@@ -1,8 +1,8 @@
 {
-  "name": "electron-typescript-react",
-  "productName": "electron-typescript-react",
+  "name": "inventory-manager",
+  "productName": "Inventory Manager",
   "version": "0.1.0",
-  "description": "My Electron application description",
+  "description": "Manage what's in the box",
   "main": "dist/main.js",
   "scripts": {
     "copy-static": "rm -r dist && cp -r html dist && cp ./node_modules/react/umd/react.production.min.js ./dist/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/",
