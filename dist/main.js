@@ -18,9 +18,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const electron_1 = require("electron");
+const git_documentdb_1 = require("git-documentdb");
+const store_1 = require("./modules_main/store");
+const i18n_1 = require("./modules_common/i18n");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const electronConnect = require('electron-connect');
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -42,10 +54,32 @@ const createWindow = () => {
         mainWindow.webContents.openDevTools();
     }
 };
+let gitDDB;
+const init = () => __awaiter(void 0, void 0, void 0, function* () {
+    // locale can be got after 'ready'
+    const myLocale = electron_1.app.getLocale();
+    console.debug(`locale: ${myLocale}`);
+    let preferredLanguage = i18n_1.defaultLanguage;
+    if (i18n_1.availableLanguages.includes(myLocale)) {
+        preferredLanguage = myLocale;
+    }
+    store_1.initializeGlobalStore(preferredLanguage);
+    gitDDB = new git_documentdb_1.GitDocumentDB({
+        localDir: store_1.getSettings().persistent.storage.path,
+        dbName: 'db',
+    });
+    yield gitDDB.open();
+    yield gitDDB.put({ _id: '1', name: 'Kimari' });
+    yield gitDDB.put({ _id: '2', name: 'Shirase' });
+    yield gitDDB.put({ _id: '3', name: 'Hinata' });
+    yield gitDDB.put({ _id: '4', name: 'Yuzu' });
+    yield gitDDB.close();
+    createWindow();
+});
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-electron_1.app.on('ready', createWindow);
+electron_1.app.on('ready', init);
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.

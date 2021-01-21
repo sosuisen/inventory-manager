@@ -1,5 +1,9 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
+import { GitDocumentDB } from 'git-documentdb';
+import { getSettings, initializeGlobalStore } from './modules_main/store';
+import { availableLanguages, defaultLanguage } from './modules_common/i18n';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const electronConnect = require('electron-connect');
 
@@ -26,10 +30,36 @@ const createWindow = (): void => {
   }
 };
 
+let gitDDB: GitDocumentDB;
+const init = async () => {
+  // locale can be got after 'ready'
+  const myLocale = app.getLocale();
+  console.debug(`locale: ${myLocale}`);
+
+  let preferredLanguage: string = defaultLanguage;
+  if (availableLanguages.includes(myLocale)) {
+    preferredLanguage = myLocale;
+  }
+  initializeGlobalStore(preferredLanguage as string);
+
+  gitDDB = new GitDocumentDB({
+    localDir: getSettings().persistent.storage.path,
+    dbName: 'db',
+  });
+  await gitDDB.open();
+  await gitDDB.put({ _id: '1', name: 'Kimari' });
+  await gitDDB.put({ _id: '2', name: 'Shirase' });
+  await gitDDB.put({ _id: '3', name: 'Hinata' });
+  await gitDDB.put({ _id: '4', name: 'Yuzu' });
+  await gitDDB.close();
+
+  createWindow();
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', init);
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

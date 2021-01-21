@@ -27,7 +27,7 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "electro_test_rxdb_react"
+            "name": "inventory-manager"
           }
         },
         {
@@ -63,7 +63,7 @@
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "cross-env": "^7.0.2",
     "css-loader": "^3.6.0",
-    "electron": "10.1.1",
+    "electron": "^11.2.0",
     "electron-forge": "^5.2.4",
     "electron-prebuilt-compile": "8.2.0",
     "electron-reload-webpack-plugin": "^2.0.4",
@@ -82,8 +82,12 @@
     "babel-plugin-react-css-modules": "^5.2.6",
     "electron-connect": "^0.6.3",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-store": "^6.0.1",
+    "git-documentdb": "^0.1.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "style-loader": "^1.2.1"
+    "redux": "^4.0.5",
+    "style-loader": "^1.2.1",
+    "typed-intl": "^1.0.3"
   }
 }
