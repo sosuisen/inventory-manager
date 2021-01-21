@@ -16,8 +16,9 @@
     "paths": {
       "*": ["node_modules/*"]
     },
+    "newLine": "LF"    
   },
   "include": [
-    "src/**/*",
+    "src/renderer.ts",
   ],
 }
