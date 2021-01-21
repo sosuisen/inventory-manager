@@ -1,14 +1,6 @@
-# my-boilerplate-electron-typescript-react
-- Electron
-  - electron-forge
-- TypeScript
-  - ts-loader
-- React
-- CSS modules
-  - css-loader
-  - style-loader
-- ESlint
-- Prettierx
-- Watch and restart renderer process
-  - electron-connect
-  - electron-reload-webpack-plugin
+# Inventory Manager
+Manage what's in the box
+
+Use Inventory Manager to...
+- Record what item is where.
+- Manage whether an item is inside or outside of the box.
