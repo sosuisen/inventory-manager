@@ -91,3 +91,5 @@ out/
 config.json
 
 inventory_manager_data/
+
+dist/
