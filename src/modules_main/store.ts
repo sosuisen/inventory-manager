@@ -1,5 +1,5 @@
 /**
- * @license Media Stickies
+ * Inventory Manager
  * Copyright (c) Hidekazu Kubota
  *
  * This source code is licensed under the Mozilla Public License Version 2.0
@@ -27,7 +27,20 @@ import {
   PersistentSettingsStateKeys,
   TemporalSettingsAction,
   TemporalSettingsState,
-} from './store.types';
+} from './store.types.settings';
+
+import {
+  BOX_ADD,
+  BOX_DELETE,
+  BOX_UPDATE,
+  initialInventoryState,
+  InventoryAction,
+  InventoryState,
+  InventoryStateKeys,
+  ITEM_ADD,
+  ITEM_DELETE,
+  ITEM_UPDATE,
+} from './store.types.inventory';
 
 /**
  * i18n
@@ -35,9 +48,9 @@ import {
 const translations = translate(English).supporting('ja', Japanese);
 
 /**
- * Media stickies data store path
- * * '../../../../../../media_stickies_data' is default path when using asar created by squirrels.windows.
- * * './media_stickies_data' is default path when starting from command line (npm start).
+ * Data store path
+ * * '../../../../../../inventory_manager_data' is default path when using asar created by squirrels.windows.
+ * * './inventory_manager_data' is default path when starting from command line (npm start).
  * * They can be distinguished by using app.isPackaged
  *
  * TODO: Default path for Mac / Linux is needed.
@@ -78,11 +91,46 @@ const electronStore = new Store({
  * * The state of the local store is used only in the renderer process.
  */
 
+const inventory = (
+  // eslint-disable-next-line default-param-last
+  state: InventoryState = initialInventoryState,
+  action: InventoryAction
+) => {
+  switch (action.type) {
+    case ITEM_ADD:
+      return { ...state, item: [...state.item, action.payload] };
+    case ITEM_UPDATE:
+      return {
+        ...state,
+        item: state.item.map(el => (el._id === action.payload._id ? action.payload : el)),
+      };
+    case ITEM_DELETE:
+      return {
+        ...state,
+        item: state.item.filter(el => el._id !== action.payload),
+      };
+    case BOX_ADD:
+      return { ...state, item: [...state.item, action.payload] };
+    case BOX_UPDATE:
+      return {
+        ...state,
+        item: state.item.map(el => (el._id === action.payload._id ? action.payload : el)),
+      };
+    case BOX_DELETE:
+      return {
+        ...state,
+        item: state.item.filter(el => el._id !== action.payload),
+      };
+    default:
+      return state;
+  }
+};
+
 /**
- * persistent reducer
- * operates serializable states
+ * Persistent settings reducer
+ * handle serializable settings
  */
-const persistent = (
+const persistentSettings = (
   // eslint-disable-next-line default-param-last
   state: PersistentSettingsState = initialPersistentSettingsState,
   action: PersistentSettingsAction
@@ -100,10 +148,10 @@ const persistent = (
 };
 
 /**
- * temporal reducer
- * operates temporal states
+ * Temporal settings reducer
+ * handle temporal settings
  */
-const temporal = (
+const temporalSettings = (
   // eslint-disable-next-line default-param-last
   state: TemporalSettingsState = initialTemporalSettingsState,
   action: TemporalSettingsAction
@@ -124,16 +172,16 @@ const temporal = (
   return state;
 };
 
-const globalReducer = combineReducers({
-  persistent,
-  temporal,
+const settingsGlobalReducer = combineReducers({
+  persistentSettings,
+  temporalSettings,
 });
 
 /**
  * Global Redux Store
  */
 
-const store = createStore(globalReducer);
+const settingsStore = createStore(settingsGlobalReducer);
 
 /**
  * Redux Dispatches
@@ -141,15 +189,15 @@ const store = createStore(globalReducer);
 
 // Dispatch request from Renderer process
 ipcMain.handle('global-dispatch', (event, action: PersistentSettingsAction) => {
-  store.dispatch(action);
+  settingsStore.dispatch(action);
 });
 
 /**
  * Add electron-store as as subscriber
  */
 let previousState = initialPersistentSettingsState;
-store.subscribe(() => {
-  const currentState = store.getState().persistent;
+settingsStore.subscribe(() => {
+  const currentState = settingsStore.getState().persistentSettings;
   const updateIfChanged = (key: PersistentSettingsStateKeys) => {
     const isChanged = () => {
       const prevValue = previousState[key];
@@ -177,10 +225,10 @@ store.subscribe(() => {
   updateIfChanged('storage');
   if (updateIfChanged('language')) {
     selectPreferredLanguage(availableLanguages, [
-      store.getState().persistent.language,
+      settingsStore.getState().persistentSettings.language,
       defaultLanguage,
     ]);
-    store.dispatch({ type: 'messages-put', payload: translations.messages() });
+    settingsStore.dispatch({ type: 'messages-put', payload: translations.messages() });
   }
 });
 
@@ -188,10 +236,10 @@ store.subscribe(() => {
  * Add Renderer process as a subscriber
  */
 export const subscribeStoreFromSettings = (subscriber: BrowserWindow) => {
-  subscriber.webContents.send('globalStoreChanged', store.getState());
-  const unsubscribe = store.subscribe(() => {
+  subscriber.webContents.send('globalStoreChanged', settingsStore.getState());
+  const unsubscribe = settingsStore.subscribe(() => {
     emitter.emit('updateTrayContextMenu');
-    subscriber.webContents.send('globalStoreChanged', store.getState());
+    subscriber.webContents.send('globalStoreChanged', settingsStore.getState());
   });
   return unsubscribe;
 };
@@ -218,7 +266,7 @@ app
 export const initializeGlobalStore = (preferredLanguage: string) => {
   const loadOrCreate = (key: string, defaultValue: any) => {
     const value: any = electronStore.get(key, defaultValue);
-    store.dispatch({
+    settingsStore.dispatch({
       type: key + '-put',
       payload: value,
     } as PersistentSettingsAction);
@@ -234,17 +282,17 @@ export const initializeGlobalStore = (preferredLanguage: string) => {
 
 // API for getting local settings
 export const getSettings = () => {
-  return store.getState();
+  return settingsStore.getState();
 };
 
 // API for globalDispatch
 export const globalDispatch = (action: PersistentSettingsAction) => {
-  store.dispatch(action);
+  settingsStore.dispatch(action);
 };
 
 // Utility for i18n
 export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
-  let message: string = getSettings().temporal.messages[label];
+  let message: string = getSettings().temporalSettings.messages[label];
   if (args) {
     args.forEach((replacement, index) => {
       const variable = '$' + (index + 1); // $1, $2, ...
