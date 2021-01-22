@@ -43,7 +43,7 @@ const init = async () => {
   initializeGlobalStore(preferredLanguage as string);
 
   gitDDB = new GitDocumentDB({
-    localDir: getSettings().persistent.storage.path,
+    localDir: getSettings().persistentSettings.storage.path,
     dbName: 'db',
   });
   await gitDDB.open();
