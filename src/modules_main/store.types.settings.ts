@@ -25,7 +25,6 @@ export interface PersistentSettingsState {
     type: string;
     path: string;
   };
-  navigationAllowedURLs: string[];
   language: string;
 }
 
@@ -59,21 +58,7 @@ export type LanguagePutAction = {
   payload: string;
 };
 
-export type NavigationAllowedURLsPutAction = {
-  type: 'navigationAllowedURLs-put';
-  payload: string | string[];
-};
-
-export type NavigationAllowedURLsDeleteAction = {
-  type: 'navigationAllowedURLs-delete';
-  payload: string | string[];
-};
-
-export type PersistentSettingsAction =
-  | StoragePutAction
-  | LanguagePutAction
-  | NavigationAllowedURLsPutAction
-  | NavigationAllowedURLsDeleteAction;
+export type PersistentSettingsAction = StoragePutAction | LanguagePutAction;
 
 export type MessagesPutAction = {
   type: 'messages-put';
@@ -96,7 +81,6 @@ export const initialPersistentSettingsState: PersistentSettingsState = {
     type: '',
     path: '',
   },
-  navigationAllowedURLs: [],
   language: '',
 };
 

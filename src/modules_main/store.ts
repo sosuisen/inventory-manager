@@ -115,6 +115,7 @@ const temporal = (
     };
   }
   else if (action.type === 'app-put') {
+    // App info
     return {
       ...state,
       app: action.payload,
