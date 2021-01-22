@@ -17,6 +17,9 @@ export const dataDirName = 'inventory_manager_data';
  * ! a key of the electron-store (that is serialized data)
  */
 
+/**
+ * Settings using electron-store
+ */
 export interface PersistentSettingsState {
   storage: {
     type: string;
