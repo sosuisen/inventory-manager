@@ -187,8 +187,8 @@ settingsStore.subscribe(() => {
 /**
  * Add Renderer process as a subscriber
  */
-export const subscribeStoreFromSettings = (subscriber: BrowserWindow) => {
-  subscriber.webContents.send('globalStoreChanged', settingsStore.getState());
+export const subscribeSettingsStore = (subscriber: BrowserWindow) => {
+  subscriber.webContents.send('settingsStoreChanged', settingsStore.getState());
   const unsubscribe = settingsStore.subscribe(() => {
     emitter.emit('updateTrayContextMenu');
     subscriber.webContents.send('globalStoreChanged', settingsStore.getState());

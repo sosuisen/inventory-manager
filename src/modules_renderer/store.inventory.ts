@@ -5,7 +5,6 @@
  * This source code is licensed under the Mozilla Public License Version 2.0
  * found in the LICENSE file in the root directory of this source tree.
  */
-import { BrowserWindow, ipcMain } from 'electron';
 import { createStore } from 'redux';
 
 import {
@@ -19,6 +18,8 @@ import {
   ITEM_ADD,
   ITEM_DELETE,
   ITEM_UPDATE,
+  STATUS_CURRENT_BOX_ADD,
+  STATUS_CURRENT_BOX_UPDATE,
 } from './store.types.inventory';
 
 /**
@@ -64,6 +65,9 @@ const inventory = (
         ...state,
         box: state.box.filter(el => el._id !== action.payload),
       };
+    case STATUS_CURRENT_BOX_ADD:
+    case STATUS_CURRENT_BOX_UPDATE:
+      return { ...state, currentBox: action.payload };
     default:
       return state;
   }
@@ -74,15 +78,6 @@ const inventory = (
  */
 
 const inventoryStore = createStore(inventory, initialInventoryState);
-
-/**
- * Redux Dispatches
- */
-
-// Dispatch request from Renderer process
-ipcMain.handle('inventory-global-dispatch', (event, action: InventoryAction) => {
-  inventoryStore.dispatch(action);
-});
 
 /**
  * Add electron-store as as subscriber
@@ -116,18 +111,8 @@ inventoryStore.subscribe(() => {
   };
   updateIfChanged('item');
   updateIfChanged('box');
+  updateIfChanged('status');
 });
-
-/**
- * Add Renderer process as a subscriber
- */
-export const subscribeStoreFromRenderer = (subscriber: BrowserWindow) => {
-  subscriber.webContents.send('inventoryGlobalStoreChanged', inventoryStore.getState());
-  const unsubscribe = inventoryStore.subscribe(() => {
-    subscriber.webContents.send('inventoryGlobalStoreChanged', inventoryStore.getState());
-  });
-  return unsubscribe;
-};
 
 /**
  * Initializing
@@ -135,6 +120,7 @@ export const subscribeStoreFromRenderer = (subscriber: BrowserWindow) => {
 
 // Inventory is deserialized from git-documentdb
 export const initializeGlobalStore = (preferredLanguage: string) => {
+  /*
   const loadOrCreate = (key: string) => {
     //    const value: any = electronStore.get(key, defaultValue);
     const value: any = '';
@@ -147,6 +133,8 @@ export const initializeGlobalStore = (preferredLanguage: string) => {
 
   loadOrCreate('item');
   loadOrCreate('box');
+  loadOrCreate('status');
+  */
 };
 
 /**
@@ -156,9 +144,4 @@ export const initializeGlobalStore = (preferredLanguage: string) => {
 // API for getting local settings
 export const getInventory = () => {
   return inventoryStore.getState();
-};
-
-// API for globalDispatch
-export const inventoryGlobalDispatch = (action: InventoryAction) => {
-  inventoryStore.dispatch(action);
 };

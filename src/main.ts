@@ -1,8 +1,12 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
-import { getSettings, initializeGlobalStore } from './modules_main/store.settings';
 import { availableLanguages, defaultLanguage } from './modules_common/i18n';
+import {
+  getSettings,
+  initializeGlobalStore,
+  subscribeSettingsStore,
+} from './modules_main/store.settings';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const electronConnect = require('electron-connect');
@@ -28,6 +32,13 @@ const createWindow = (): void => {
     electronConnect.client.create(mainWindow);
     mainWindow.webContents.openDevTools();
   }
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    const unsubscribe = subscribeSettingsStore(mainWindow);
+    mainWindow.on('close', () => {
+      unsubscribe();
+    });
+  });
 };
 
 let gitDDB: GitDocumentDB;
