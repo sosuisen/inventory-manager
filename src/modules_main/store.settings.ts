@@ -29,19 +29,6 @@ import {
   TemporalSettingsState,
 } from './store.types.settings';
 
-import {
-  BOX_ADD,
-  BOX_DELETE,
-  BOX_UPDATE,
-  initialInventoryState,
-  InventoryAction,
-  InventoryState,
-  InventoryStateKeys,
-  ITEM_ADD,
-  ITEM_DELETE,
-  ITEM_UPDATE,
-} from './store.types.inventory';
-
 /**
  * i18n
  */
@@ -90,41 +77,6 @@ const electronStore = new Store({
  * * The state of the global store is proxied to the renderer processes.
  * * The state of the local store is used only in the renderer process.
  */
-
-const inventory = (
-  // eslint-disable-next-line default-param-last
-  state: InventoryState = initialInventoryState,
-  action: InventoryAction
-) => {
-  switch (action.type) {
-    case ITEM_ADD:
-      return { ...state, item: [...state.item, action.payload] };
-    case ITEM_UPDATE:
-      return {
-        ...state,
-        item: state.item.map(el => (el._id === action.payload._id ? action.payload : el)),
-      };
-    case ITEM_DELETE:
-      return {
-        ...state,
-        item: state.item.filter(el => el._id !== action.payload),
-      };
-    case BOX_ADD:
-      return { ...state, item: [...state.item, action.payload] };
-    case BOX_UPDATE:
-      return {
-        ...state,
-        item: state.item.map(el => (el._id === action.payload._id ? action.payload : el)),
-      };
-    case BOX_DELETE:
-      return {
-        ...state,
-        item: state.item.filter(el => el._id !== action.payload),
-      };
-    default:
-      return state;
-  }
-};
 
 /**
  * Persistent settings reducer

@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
-import { getSettings, initializeGlobalStore } from './modules_main/store';
+import { getSettings, initializeGlobalStore } from './modules_main/store.settings';
 import { availableLanguages, defaultLanguage } from './modules_common/i18n';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
