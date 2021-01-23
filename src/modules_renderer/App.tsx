@@ -1,15 +1,12 @@
 import * as React from 'react';
 import './App.css';
+import { InventoryManager } from './InventoryManager';
+import { StoreProvider } from './StoreProvider';
 
-export interface AppProps {
-  title: string;
-  author: string;
-}
-
-export const App = (props: AppProps) => {
+export const App = () => {
   return (
-    <div styleName='app'>
-      {props.title}, {props.author}
-    </div>
+    <StoreProvider>
+      <InventoryManager></InventoryManager>
+    </StoreProvider>
   );
 };

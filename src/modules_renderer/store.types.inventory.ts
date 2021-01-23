@@ -22,6 +22,10 @@ export interface Box {
   modified_date: string;
 }
 
+export interface Status {
+  currentBox: string;
+}
+
 /**
  * Redux State
  */
@@ -29,6 +33,7 @@ export interface Box {
 export interface InventoryState {
   item: Item[];
   box: Box[];
+  status: Status;
 }
 
 export type InventoryStateKeys = keyof InventoryState;
@@ -44,6 +49,8 @@ export const ITEM_DELETE = 'item-delete';
 export const BOX_ADD = 'box-add';
 export const BOX_UPDATE = 'box-update';
 export const BOX_DELETE = 'box-delete';
+export const STATUS_CURRENT_BOX_ADD = 'status-current-box-status-add'; // NOTE: Adding status-current-box-status is same as updating it.
+export const STATUS_CURRENT_BOX_UPDATE = 'status-current-box-status-update';
 
 export type ItemAddAction = {
   type: typeof ITEM_ADD;
@@ -75,15 +82,30 @@ export type BoxDeleteAction = {
   payload: string;
 };
 
+export type StatusCurrentBoxAddAction = {
+  type: typeof STATUS_CURRENT_BOX_ADD;
+  payload: string;
+};
+
+export type StatusCurrentBoxUpdateAction = {
+  type: typeof STATUS_CURRENT_BOX_UPDATE;
+  payload: string;
+};
+
 export type InventoryAction =
   | ItemAddAction
   | ItemUpdateAction
   | ItemDeleteAction
   | BoxAddAction
   | BoxUpdateAction
-  | BoxDeleteAction;
+  | BoxDeleteAction
+  | StatusCurrentBoxAddAction
+  | StatusCurrentBoxUpdateAction;
 
 export const initialInventoryState: InventoryState = {
   item: [],
   box: [],
+  status: {
+    currentBox: '1',
+  },
 };
