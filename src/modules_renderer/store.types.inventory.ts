@@ -31,7 +31,9 @@ export interface Status {
  */
 
 export interface InventoryState {
-  item: Item[];
+  item: {
+    [_id: string]: Item;
+  };
   box: Box[];
   status: Status;
 }
@@ -103,8 +105,45 @@ export type InventoryAction =
   | StatusCurrentBoxUpdateAction;
 
 export const initialInventoryState: InventoryState = {
-  item: [],
-  box: [],
+  item: {
+    '1': {
+      _id: '1',
+      name: 'kimari',
+      takeout: false,
+      created_date: '2020-01-01 00:00:00',
+      modified_date: '2020-01-01 00:00:00',
+    },
+    '2': {
+      _id: '2',
+      name: 'shirase',
+      takeout: false,
+      created_date: '2020-01-01 00:00:00',
+      modified_date: '2020-01-01 00:00:00',
+    },
+    '10': {
+      _id: '10',
+      name: 'gin',
+      takeout: false,
+      created_date: '2020-01-01 00:00:00',
+      modified_date: '2020-01-01 00:00:00',
+    },
+  },
+  box: [
+    {
+      _id: '1',
+      name: 'doukou',
+      created_date: '2020-01-01 00:00:00',
+      modified_date: '2020-01-01 00:00:00',
+      items: ['1', '2'],
+    },
+    {
+      _id: '2',
+      name: 'member',
+      created_date: '2020-01-01 00:00:00',
+      modified_date: '2020-01-01 00:00:00',
+      items: ['10'],
+    },
+  ],
   status: {
     currentBox: '1',
   },
