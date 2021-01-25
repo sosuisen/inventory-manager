@@ -5,21 +5,30 @@
  * This source code is licensed under the Mozilla Public License Version 2.0
  * found in the LICENSE file in the root directory of this source tree.
  */
-import { createStore } from 'redux';
+import { combineReducers, createStore } from 'redux';
+import { nanoid } from 'nanoid';
 
 import {
+  Box,
   BOX_ADD,
   BOX_DELETE,
+  BOX_ITEM_ADD,
+  BOX_ITEM_DELETE,
   BOX_UPDATE,
-  initialInventoryState,
-  InventoryAction,
-  InventoryState,
-  InventoryStateKeys,
+  BoxAction,
+  BoxState,
+  initialBoxState,
+  initialItemState,
+  initialWorkState,
   ITEM_ADD,
   ITEM_DELETE,
   ITEM_UPDATE,
-  STATUS_CURRENT_BOX_ADD,
-  STATUS_CURRENT_BOX_UPDATE,
+  ItemAction,
+  ItemState,
+  WORK_CURRENT_BOX_ADD,
+  WORK_CURRENT_BOX_UPDATE,
+  WorkAction,
+  WorkState,
 } from './store.types.inventory';
 
 /**
@@ -35,57 +44,143 @@ import {
  * * The state of the local store is used only in the renderer process.
  */
 
-const inventory = (
+const getCurrentDateAndTime = (): string => {
+  // Returns UTC date with 'YYYY-MM-DD HH:mm:ss' format
+  return new Date().toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
+};
+
+const itemReducer = (
   // eslint-disable-next-line default-param-last
-  state: InventoryState = initialInventoryState,
-  action: InventoryAction
+  state: ItemState = initialItemState,
+  action: ItemAction
 ) => {
   switch (action.type) {
-    case ITEM_ADD:
-      return { ...state, item: [...state.item, action.payload] };
-    case ITEM_UPDATE:
-      return {
-        ...state,
-        item: state.item.map(el => (el._id === action.payload._id ? action.payload : el)),
+    case ITEM_ADD: {
+      const newState = { ...state };
+      const date = getCurrentDateAndTime();
+      newState[action.payload._id] = {
+        ...action.payload,
+        created_date: date,
+        modified_date: date,
+        takeout: false,
       };
-    case ITEM_DELETE:
-      return {
-        ...state,
-        item: state.item.filter(el => el._id !== action.payload),
+      return newState;
+    }
+    case ITEM_UPDATE: {
+      const newState = { ...state };
+      const date = getCurrentDateAndTime();
+      newState[action.payload._id] = {
+        ...newState[action.payload._id],
+        modified_date: date,
+        name: action.payload.name ?? newState[action.payload._id].name,
+        takeout: action.payload.takeout ?? newState[action.payload._id].takeout,
       };
-    case BOX_ADD:
-      return { ...state, box: [...state.box, action.payload] };
-    case BOX_UPDATE:
-      return {
-        ...state,
-        box: state.box.map(el => (el._id === action.payload._id ? action.payload : el)),
+      return newState;
+    }
+    case ITEM_DELETE: {
+      const newState = { ...state };
+      delete newState[action.payload];
+      return newState;
+    }
+    default:
+      return state;
+  }
+};
+
+const boxReducer = (
+  // eslint-disable-next-line default-param-last
+  state: BoxState = initialBoxState,
+  action: BoxAction
+) => {
+  switch (action.type) {
+    case BOX_ADD: {
+      const date = getCurrentDateAndTime();
+      const newState: Box = {
+        ...action.payload,
+        created_date: date,
+        modified_date: date,
+        items: [],
       };
+      return [...state, newState];
+    }
+    case BOX_UPDATE: {
+      const date = getCurrentDateAndTime();
+      return state.map(el =>
+        el._id === action.payload._id
+          ? {
+            ...el,
+            ...action.payload,
+            modified_date: date,
+          }
+          : el
+      );
+    }
     case BOX_DELETE:
-      return {
-        ...state,
-        box: state.box.filter(el => el._id !== action.payload),
-      };
-    case STATUS_CURRENT_BOX_ADD:
-    case STATUS_CURRENT_BOX_UPDATE:
+      return state.filter(el => el._id !== action.payload);
+    case BOX_ITEM_ADD: {
+      const date = getCurrentDateAndTime();
+      return state.map(el =>
+        el._id === action.payload.box_id
+          ? {
+            ...el,
+            items: [...el.items, action.payload.item_id],
+            modified_date: date,
+          }
+          : el
+      );
+    }
+    case BOX_ITEM_DELETE: {
+      const date = getCurrentDateAndTime();
+      return state.map(el =>
+        el._id === action.payload.box_id
+          ? {
+            ...el,
+            items: el.items.filter(id => id !== action.payload.item_id),
+            modified_date: date,
+          }
+          : el
+      );
+    }
+    default:
+      return state;
+  }
+};
+
+const workReducer = (
+  // eslint-disable-next-line default-param-last
+  state: WorkState = initialWorkState,
+  action: WorkAction
+) => {
+  switch (action.type) {
+    case WORK_CURRENT_BOX_ADD:
+    case WORK_CURRENT_BOX_UPDATE:
       return { ...state, currentBox: action.payload };
     default:
       return state;
   }
 };
 
+export const inventory = combineReducers({
+  item: itemReducer,
+  box: boxReducer,
+  work: workReducer,
+});
+
 /**
  * Global Redux Store
  */
 
-const inventoryStore = createStore(inventory, initialInventoryState);
+const inventoryStore = createStore(inventory);
 
 /**
  * Add electron-store as as subscriber
  */
-let previousState = initialInventoryState;
+/*
+let previousItemState = initialItemState;
+let previousBoxState = initialBoxState;
 inventoryStore.subscribe(() => {
   const currentState = inventoryStore.getState();
-  const updateIfChanged = (key: InventoryStateKeys) => {
+  const updateIfChanged = (key: any) => {
     const isChanged = () => {
       const prevValue = previousState[key];
       const currentValue = currentState[key];
@@ -103,7 +198,7 @@ inventoryStore.subscribe(() => {
       );
     };
     if (isChanged()) {
-      previousState = currentState;
+      previousItemState = currentState;
       //      electronStore.set(key, currentState[key]);
       return true;
     }
@@ -113,6 +208,7 @@ inventoryStore.subscribe(() => {
   updateIfChanged('box');
   updateIfChanged('status');
 });
+*/
 
 /**
  * Initializing
