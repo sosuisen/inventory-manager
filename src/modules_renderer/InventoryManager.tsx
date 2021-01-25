@@ -1,12 +1,13 @@
 import * as React from 'react';
 import './InventoryManager.css';
 import { ItemRow } from './ItemRow';
+import { InputArea } from './InputArea';
 import { InventoryContext, InventoryProvider } from './StoreProvider';
 
 export const InventoryManager = () => {
-  const [inventoryState]: InventoryProvider = React.useContext(InventoryContext);
+  const [inventoryState] = React.useContext(InventoryContext) as InventoryProvider;
   const currentBox = inventoryState.box.find(
-    elm => elm._id === inventoryState.status.currentBox
+    elm => elm._id === inventoryState.work.currentBox
   );
   let itemList;
   if (currentBox) {
@@ -17,8 +18,9 @@ export const InventoryManager = () => {
   }
   return (
     <div>
-      <div styleName='app'>Current box is [{inventoryState.status.currentBox}]</div>
+      <div styleName='app'>Current box is [{inventoryState.work.currentBox}]</div>
       {itemList}
+      <InputArea></InputArea>
     </div>
   );
 };

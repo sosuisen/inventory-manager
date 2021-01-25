@@ -7,6 +7,7 @@
  */
 
 import * as React from 'react';
+import { inventory } from './store.inventory';
 import {
   initialInventoryState,
   InventoryAction,
@@ -15,13 +16,13 @@ import {
 
 export type InventoryProvider = [InventoryState, (action: InventoryAction) => void];
 
-export const InventoryContext = React.createContext<InventoryState | any>(
-  initialInventoryState
-);
+export const InventoryContext = React.createContext<InventoryState | any>('');
 
 export const StoreProvider = (props: { children: React.ReactNode }) => {
-  const [inventoryState, inventoryDispatch] = React.useState(initialInventoryState);
-
+  const [inventoryState, inventoryDispatch]: InventoryProvider = React.useReducer(
+    inventory,
+    initialInventoryState
+  );
   return (
     <InventoryContext.Provider value={[inventoryState, inventoryDispatch]}>
       {props.children}
