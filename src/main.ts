@@ -31,12 +31,9 @@ const createWindow = (): void => {
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
 
-  // hot reload
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
-    electronConnect.client.create(mainWindow);
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   }
-  mainWindow.webContents.openDevTools();
 
   mainWindow.webContents.on('did-finish-load', () => {
     const unsubscribe = subscribeSettingsStore(mainWindow);

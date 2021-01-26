@@ -8,8 +8,8 @@
   },
   "tasks": [
     {
-      "label": "compile-main-debug-task",
-      "command": "npm run compile-main-debug",
+      "label": "compile-debug-task",
+      "command": "npm run compile-debug",
     },
     {
       "label": "Sleepdelay",
