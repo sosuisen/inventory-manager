@@ -6,9 +6,10 @@
       "type": "node",
       "request": "launch",
       // "preLaunchTask": "compile-debug-task",
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-nix",
+      "program": "${workspaceFolder}/dist/main.js",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
       "windows": {
-        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-win.cmd"
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
       },
       "env":{
         "NODE_ENV": "development"
@@ -16,7 +17,7 @@
       // runtimeArgs will be passed directly to your Electron application
       "runtimeArgs": [
         // this args for attaching render process
-        "--remote-debugging-port=9222"
+        "--remote-debugging-port=9222 ."
       ],
       "cwd": "${workspaceFolder}",
       "outputCapture": "std"
