@@ -9,13 +9,12 @@
     "copy-static": "npm run clean && cp -r html dist && cp ./node_modules/react/umd/react.production.min.js ./dist/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/",
     "compile": "npm run lint && npx tsc -p tsconfig.main.production.json && npx webpack --config webpack.renderer.production.js",
     "compile-debug": "npm run lint  && npx tsc -p tsconfig.main.development.json && npx webpack --config webpack.renderer.development.js",
-    "start": "npm run copy-static && npm run compile && electron-forge start",    
+    "start": "npm run copy-static && npm run compile && electron-forge start",
     "/* debug-main */": "/* Please launch [Main (inventory-manager)] from VSCode debugger after compile-debug */",
     "/* debug-renderer */": "/* Please launch [Renderer (inventory-manager)] from VSCode debugger after compile-debug and [Main (inventory-manager)] */",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "npm run copy-static && npm run compile && electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --fix --ext .ts ."
+    "lint": "eslint --fix --ignore-path .gitignore ."
   },
   "keywords": [],
   "author": {
@@ -25,7 +24,15 @@
   "license": "MPL-2.0",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "appCopyright": "Copyright(C) 2021 Hidekazu Kubota",
+        "asar": true,
+        "icon": "assets/inventory_manager_icon",
+        "win32metadata": {
+          "ProductName": "Inventory Manager",
+          "FileDescription": "Inventory Manager"
+        }
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -69,9 +76,7 @@
     "css-loader": "^3.6.0",
     "electron": "^11.2.0",
     "electron-devtools-installer": "^3.1.1",
-    "electron-forge": "^5.2.4",
     "electron-prebuilt-compile": "8.2.0",
-    "electron-reload-webpack-plugin": "^2.0.4",
     "eslint": "^7.8.1",
     "eslint-config-standardize": "^0.7.1",
     "eslint-plugin-import": "^2.22.0",
