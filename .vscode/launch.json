@@ -5,10 +5,13 @@
       "name": "Main",
       "type": "node",
       "request": "launch",
-      // "preLaunchTask": "compile-main-debug-task",
+      // "preLaunchTask": "compile-debug-task",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-nix",
       "windows": {
         "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron-forge-vscode-win.cmd"
+      },
+      "env":{
+        "NODE_ENV": "development"
       },
       // runtimeArgs will be passed directly to your Electron application
       "runtimeArgs": [
@@ -26,8 +29,4 @@
       "port": 9222,
       "webRoot": "${workspaceRoot}/dist",
     }],
-  "compounds": [{
-    "name": "Main & Renderer",
-    "configurations": ["Main", "Renderer"]
-  }]
 }
