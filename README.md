@@ -1,4 +1,4 @@
-<img alt="Inventory Manager" src="https://github.com/sosuisen/inventory-manager/blob/master/assets/inventory_manager-128x128.png" width=80 height=80 align="left"> 
+<img alt="Inventory Manager" src="https://github.com/sosuisen/inventory-manager/blob/main/assets/inventory_manager_icon-128x128.png" width=80 height=80 align="left"> 
 
 # Inventory Manager
 
