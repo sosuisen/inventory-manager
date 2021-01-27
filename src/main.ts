@@ -1,10 +1,6 @@
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
-import installExtension, {
-  REACT_DEVELOPER_TOOLS,
-  REDUX_DEVTOOLS,
-} from 'electron-devtools-installer';
 import { availableLanguages, defaultLanguage } from './modules_common/i18n';
 import {
   getSettings,
@@ -73,19 +69,6 @@ const init = async () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', init);
-
-// eslint-disable-next-line promise/catch-or-return
-app.whenReady().then(() => {
-  // https://github.com/zalmoxisus/redux-devtools-extension#2-use-with-redux
-  // eslint-disable-next-line promise/no-nesting
-  installExtension(REDUX_DEVTOOLS)
-    .then(name => console.log(`Added Extension:  ${name}`))
-    .catch(err => console.log('An error occurred:', err));
-  // eslint-disable-next-line promise/no-nesting
-  installExtension(REACT_DEVELOPER_TOOLS)
-    .then(name => console.log(`Added Extension:  ${name}`))
-    .catch(err => console.log('An error occurred:', err));
-});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
