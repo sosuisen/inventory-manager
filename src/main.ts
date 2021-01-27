@@ -60,6 +60,7 @@ const init = async () => {
   await gitDDB.put({ _id: '2', name: 'Shirase' });
   await gitDDB.put({ _id: '3', name: 'Hinata' });
   await gitDDB.put({ _id: '4', name: 'Yuzu' });
+  await gitDDB.put({ _id: 'data', name: getSettings().persistentSettings.storage.path });
   await gitDDB.close();
 
   createWindow();

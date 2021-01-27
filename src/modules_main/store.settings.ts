@@ -56,13 +56,13 @@ const defaultStorage = {
  *
  * * Individual settings are serialized into config.json
  * * It is saved to:
- * * app.isPackaged == true ? C:\Users\{UserName}\AppData\Roaming\Media Stickies
+ * * app.isPackaged == true ? C:\Users\{UserName}\AppData\Roaming\Inventory Manager
  * *                        : Project root directory (/media_stickies)
  * TODO: config.json path for Mac / Linux is needed.
  */
 
 const electronStore = new Store({
-  cwd: app.isPackaged ? './' : path.join(__dirname, '../../'),
+  cwd: app.isPackaged ? `./` : path.join(__dirname, '../../'),
 });
 
 /**
