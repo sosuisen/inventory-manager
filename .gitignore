@@ -93,3 +93,5 @@ config.json
 inventory_manager_data/
 
 dist/
+
+InventoryManager-win32-x64/
