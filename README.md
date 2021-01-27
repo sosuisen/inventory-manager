@@ -10,4 +10,4 @@ Use Inventory Manager to...
 - Manage whether an item is inside or outside of the box.
 - Save your inventory to Git repository.
 
-NOTE: This is example application of [git-documentdb](https://github.com/sosuisen/git-documentdb).
+NOTE: This is an example application of [git-documentdb](https://github.com/sosuisen/git-documentdb).
