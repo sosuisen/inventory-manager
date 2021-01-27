@@ -169,12 +169,7 @@ export const inventory = combineReducers({
  * Global Redux Store
  */
 
-const inventoryStore = createStore(
-  inventory,
-  // https://github.com/zalmoxisus/redux-devtools-extension#2-use-with-redux
-  // @ts-ignore
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-);
+const inventoryStore = createStore(inventory);
 
 /**
  * Add electron-store as as subscriber
