@@ -29,6 +29,7 @@ import {
   WorkAction,
   WorkState,
 } from './store.types.inventory';
+import { getCurrentDateAndTime } from './utils';
 
 /**
  * Redux for individual settings
@@ -42,11 +43,6 @@ import {
  * * The state of the global store is proxied to the renderer processes.
  * * The state of the local store is used only in the renderer process.
  */
-
-const getCurrentDateAndTime = (): string => {
-  // Returns UTC date with 'YYYY-MM-DD HH:mm:ss' format
-  return new Date().toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
-};
 
 const itemReducer = (
   // eslint-disable-next-line default-param-last

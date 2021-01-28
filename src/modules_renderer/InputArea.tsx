@@ -33,8 +33,8 @@ export const InputArea = () => {
   };
 
   return (
-    <div>
-      <div>
+    <div styleName='inputArea'>
+      <div styleName='nameField'>
         Name:{' '}
         <input
           type='text'
@@ -43,7 +43,7 @@ export const InputArea = () => {
           onChange={e => setName(e.target.value)}
         ></input>
       </div>
-      <div styleName={'addButton'} onClick={handleClick}>
+      <div styleName='addButton' onClick={handleClick}>
         Add
       </div>
     </div>

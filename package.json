@@ -12,7 +12,7 @@
     "start": "npm run copy-static && npm run compile && npx electron .",
     "/* debug-main */": "/* Please launch [Main (inventory-manager)] from VSCode debugger after compile-debug */",
     "/* debug-renderer */": "/* Please launch [Renderer (inventory-manager)] from VSCode debugger after compile-debug and [Main (inventory-manager)] */",
-    "rebuild-native": "npx electron-rebuild",
+    "rebuild-native": "npx electron-rebuild -f",
     "make": "npm run copy-static && npm run compile && rm -rf ./installer/* && node --experimental-json-modules packager.mjs",
     "publish": "electron-forge publish",
     "lint": "eslint --fix --ignore-path .gitignore ."
@@ -55,7 +55,7 @@
     "babel-plugin-react-css-modules": "^5.2.6",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^6.0.1",
-    "git-documentdb": "^0.1.1",
+    "git-documentdb": "^0.1.2",
     "nanoid": "^3.1.20",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
