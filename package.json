@@ -13,7 +13,7 @@
     "/* debug-main */": "/* Please launch [Main (inventory-manager)] from VSCode debugger after compile-debug */",
     "/* debug-renderer */": "/* Please launch [Renderer (inventory-manager)] from VSCode debugger after compile-debug and [Main (inventory-manager)] */",
     "rebuild-native": "npx electron-rebuild",
-    "make": "npm run copy-static && npm run compile && rm -rf ./installer/* && node packager.mjs",
+    "make": "npm run copy-static && npm run compile && rm -rf ./installer/* && node --experimental-json-modules packager.mjs",
     "publish": "electron-forge publish",
     "lint": "eslint --fix --ignore-path .gitignore ."
   },
