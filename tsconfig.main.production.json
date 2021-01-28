@@ -19,5 +19,6 @@
   },
   "include": [
     "src/main.ts",
+    "src/preload.ts"
   ],
 }
