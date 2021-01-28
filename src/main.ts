@@ -19,6 +19,12 @@ const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
     height: 900,
     width: 1200,
+    webPreferences: {
+      preload: path.join(__dirname, './preload.js'),
+      sandbox: true,
+      contextIsolation: true,
+    },
+    icon: path.join(__dirname, '../assets/inventory_manager_icon.ico'),
   });
 
   // and load the index.html of the app.
