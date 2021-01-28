@@ -8,9 +8,6 @@ import {
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const electronConnect = require('electron-connect');
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   // eslint-disable-line global-require
@@ -28,6 +25,8 @@ const createWindow = (): void => {
   mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
 
   if (!app.isPackaged && process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('electron-connect').client.create(mainWindow);
     mainWindow.webContents.openDevTools();
   }
 
