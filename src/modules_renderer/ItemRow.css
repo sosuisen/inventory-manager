@@ -1,0 +1,28 @@
+.row {
+  clear: both;
+}
+.col {
+  float: left;
+  padding: 3px 7px 3px 7px;
+}
+.name {
+  width: 120px;
+}
+.created_date{
+
+}
+.modified_date{
+
+}
+.takeout{
+
+}
+.delete{
+
+}
+.deleteButton{
+  border: 1px solid black;
+  padding: 3px;
+  margin-top: -3px;
+  cursor: pointer;
+}

@@ -1,5 +1,17 @@
+.inputArea {
+  clear: both;
+  margin-top: 12px;
+}
+.nameField {
+  float: left;
+}
 .addButton {
-  padding: 7px;
+  float: left;
+  text-align: center;
+  padding: 3px;
   color: black;
   border: 1px solid black;
+  width: 50px;
+  cursor: pointer;
+  margin-left: 7px;
 }
