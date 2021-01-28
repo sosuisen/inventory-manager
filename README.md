@@ -3,7 +3,7 @@
 # Inventory Manager
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](LICENSE)
 
-Manage what's in the box
+Electron app to manage what's in the box
 
 Use Inventory Manager to...
 - Record what item is where.
