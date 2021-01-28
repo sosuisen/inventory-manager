@@ -30,10 +30,22 @@ export type ItemState = {
   [_id: string]: Item;
 };
 
-export type BoxState = Box[];
+export type BoxState = {
+  [_id: string]: Box;
+};
 
 export type WorkState = {
+  boxOrder: string[];
   currentBox: string;
+};
+
+export type ObjectTypeState = ItemState | BoxState;
+export type ObjectTypeTable = 'item' | 'box';
+
+export type InventoryState = {
+  item: ItemState;
+  box: BoxState;
+  work: WorkState;
 };
 
 /**
@@ -133,12 +145,6 @@ export type WorkAction = WorkCurrentBoxAddAction | WorkCurrentBoxUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
-export type InventoryState = {
-  item: ItemState;
-  box: BoxState;
-  work: WorkState;
-};
-
 export const initialItemState: ItemState = {
   '1': {
     _id: '1',
@@ -162,23 +168,24 @@ export const initialItemState: ItemState = {
     modified_date: '2020-01-01 00:00:00',
   },
 };
-export const initialBoxState: BoxState = [
-  {
+export const initialBoxState: BoxState = {
+  '1': {
     _id: '1',
-    name: 'doukou',
+    name: 'submember',
     created_date: '2020-01-01 00:00:00',
     modified_date: '2020-01-01 00:00:00',
     items: ['1', '2'],
   },
-  {
+  '2': {
     _id: '2',
     name: 'member',
     created_date: '2020-01-01 00:00:00',
     modified_date: '2020-01-01 00:00:00',
     items: ['10'],
   },
-];
+};
 export const initialWorkState: WorkState = {
+  boxOrder: ['1', '2'],
   currentBox: '1',
 };
 

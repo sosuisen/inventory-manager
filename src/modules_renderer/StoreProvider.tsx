@@ -7,7 +7,7 @@
  */
 
 import * as React from 'react';
-import { inventory } from './store.inventory';
+import { inventory, updatePersistentStore } from './store.inventory';
 import {
   initialInventoryState,
   InventoryAction,
@@ -23,6 +23,16 @@ export const StoreProvider = (props: { children: React.ReactNode }) => {
     inventory,
     initialInventoryState
   );
+
+  React.useEffect(() => {
+    const currentState = inventoryState;
+    const updateIfObjectChanged = (table: any) => {
+      updatePersistentStore(table, currentState);
+    };
+    updateIfObjectChanged('item');
+    updateIfObjectChanged('box');
+  }, [inventoryState]);
+
   return (
     <InventoryContext.Provider value={[inventoryState, inventoryDispatch]}>
       {props.children}
