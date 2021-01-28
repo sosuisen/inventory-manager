@@ -6,9 +6,8 @@ import { InventoryContext, InventoryProvider } from './StoreProvider';
 
 export const InventoryManager = () => {
   const [inventoryState] = React.useContext(InventoryContext) as InventoryProvider;
-  const currentBox = inventoryState.box.find(
-    elm => elm._id === inventoryState.work.currentBox
-  );
+  const currentBox = inventoryState.box[inventoryState.work.currentBox];
+
   let itemList;
   if (currentBox) {
     itemList = currentBox.items.map(_id => {
