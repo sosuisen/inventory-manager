@@ -60,13 +60,10 @@ const init = async () => {
     localDir: getSettings().persistentSettings.storage.path,
     dbName: 'db',
   });
+
   await gitDDB.open();
-  await gitDDB.put({ _id: '1', name: 'Kimari' });
-  await gitDDB.put({ _id: '2', name: 'Shirase' });
-  await gitDDB.put({ _id: '3', name: 'Hinata' });
-  await gitDDB.put({ _id: '4', name: 'Yuzu' });
-  await gitDDB.put({ _id: 'data', name: getSettings().persistentSettings.storage.path });
-  await gitDDB.close();
+  await gitDDB.put({ _id: 'item/1', name: 'Kimari' });
+  await gitDDB.put({ _id: 'item/2', name: 'Shirase' });
 
   createWindow();
 };
