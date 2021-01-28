@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
 import { availableLanguages, defaultLanguage } from './modules_common/i18n';
 import {
@@ -7,6 +7,7 @@ import {
   initializeGlobalStore,
   subscribeSettingsStore,
 } from './modules_main/store.settings';
+import { DatabaseCommand } from './modules_common/types';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -94,3 +95,22 @@ app.on('activate', async () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+ipcMain.handle('db', (e, command: DatabaseCommand) => {
+  switch (command.action) {
+    case 'create':
+    case 'update': {
+      const jsonObj = (command.data as unknown) as { _id: string };
+      jsonObj._id = command.table + '/' + jsonObj._id;
+      gitDDB.put(jsonObj);
+      break;
+    }
+    case 'delete': {
+      const id = command.table + '/' + command.data;
+      gitDDB.delete(id);
+      break;
+    }
+    default:
+      break;
+  }
+});
