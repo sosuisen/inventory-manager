@@ -3,14 +3,9 @@ import { nanoid } from 'nanoid';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  BOX_ITEM_ADD,
-  BoxAction,
-  InventoryState,
-  ITEM_ADD,
-  ItemAction,
-} from './store.types.inventory';
+import { BOX_ITEM_ADD, BoxAction, ITEM_ADD, ItemAction } from './store.types.inventory';
 import './InputArea.css';
+import { selectorCurrentBoxId } from './selector';
 
 const generateId = () => {
   return 'id' + nanoid(21); // 23 characters include only 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-
@@ -19,7 +14,7 @@ const generateId = () => {
 export const InputArea = () => {
   const [nameValue, setName] = useState('');
 
-  const currentBoxId = useSelector((state: InventoryState) => state.work.currentBox);
+  const currentBoxId = useSelector(selectorCurrentBoxId);
   const dispatch = useDispatch();
 
   const handleClick = useCallback(() => {

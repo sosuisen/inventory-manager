@@ -3,14 +3,10 @@ import './InventoryManager.css';
 import { useSelector } from 'react-redux';
 import { ItemRow } from './ItemRow';
 import { InputArea } from './InputArea';
-import { InventoryState } from './store.types.inventory';
+import { selectorCurrentBoxAndItems } from './selector';
 
 export const InventoryManager = () => {
-  const currentBox = useSelector((state: InventoryState) => {
-    const box = state.box[state.work.currentBox];
-    const items = box ? box.items.map(_id => state.item[_id]) : [];
-    return { name: box.name, items: items };
-  });
+  const currentBox = useSelector(selectorCurrentBoxAndItems);
 
   const itemList = currentBox.items.map(item => <ItemRow item={item}></ItemRow>);
 
