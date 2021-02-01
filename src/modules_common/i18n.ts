@@ -10,6 +10,8 @@ type MessagesMain = {
   appName: string;
   databaseCreateError: string;
   databaseOpenError: string;
+  enterBoxName: string;
+  boxName: string;
 };
 
 type MessagesLanguage = {
@@ -31,6 +33,8 @@ export const English: Messages = {
   appName: 'Inventory Manager',
   databaseCreateError: 'Error: Cannot create database',
   databaseOpenError: 'Error: Cannot open database',
+  enterBoxName: 'Enter box name',
+  boxName: 'Box name',
 };
 
 export const Japanese: Messages = {
@@ -38,6 +42,8 @@ export const Japanese: Messages = {
   appName: '収納管理',
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   databaseOpenError: 'エラー: データベースを開くことができませんでした。',
+  enterBoxName: 'ボックス名を入力してください',
+  boxName: 'ボックス名',
 };
 
 export const availableLanguages = ['en', 'ja'];
