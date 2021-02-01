@@ -81,12 +81,28 @@ const init = async () => {
     dbName: 'db',
   });
 
-  await gitDDB.open().catch(e => {
-    showErrorDialog('databaseOpenError');
+  const dbInfo = await gitDDB.open().catch(e => {
+    showErrorDialog('databaseCreateError');
+    console.error(e);
     app.exit();
   });
-  const allItems = await gitDDB.allDocs({ directory: 'item', include_docs: true });
-  if (allItems && allItems.total_rows > 0) {
+
+  if (!dbInfo) {
+    return;
+  }
+
+  const allItems = await gitDDB
+    .allDocs({ directory: 'item', include_docs: true })
+    .catch(e => {
+      showErrorDialog('databaseOpenError');
+      app.exit();
+    });
+
+  if (!allItems) {
+    return;
+  }
+
+  if (allItems.total_rows > 0) {
     allItems.rows?.forEach(item => {
       if (item.doc) {
         const doc = (item.doc as unknown) as Item;
@@ -96,8 +112,18 @@ const init = async () => {
     });
   }
 
-  const allBoxes = await gitDDB.allDocs({ directory: 'box', include_docs: true });
-  if (allBoxes && allBoxes.total_rows > 0) {
+  const allBoxes = await gitDDB
+    .allDocs({ directory: 'box', include_docs: true })
+    .catch(e => {
+      showErrorDialog('databaseOpenError');
+      app.exit();
+    });
+
+  if (!allBoxes) {
+    return;
+  }
+
+  if (allBoxes.total_rows > 0) {
     allBoxes.rows?.forEach(box => {
       if (box.doc) {
         const doc = (box.doc as unknown) as Box;
