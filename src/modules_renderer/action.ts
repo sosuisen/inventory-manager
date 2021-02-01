@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { Dispatch } from 'redux';
 import { DatabaseCommand } from '../modules_common/types';
 import {
+  BOX_ADD,
   BOX_ITEM_ADD,
   BOX_ITEM_DELETE,
   BoxAction,
@@ -84,5 +85,28 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
       data: newBox,
     };
     window.api.db(boxUpdateCommand);
+  };
+};
+
+export const boxAddAction = (name: string) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    // put()
+    const _id = generateId();
+    const boxAction: BoxAction = {
+      type: BOX_ADD,
+      payload: {
+        _id: _id,
+        name,
+      },
+    };
+    dispatch(boxAction);
+
+    const newBox = getState().box[_id];
+    const boxCreateCommand: DatabaseCommand = {
+      table: 'box',
+      action: 'create',
+      data: newBox,
+    };
+    window.api.db(boxCreateCommand);
   };
 };
