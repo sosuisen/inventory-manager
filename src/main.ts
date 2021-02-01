@@ -1,7 +1,6 @@
 import * as path from 'path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
-
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
