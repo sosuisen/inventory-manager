@@ -1,20 +1,18 @@
 import React from 'react';
-import './InventoryManager.css';
-import { useSelector } from 'react-redux';
-import { ItemRow } from './ItemRow';
+import { ItemList } from './ItemList';
 import { InputArea } from './InputArea';
-import { selectorCurrentBoxAndItems } from './selector';
+import { BoxRow } from './BoxRow';
+import './InventoryManager.css';
 
 export const InventoryManager = () => {
-  const currentBox = useSelector(selectorCurrentBoxAndItems);
-
-  const itemList = currentBox.items.map(item => <ItemRow item={item}></ItemRow>);
-
   return (
-    <div>
-      <div styleName='app'>Current box is [{currentBox.name}]</div>
-      {itemList}
-      <InputArea></InputArea>
+    <div styleName='inventoryManager'>
+      <div styleName='header'>Inventory Manager</div>
+      <BoxRow />
+      <InputArea />
+      <ItemList />
+      <br style={{ clear: 'both' }}></br>
+      <InputArea />
     </div>
   );
 };

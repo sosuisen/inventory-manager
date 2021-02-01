@@ -1,0 +1,12 @@
+.boxRow {
+  background-color: #ffe0e0;
+  padding: 0px;
+  height: 26px;
+}
+
+.header {
+  float: left;
+  padding: 3px 7px 3px 7px;
+  font-size: 16px;
+  height: 20px;
+}

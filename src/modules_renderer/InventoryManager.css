@@ -1,4 +1,9 @@
-.app {
-  padding: 7px;
-  color: red;
+.inventoryManager {
+  width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.header {
+  padding: 6px;
+  font-size: 32px;
 }
