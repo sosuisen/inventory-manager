@@ -18,10 +18,11 @@ export const InputArea = () => {
 
   return (
     <div styleName='inputArea'>
-      <div styleName='nameField'>
-        Item name:{' '}
+      <div styleName='name'>
+        <div styleName='header'>Item name</div>
         <input
           type='text'
+          styleName='field'
           id='nameField'
           value={nameValue}
           onChange={e => setName(e.target.value)}
