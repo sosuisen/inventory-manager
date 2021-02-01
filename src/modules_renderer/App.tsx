@@ -1,11 +1,12 @@
-import * as React from 'react';
+import React from 'react';
+import { Provider } from 'react-redux';
 import { InventoryManager } from './InventoryManager';
-import { StoreProvider } from './StoreProvider';
+import { inventoryStore } from './store.inventory';
 
 export const App = () => {
   return (
-    <StoreProvider>
+    <Provider store={inventoryStore}>
       <InventoryManager></InventoryManager>
-    </StoreProvider>
+    </Provider>
   );
 };

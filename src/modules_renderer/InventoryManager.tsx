@@ -1,23 +1,22 @@
-import * as React from 'react';
+import React from 'react';
 import './InventoryManager.css';
+import { useSelector } from 'react-redux';
 import { ItemRow } from './ItemRow';
 import { InputArea } from './InputArea';
-import { InventoryContext, InventoryProvider } from './StoreProvider';
+import { InventoryState } from './store.types.inventory';
 
 export const InventoryManager = () => {
-  const [inventoryState] = React.useContext(InventoryContext) as InventoryProvider;
-  const currentBox = inventoryState.box[inventoryState.work.currentBox];
+  const currentBox = useSelector((state: InventoryState) => {
+    const box = state.box[state.work.currentBox];
+    const items = box ? box.items.map(_id => state.item[_id]) : [];
+    return { name: box.name, items: items };
+  });
 
-  let itemList;
-  if (currentBox) {
-    itemList = currentBox.items.map(_id => {
-      const item = inventoryState.item[_id];
-      return <ItemRow item={item}></ItemRow>;
-    });
-  }
+  const itemList = currentBox.items.map(item => <ItemRow item={item}></ItemRow>);
+
   return (
     <div>
-      <div styleName='app'>Current box is [{inventoryState.work.currentBox}]</div>
+      <div styleName='app'>Current box is [{currentBox.name}]</div>
       {itemList}
       <InputArea></InputArea>
     </div>
