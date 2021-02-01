@@ -5,7 +5,7 @@
  * This source code is licensed under the Mozilla Public License Version 2.0
  * found in the LICENSE file in the root directory of this source tree.
  */
-import { combineReducers } from 'redux';
+import { combineReducers, createStore } from 'redux';
 import { DatabaseCommand } from '../modules_common/types';
 import window from './window';
 
@@ -35,19 +35,6 @@ import {
   WorkState,
 } from './store.types.inventory';
 import { getCurrentDateAndTime } from './utils';
-
-/**
- * Redux for individual settings
- * Individual settings are deserialized into Global Redux store.
- */
-
-/**
- * Redux globalReducer
- * * The main process has a global store with globalReducer,
- * * while each renderer process has a local store with a localReducer such as SettingsDialogReducer.
- * * The state of the global store is proxied to the renderer processes.
- * * The state of the local store is used only in the renderer process.
- */
 
 const itemReducer = (
   // eslint-disable-next-line default-param-last
@@ -164,6 +151,12 @@ export const inventory = combineReducers({
   box: boxReducer,
   work: workReducer,
 });
+
+/**
+ * Create store
+ */
+
+export const inventoryStore = createStore(inventory);
 
 /**
  * Update persistent store

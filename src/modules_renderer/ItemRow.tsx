@@ -1,18 +1,21 @@
-import * as React from 'react';
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   BOX_ITEM_DELETE,
   BoxAction,
+  InventoryState,
   Item,
   ITEM_DELETE,
   ItemAction,
 } from './store.types.inventory';
 import './ItemRow.css';
 import { getLocalDateAndTime } from './utils';
-import { InventoryContext, InventoryProvider } from './StoreProvider';
 
 export const ItemRow = (prop: { item: Item }) => {
-  const [state, dispatch]: InventoryProvider = React.useContext(InventoryContext);
-  const deleteItem = () => {
+  const currentBoxId = useSelector((state: InventoryState) => state.work.currentBox);
+  const dispatch = useDispatch();
+
+  const deleteItem = useCallback(() => {
     const _id = prop.item._id;
     const itemAction: ItemAction = {
       type: ITEM_DELETE,
@@ -22,12 +25,13 @@ export const ItemRow = (prop: { item: Item }) => {
     const boxAction: BoxAction = {
       type: BOX_ITEM_DELETE,
       payload: {
-        box_id: state.work.currentBox,
+        box_id: currentBoxId,
         item_id: _id,
       },
     };
     dispatch(boxAction);
-  };
+  }, [dispatch]);
+
   return (
     <div styleName='row'>
       <div styleName='col name'>{prop.item.name}</div>

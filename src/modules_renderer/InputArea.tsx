@@ -1,7 +1,15 @@
-import * as React from 'react';
+import React, { useCallback, useState } from 'react';
 import { nanoid } from 'nanoid';
-import { BOX_ITEM_ADD, BoxAction, ITEM_ADD, ItemAction } from './store.types.inventory';
-import { InventoryContext, InventoryProvider } from './StoreProvider';
+
+import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  BOX_ITEM_ADD,
+  BoxAction,
+  InventoryState,
+  ITEM_ADD,
+  ItemAction,
+} from './store.types.inventory';
 import './InputArea.css';
 
 const generateId = () => {
@@ -9,10 +17,12 @@ const generateId = () => {
 };
 
 export const InputArea = () => {
-  const [nameValue, setName] = React.useState('');
+  const [nameValue, setName] = useState('');
 
-  const [state, dispatch]: InventoryProvider = React.useContext(InventoryContext);
-  const handleClick = () => {
+  const currentBoxId = useSelector((state: InventoryState) => state.work.currentBox);
+  const dispatch = useDispatch();
+
+  const handleClick = useCallback(() => {
     const _id = generateId();
     const itemAction: ItemAction = {
       type: ITEM_ADD,
@@ -25,12 +35,12 @@ export const InputArea = () => {
     const boxAction: BoxAction = {
       type: BOX_ITEM_ADD,
       payload: {
-        box_id: state.work.currentBox,
+        box_id: currentBoxId,
         item_id: _id,
       },
     };
     dispatch(boxAction);
-  };
+  }, [nameValue, dispatch]);
 
   return (
     <div styleName='inputArea'>
