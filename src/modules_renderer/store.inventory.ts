@@ -7,28 +7,23 @@
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
-import { DatabaseCommand } from '../modules_common/types';
 
 import {
   BOX_ADD,
   BOX_DELETE,
+  BOX_INIT,
   BOX_ITEM_ADD,
   BOX_ITEM_DELETE,
   BOX_UPDATE,
   BoxAction,
   BoxState,
-  initialBoxState,
-  initialInventoryState,
-  initialItemState,
   initialWorkState,
-  InventoryState,
   ITEM_ADD,
   ITEM_DELETE,
+  ITEM_INIT,
   ITEM_UPDATE,
   ItemAction,
   ItemState,
-  ObjectTypeState,
-  ObjectTypeTable,
   WORK_CURRENT_BOX_ADD,
   WORK_CURRENT_BOX_UPDATE,
   WorkAction,
@@ -36,12 +31,12 @@ import {
 } from './store.types.inventory';
 import { getCurrentDateAndTime } from './utils';
 
-const itemReducer = (
-  // eslint-disable-next-line default-param-last
-  state: ItemState = initialItemState,
-  action: ItemAction
-) => {
+// eslint-disable-next-line default-param-last
+const itemReducer = (state: ItemState = {}, action: ItemAction) => {
   switch (action.type) {
+    case ITEM_INIT: {
+      return { ...action.payload };
+    }
     case ITEM_ADD: {
       const newState = { ...state };
       const date = getCurrentDateAndTime();
@@ -74,12 +69,12 @@ const itemReducer = (
   }
 };
 
-const boxReducer = (
-  // eslint-disable-next-line default-param-last
-  state: BoxState = initialBoxState,
-  action: BoxAction
-) => {
+// eslint-disable-next-line default-param-last
+const boxReducer = (state: BoxState = {}, action: BoxAction) => {
   switch (action.type) {
+    case BOX_INIT: {
+      return { ...action.payload };
+    }
     case BOX_ADD: {
       const newState = { ...state };
       const date = getCurrentDateAndTime();
@@ -152,39 +147,4 @@ export const inventory = combineReducers({
   work: workReducer,
 });
 
-/**
- * Create store
- */
-
 export const inventoryStore = createStore(inventory, applyMiddleware(thunk));
-
-/**
- * Update persistent store
- */
-
-const previousInventoryState: InventoryState = JSON.parse(
-  JSON.stringify(initialInventoryState)
-);
-
-/**
- * Initializing
- */
-
-// Inventory is deserialized from git-documentdb
-export const initializeGlobalStore = (preferredLanguage: string) => {
-  /*
-  const loadOrCreate = (key: string) => {
-    //    const value: any = electronStore.get(key, defaultValue);
-    const value: any = '';
-
-    inventoryStore.dispatch({
-      type: key + '-add',
-      payload: value,
-    } as InventoryAction);
-  };
-
-  loadOrCreate('item');
-  loadOrCreate('box');
-  loadOrCreate('status');
-  */
-};

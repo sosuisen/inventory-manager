@@ -21,6 +21,6 @@ contextBridge.exposeInMainWorld('api', {
 /**
  * Command from Main process
  */
-// ipcRenderer.on('reactive-forward', (event, propertyName, doc) => {
-//  window.postMessage({ command: 'reactive-forward', propertyName, doc }, 'file://');
-// });
+ipcRenderer.on('initialize-store', (event, items, boxes) => {
+  window.postMessage({ command: 'initialize-store', items, boxes }, 'file://');
+});

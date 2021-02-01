@@ -8,6 +8,7 @@
 
 type MessagesMain = {
   appName: string;
+  databaseOpenError: string;
 };
 
 type MessagesLanguage = {
@@ -27,11 +28,13 @@ const LanguagesCommon: MessagesLanguage = {
 export const English: Messages = {
   ...LanguagesCommon,
   appName: 'Inventory Manager',
+  databaseOpenError: 'Error: Cannot open database',
 };
 
 export const Japanese: Messages = {
   ...LanguagesCommon,
-  appName: '収納ボックス管理',
+  appName: '収納管理',
+  databaseOpenError: 'エラー：データベーを開くことができませんでした。',
 };
 
 export const availableLanguages = ['en', 'ja'];

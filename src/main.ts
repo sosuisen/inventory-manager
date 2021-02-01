@@ -1,13 +1,17 @@
 import * as path from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { GitDocumentDB } from 'git-documentdb';
-import { availableLanguages, defaultLanguage } from './modules_common/i18n';
+
+import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
   initializeGlobalStore,
+  MESSAGE,
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/types';
+import { Box, Item } from './modules_renderer/store.types.inventory';
+import { getCurrentDateAndTime } from './modules_renderer/utils';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -38,6 +42,8 @@ const createWindow = (): void => {
   }
 
   mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('initialize-store', items, boxes);
+
     const unsubscribe = subscribeSettingsStore(mainWindow);
     mainWindow.on('close', () => {
       unsubscribe();
@@ -46,6 +52,17 @@ const createWindow = (): void => {
 };
 
 let gitDDB: GitDocumentDB;
+const items: { [key: string]: Item } = {};
+const boxes: { [key: string]: Box } = {};
+
+const showErrorDialog = (label: MessageLabel) => {
+  dialog.showMessageBoxSync({
+    type: 'error',
+    buttons: ['OK'],
+    message: MESSAGE(label),
+  });
+};
+
 const init = async () => {
   // locale can be got after 'ready'
   const myLocale = app.getLocale();
@@ -55,16 +72,53 @@ const init = async () => {
   if (availableLanguages.includes(myLocale)) {
     preferredLanguage = myLocale;
   }
+  // Load settings
   initializeGlobalStore(preferredLanguage as string);
 
+  // Load inventory
   gitDDB = new GitDocumentDB({
     localDir: getSettings().persistentSettings.storage.path,
     dbName: 'db',
   });
 
-  await gitDDB.open();
-  await gitDDB.put({ _id: 'item/1', name: 'Kimari' });
-  await gitDDB.put({ _id: 'item/2', name: 'Shirase' });
+  await gitDDB.open().catch(e => {
+    showErrorDialog('databaseOpenError');
+    app.exit();
+  });
+  const allItems = await gitDDB.allDocs({ directory: 'item', include_docs: true });
+  if (allItems && allItems.total_rows > 0) {
+    allItems.rows?.forEach(item => {
+      if (item.doc) {
+        const doc = (item.doc as unknown) as Item;
+        doc._id = doc._id.replace(/^item\//, '');
+        items[doc._id] = doc;
+      }
+    });
+  }
+
+  const allBoxes = await gitDDB.allDocs({ directory: 'box', include_docs: true });
+  if (allBoxes && allBoxes.total_rows > 0) {
+    allBoxes.rows?.forEach(box => {
+      if (box.doc) {
+        const doc = (box.doc as unknown) as Box;
+        doc._id = doc._id.replace(/^box\//, '');
+        boxes[doc._id] = doc;
+      }
+    });
+  }
+  else {
+    const date = getCurrentDateAndTime();
+    const firstBox: Box = {
+      _id: 'box/1',
+      name: '1',
+      items: [],
+      created_date: date,
+      modified_date: date,
+    };
+    await gitDDB.put(firstBox);
+    firstBox._id = '1';
+    boxes[firstBox._id] = firstBox;
+  }
 
   createWindow();
 };
