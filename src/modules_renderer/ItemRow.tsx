@@ -13,7 +13,6 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
   const deleteItem = useCallback(() => {
     dispatch(itemDeleteAction(currentBoxId, prop.item._id));
   }, [currentBoxId, prop.item._id, dispatch]);
-  console.log(prop.index);
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
       <div styleName='col name'>{prop.item.name}</div>
