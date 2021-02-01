@@ -13,17 +13,23 @@ export const InputArea = () => {
 
   const handleClick = useCallback(() => {
     dispatch(itemAddAction(currentBoxId, nameValue));
+    setName('');
   }, [currentBoxId, nameValue, dispatch]);
 
   return (
     <div styleName='inputArea'>
       <div styleName='nameField'>
-        Name:{' '}
+        Item name:{' '}
         <input
           type='text'
           id='nameField'
           value={nameValue}
           onChange={e => setName(e.target.value)}
+          onKeyPress={e => {
+            if (e.key === 'Enter') {
+              handleClick();
+            }
+          }}
         ></input>
       </div>
       <div styleName='addButton' onClick={handleClick}>

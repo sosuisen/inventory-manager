@@ -1,0 +1,12 @@
+.col {
+  float: left;
+  padding: 3px 7px 3px 7px;
+  font-size: 16px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.selected {
+  background-color:#ff9090;
+  cursor: default;
+}
