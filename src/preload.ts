@@ -6,7 +6,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { contextBridge, ipcRenderer, MouseInputEvent } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { DatabaseCommand } from './modules_common/types';
 
 contextBridge.exposeInMainWorld('api', {
