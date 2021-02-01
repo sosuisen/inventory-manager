@@ -5,9 +5,9 @@
  * This source code is licensed under the Mozilla Public License Version 2.0
  * found in the LICENSE file in the root directory of this source tree.
  */
-import { combineReducers, createStore } from 'redux';
+import { applyMiddleware, combineReducers, createStore } from 'redux';
+import thunk from 'redux-thunk';
 import { DatabaseCommand } from '../modules_common/types';
-import window from './window';
 
 import {
   BOX_ADD,
@@ -156,7 +156,7 @@ export const inventory = combineReducers({
  * Create store
  */
 
-export const inventoryStore = createStore(inventory);
+export const inventoryStore = createStore(inventory, applyMiddleware(thunk));
 
 /**
  * Update persistent store
@@ -165,71 +165,6 @@ export const inventoryStore = createStore(inventory);
 const previousInventoryState: InventoryState = JSON.parse(
   JSON.stringify(initialInventoryState)
 );
-
-export const updatePersistentStore = (
-  table: ObjectTypeTable,
-  currentInventoryState: InventoryState
-) => {
-  const prev = previousInventoryState[table] as ObjectTypeState;
-  const current = currentInventoryState[table] as ObjectTypeState;
-  const prevKeys = Object.keys(prev);
-  const currentKeys = Object.keys(current);
-  if (currentKeys.length - prevKeys.length > 0) {
-    // key is added
-    const newKeys = currentKeys.filter(id => prev[id] === undefined);
-    if (newKeys.length === 1) {
-      const newKey = newKeys[0];
-      const newObject = current[newKey];
-      // put()
-      const command: DatabaseCommand = {
-        table: table,
-        action: 'create',
-        data: newObject,
-      };
-      window.api.db(command);
-      console.log(`add: ${newObject.name}`);
-      prev[newKey] = newObject;
-    }
-  }
-  else if (currentKeys.length - prevKeys.length < 0) {
-    // key is deleted
-    const deletedKeys = prevKeys.filter(id => current[id] === undefined);
-    if (deletedKeys.length === 1) {
-      const deletedKey = deletedKeys[0];
-      const deletedObject = prev[deletedKey];
-      // delete()
-      const command: DatabaseCommand = {
-        table: table,
-        action: 'delete',
-        data: deletedObject._id,
-      };
-      window.api.db(command);
-      console.log(`delete: ${table}#${deletedObject.name}`);
-      delete prev[deletedKey];
-    }
-  }
-  else {
-    // Object is updated
-    let updatedKey;
-    for (const key of currentKeys) {
-      if (JSON.stringify(current[key]) !== JSON.stringify(prev[key])) {
-        updatedKey = key;
-        break;
-      }
-    }
-    // update()
-    if (updatedKey !== undefined) {
-      const command: DatabaseCommand = {
-        table: table,
-        action: 'update',
-        data: current[updatedKey],
-      };
-      window.api.db(command);
-      console.log(`update: ${table}#${current[updatedKey]._id}`);
-      prev[updatedKey] = JSON.parse(JSON.stringify(current[updatedKey]));
-    }
-  }
-};
 
 /**
  * Initializing
