@@ -9,7 +9,7 @@ import {
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
-import { Box, Item, WorkState } from './modules_renderer/store.types.inventory';
+import { Box, Item, WorkState } from './modules_common/store.types';
 import { getCurrentDateAndTime } from './modules_renderer/utils';
 
 let gitDDB: GitDocumentDB;
@@ -149,7 +149,7 @@ const init = async () => {
         currentBox: Object.keys(boxes)[0],
       };
       const workStateForSave = JSON.parse(JSON.stringify(firstWorkState));
-      workStateForSave._id = workId;
+      workStateForSave._id = 'work/' + workId;
       await gitDDB.put(workStateForSave);
       return firstWorkState;
     }
@@ -165,7 +165,12 @@ const init = async () => {
         boxOrder: Object.keys(boxes),
         currentBox: workState.boxOrder[0],
       };
-      await gitDDB.put(workState);
+      const workStateForSave = JSON.parse(JSON.stringify(workState));
+      workStateForSave._id = 'work/' + workId;
+      await gitDDB.put(workStateForSave);
+    }
+    else {
+      workState._id = workState._id.replace(/^work\//, '');
     }
   }
 

@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { boxSelectAction } from './action';
 import './BoxColumn.css';
-import { Box } from './store.types.inventory';
+import { Box } from '../modules_common/store.types';
 
 export const BoxColumn = (prop: { box: Box; currentBoxId: string }) => {
   const dispatch = useDispatch();

@@ -1,4 +1,4 @@
-import { InventoryState } from './store.types.inventory';
+import { InventoryState } from '../modules_common/store.types';
 
 export const selectorCurrentBoxId = (state: InventoryState) => state.work.currentBox;
 

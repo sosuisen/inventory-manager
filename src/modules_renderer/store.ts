@@ -9,7 +9,7 @@ import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import { BoxAction, ItemAction, WorkAction } from './action';
 
-import { BoxState, ItemState, WorkState } from './store.types.inventory';
+import { BoxState, ItemState, WorkState } from '../modules_common/store.types';
 import { getCurrentDateAndTime } from './utils';
 
 // eslint-disable-next-line default-param-last
