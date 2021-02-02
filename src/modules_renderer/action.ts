@@ -286,3 +286,20 @@ export const boxDeleteAction = (_id: string) => {
     window.api.db(workCommand);
   };
 };
+
+export const boxSelectAction = (_id: string) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const workAction: WorkCurrentBoxUpdateAction = {
+      type: 'work-current-box-update',
+      payload: _id,
+    };
+    dispatch(workAction);
+
+    const newWork = getState().work;
+    const workCommand: DatabaseCommand = {
+      action: 'work-update',
+      data: newWork,
+    };
+    window.api.db(workCommand);
+  };
+};
