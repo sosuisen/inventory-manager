@@ -7,37 +7,18 @@
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
+import { BoxAction, ItemAction, WorkAction } from './action';
 
-import {
-  BOX_ADD,
-  BOX_DELETE,
-  BOX_INIT,
-  BOX_ITEM_ADD,
-  BOX_ITEM_DELETE,
-  BOX_UPDATE,
-  BoxAction,
-  BoxState,
-  initialWorkState,
-  ITEM_ADD,
-  ITEM_DELETE,
-  ITEM_INIT,
-  ITEM_UPDATE,
-  ItemAction,
-  ItemState,
-  WORK_CURRENT_BOX_ADD,
-  WORK_CURRENT_BOX_UPDATE,
-  WorkAction,
-  WorkState,
-} from './store.types.inventory';
+import { BoxState, ItemState, WorkState } from './store.types.inventory';
 import { getCurrentDateAndTime } from './utils';
 
 // eslint-disable-next-line default-param-last
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
   switch (action.type) {
-    case ITEM_INIT: {
+    case 'item-init': {
       return { ...action.payload };
     }
-    case ITEM_ADD: {
+    case 'item-add': {
       const newState = { ...state };
       const date = getCurrentDateAndTime();
       newState[action.payload._id] = {
@@ -48,7 +29,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
       };
       return newState;
     }
-    case ITEM_UPDATE: {
+    case 'item-update': {
       const newState = { ...state };
       const date = getCurrentDateAndTime();
       newState[action.payload._id] = {
@@ -59,7 +40,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
       };
       return newState;
     }
-    case ITEM_DELETE: {
+    case 'item-delete': {
       const newState = { ...state };
       delete newState[action.payload];
       return newState;
@@ -72,10 +53,10 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
 // eslint-disable-next-line default-param-last
 const boxReducer = (state: BoxState = {}, action: BoxAction) => {
   switch (action.type) {
-    case BOX_INIT: {
+    case 'box-init': {
       return { ...action.payload };
     }
-    case BOX_ADD: {
+    case 'box-add': {
       const newState = { ...state };
       const date = getCurrentDateAndTime();
       newState[action.payload._id] = {
@@ -86,7 +67,7 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
       };
       return newState;
     }
-    case BOX_UPDATE: {
+    case 'box-update': {
       const newState = JSON.parse(JSON.stringify(state));
       const date = getCurrentDateAndTime();
       newState[action.payload._id] = {
@@ -98,12 +79,12 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
 
       return newState;
     }
-    case BOX_DELETE: {
+    case 'box-delete': {
       const newState = JSON.parse(JSON.stringify(state));
       delete newState[action.payload];
       return newState;
     }
-    case BOX_ITEM_ADD: {
+    case 'box-item-add': {
       const newState = JSON.parse(JSON.stringify(state));
       const date = getCurrentDateAndTime();
       newState[action.payload.box_id].items = [
@@ -113,7 +94,7 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
       newState[action.payload.box_id].modified_date = date;
       return newState;
     }
-    case BOX_ITEM_DELETE: {
+    case 'box-item-delete': {
       const newState = JSON.parse(JSON.stringify(state));
       const date = getCurrentDateAndTime();
       newState[action.payload.box_id].items = newState[action.payload.box_id].items.filter(
@@ -129,12 +110,18 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
 
 const workReducer = (
   // eslint-disable-next-line default-param-last
-  state: WorkState = initialWorkState,
+  state: WorkState = { _id: '', boxOrder: [], currentBox: '' },
   action: WorkAction
 ) => {
   switch (action.type) {
-    case WORK_CURRENT_BOX_ADD:
-    case WORK_CURRENT_BOX_UPDATE:
+    case 'work-init':
+      return { ...action.payload, boxOrder: [...action.payload.boxOrder] };
+    case 'work-box-order-add':
+      return { ...state, boxOrder: [...state.boxOrder, action.payload] };
+    case 'work-box-order-delete':
+      return { ...state, boxOrder: state.boxOrder.filter(id => id !== action.payload) };
+    case 'work-current-box-add':
+    case 'work-current-box-update':
       return { ...state, currentBox: action.payload };
     default:
       return state;

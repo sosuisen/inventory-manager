@@ -7,7 +7,7 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { DatabaseCommand } from './modules_common/types';
+import { DatabaseCommand } from './modules_common/action.types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -21,6 +21,6 @@ contextBridge.exposeInMainWorld('api', {
 /**
  * Command from Main process
  */
-ipcRenderer.on('initialize-store', (event, items, boxes) => {
-  window.postMessage({ command: 'initialize-store', items, boxes }, 'file://');
+ipcRenderer.on('initialize-store', (event, items, boxes, workState) => {
+  window.postMessage({ command: 'initialize-store', items, boxes, workState }, 'file://');
 });
