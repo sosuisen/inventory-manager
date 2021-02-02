@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
-import { Box, InventoryState, Item, WorkState } from './store.types.inventory';
+import { Box, InventoryState, Item, WorkState } from '../modules_common/store.types';
 import window from './window';
 
 const generateId = () => {
@@ -183,7 +183,7 @@ export const itemAddAction = (boxId: string, nameValue: string) => {
 
     const newBox = getState().box[boxId];
     const boxCommand: DatabaseCommand = {
-      action: 'box-item-add',
+      action: 'box-update',
       data: newBox,
     };
     window.api.db(boxCommand);
@@ -242,11 +242,17 @@ export const boxAddAction = (name: string) => {
     };
     window.api.db(boxCreateCommand);
 
-    const workAction: WorkBoxOrderAddAction = {
+    const workBoxOrderAction: WorkBoxOrderAddAction = {
       type: 'work-box-order-add',
       payload: _id,
     };
-    dispatch(workAction);
+    dispatch(workBoxOrderAction);
+
+    const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
+      type: 'work-current-box-update',
+      payload: _id,
+    };
+    dispatch(workCurrentBoxAction);
 
     const newWork = getState().work;
     const workCommand: DatabaseCommand = {

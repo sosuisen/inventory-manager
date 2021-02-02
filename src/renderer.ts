@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './modules_renderer/App';
-import { inventoryStore } from './modules_renderer/store.inventory';
-import { Box, Item, WorkState } from './modules_renderer/store.types.inventory';
+import { inventoryStore } from './modules_renderer/store';
+import { Box, Item, WorkState } from './modules_common/store.types';
 
 // eslint-disable-next-line complexity
 window.addEventListener('message', event => {

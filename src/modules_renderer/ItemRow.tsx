@@ -4,7 +4,7 @@ import './ItemRow.css';
 import { getLocalDateAndTime } from './utils';
 import { selectorCurrentBoxId } from './selector';
 import { itemDeleteAction } from './action';
-import { Item } from './store.types.inventory';
+import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
   const currentBoxId = useSelector(selectorCurrentBoxId);

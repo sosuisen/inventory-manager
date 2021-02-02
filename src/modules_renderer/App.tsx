@@ -1,7 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { InventoryManager } from './InventoryManager';
-import { inventoryStore } from './store.inventory';
+import { inventoryStore } from './store';
 
 export const App = () => {
   return (
