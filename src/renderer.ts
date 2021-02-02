@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store.inventory';
-import { Box, BOX_INIT, Item, ITEM_INIT } from './modules_renderer/store.types.inventory';
+import { Box, Item, WorkState } from './modules_renderer/store.types.inventory';
 
 // eslint-disable-next-line complexity
 window.addEventListener('message', event => {
@@ -12,14 +12,19 @@ window.addEventListener('message', event => {
     case 'initialize-store': {
       const items: { [key: string]: Item } = event.data.items;
       const boxes: { [key: string]: Box } = event.data.boxes;
+      const workState: WorkState = event.data.workState;
 
       inventoryStore.dispatch({
-        type: ITEM_INIT,
+        type: 'item-init',
         payload: items,
       });
       inventoryStore.dispatch({
-        type: BOX_INIT,
+        type: 'box-init',
         payload: boxes,
+      });
+      inventoryStore.dispatch({
+        type: 'work-init',
+        payload: workState,
       });
 
       const domContainer = document.getElementById('react-container');

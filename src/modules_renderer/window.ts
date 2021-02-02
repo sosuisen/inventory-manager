@@ -6,7 +6,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DatabaseCommand } from '../modules_common/types';
+import { DatabaseCommand } from '../modules_common/action.types';
 
 interface WindowWithAPI extends Window {
   api: {
