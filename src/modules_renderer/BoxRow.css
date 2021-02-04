@@ -34,41 +34,60 @@
 }
 
 .boxNameDialog {
+  text-align: center;
   font-size: 16px;
   background-color: #f0f0f0;
   padding: 5px 5px 5px 5px;
   height: 90px;
 }
 
-.dialogHeader {
-  float: left;
-  margin-right: 12px;
+.alertDialog {
+  text-align: center;
+  font-size: 16px;
+  background-color: #f0f0f0;
+  padding: 12px 12px 12px 12px;
+  height: 55px;
+}
+
+.okButton {
+  font-size: 16px;
+  border: 1px solid #909090;  
+  background-color: #ffffff;
+  padding: 2px 5px 2px 5px;
+  cursor: pointer;
+  border-radius: 7px;
+  margin-top: 7px;
+  margin-right: auto;
+  margin-left: auto;
+  width: 50px;
 }
 
 .inputField {
-  float: left;
   margin-top: 3px;
   margin-bottom: 7px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 160px;
 }
 
 .addButton {
   float: left;
   font-size: 16px;
-
+  border: 1px solid #909090;
   background-color: #ffffff;
   padding: 2px 5px 2px 5px;
   cursor: pointer;
   border-radius: 7px;
-  margin-right: 12px;
+  margin-left: 30px;
 }
 
 .cancelButton {
-  float: left;
+  float: right;
   font-size: 16px;
-
+  border: 1px solid #909090;
   background-color: #ffffff;
   padding: 2px 5px 2px 5px;
   cursor: pointer;
   border-radius: 7px;
-  margin-right: 12px;
+  margin-right: 30px;
 }

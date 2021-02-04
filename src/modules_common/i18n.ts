@@ -11,6 +11,7 @@ type MessagesMain = {
   databaseOpenError: string;
   enterBoxName: string;
   add: string;
+  ok: string;
   cancel: string;
   box: string;
   item: string;
@@ -18,6 +19,7 @@ type MessagesMain = {
   created_date: string;
   modified_date: string;
   takeout: string;
+  cannotDeleteBoxIfNotEmpty: string;
 };
 
 type MessagesLanguage = {
@@ -40,6 +42,7 @@ export const English: Messages = {
   databaseOpenError: 'Error: Cannot open database',
   enterBoxName: 'Enter box name',
   add: 'Add',
+  ok: 'Ok',
   cancel: 'Cancel',
   box: 'Box',
   item: 'Item',
@@ -47,6 +50,7 @@ export const English: Messages = {
   created_date: 'Created',
   modified_date: 'Modified',
   takeout: 'Check for taking out item or completion of todo',
+  cannotDeleteBoxIfNotEmpty: 'A box cannot be deleted if not empty.',
 };
 
 export const Japanese: Messages = {
@@ -55,6 +59,7 @@ export const Japanese: Messages = {
   databaseOpenError: 'エラー: データベースを開くことができませんでした。',
   enterBoxName: '箱の名前を入力してください',
   add: '追加',
+  ok: 'Ok',
   cancel: 'キャンセル',
   box: '箱',
   item: 'アイテム',
@@ -62,6 +67,7 @@ export const Japanese: Messages = {
   created_date: '作成日時',
   modified_date: '変更日時',
   takeout: '物品を持出中または事項の完了をチェック',
+  cannotDeleteBoxIfNotEmpty: '空でない箱は削除できません。',
 };
 
 export const availableLanguages = ['en', 'ja'];

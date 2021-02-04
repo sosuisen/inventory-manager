@@ -12,7 +12,7 @@
   height: 26px;
 }
 .name {
-  width: 400px;
+  width: 450px;
 }
 .created_date{
   text-align: center;
@@ -28,10 +28,10 @@
 }
 .takeout{
   text-align: center;
-  width: 50px;
+  width: 30px;
 }
 .delete{
-
+  width: 20px;
 }
 .deleteButton{
   background-color: #f0f0f0;
@@ -39,4 +39,5 @@
   margin-top: -2px;
   cursor: pointer;
   border-radius: 7px;
+  width:14px;
 }
