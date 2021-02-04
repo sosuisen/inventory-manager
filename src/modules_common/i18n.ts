@@ -15,6 +15,10 @@ type MessagesMain = {
   cancel: string;
   box: string;
   item: string;
+  name: string;
+  created_date: string;
+  modified_date: string;
+  takeout: string;
 };
 
 type MessagesLanguage = {
@@ -41,6 +45,10 @@ export const English: Messages = {
   cancel: 'Cancel',
   box: 'Box',
   item: 'Item',
+  name: 'Name',
+  created_date: 'Created',
+  modified_date: 'Modified',
+  takeout: 'Take out',
 };
 
 export const Japanese: Messages = {
@@ -53,6 +61,10 @@ export const Japanese: Messages = {
   cancel: 'キャンセル',
   box: '箱',
   item: '物品',
+  name: '名前',
+  created_date: '作成日時',
+  modified_date: '変更日時',
+  takeout: '持出',
 };
 
 export const availableLanguages = ['en', 'ja'];
