@@ -36,7 +36,7 @@ export const InputArea = () => {
         ></input>
       </div>
       <div styleName='addButton' onClick={handleClick}>
-        Add Item
+        <i className='far fa-plus-square'></i> Item
       </div>
     </div>
   );
