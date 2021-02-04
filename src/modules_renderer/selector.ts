@@ -1,4 +1,4 @@
-import { InventoryState } from '../modules_common/store.types';
+import { AppInfo, InventoryState } from '../modules_common/store.types';
 
 export const selectorCurrentBoxId = (state: InventoryState) => state.work.currentBox;
 
@@ -27,4 +27,12 @@ export const selectorCurrentItems = (state: InventoryState) => {
     return box.items.map(_id => state.item[_id]);
   }
   return [];
+};
+
+export const selectorAppInfo = (state: InventoryState) => {
+  return state.settings.appinfo;
+};
+
+export const selectorMessages = (state: InventoryState) => {
+  return state.settings.messages;
 };

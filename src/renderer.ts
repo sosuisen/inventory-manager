@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
-import { Box, Item, WorkState } from './modules_common/store.types';
+import { AppInfo, Box, Item, WorkState } from './modules_common/store.types';
+import { Messages } from './modules_common/i18n';
 
 // eslint-disable-next-line complexity
 window.addEventListener('message', event => {
@@ -25,6 +26,18 @@ window.addEventListener('message', event => {
       inventoryStore.dispatch({
         type: 'work-init',
         payload: workState,
+      });
+
+      const appInfo = (event.data.settings.temporalSettings.app as unknown) as AppInfo;
+      const messages = (event.data.settings.temporalSettings
+        .messages as unknown) as Messages;
+      inventoryStore.dispatch({
+        type: 'appinfo-put',
+        payload: appInfo,
+      });
+      inventoryStore.dispatch({
+        type: 'messages-put',
+        payload: messages,
       });
 
       const domContainer = document.getElementById('react-container');

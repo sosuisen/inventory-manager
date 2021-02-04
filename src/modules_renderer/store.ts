@@ -9,7 +9,14 @@ import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import { BoxAction, ItemAction, WorkAction } from './action';
 
-import { BoxState, ItemState, WorkState } from '../modules_common/store.types';
+import {
+  BoxState,
+  initialTemporalSettingsState,
+  ItemState,
+  TemporalSettingsAction,
+  TemporalSettingsState,
+  WorkState,
+} from '../modules_common/store.types';
 import { getCurrentDateAndTime } from './utils';
 
 // eslint-disable-next-line default-param-last
@@ -128,10 +135,26 @@ const workReducer = (
   }
 };
 
+const settingsReducer = (
+  // eslint-disable-next-line default-param-last
+  state: TemporalSettingsState = initialTemporalSettingsState,
+  action: TemporalSettingsAction
+) => {
+  switch (action.type) {
+    case 'appinfo-put':
+      return { ...state, appinfo: action.payload };
+    case 'messages-put':
+      return { ...state, messages: action.payload };
+    default:
+      return state;
+  }
+};
+
 export const inventory = combineReducers({
   item: itemReducer,
   box: boxReducer,
   work: workReducer,
+  settings: settingsReducer,
 });
 
 export const inventoryStore = createStore(inventory, applyMiddleware(thunk));

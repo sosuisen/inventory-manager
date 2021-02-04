@@ -6,8 +6,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { app } from 'electron';
-import { English, Messages } from '../modules_common/i18n';
+import {
+  initialTemporalSettingsState,
+  TemporalSettingsState,
+} from '../modules_common/store.types';
 
 export const dataDirName = 'inventory_manager_data';
 
@@ -27,16 +29,6 @@ export interface PersistentSettingsState {
   };
   language: string;
 }
-
-export interface TemporalSettingsState {
-  messages: Messages; // It is set and updated when 'settings.language' is changed.
-  app: {
-    name: string;
-    version: string;
-    iconDataURL: string;
-  };
-}
-
 export interface SettingsState {
   persistent: PersistentSettingsState; // serialized to storage
   temporal: TemporalSettingsState; // not serialized
@@ -60,37 +52,12 @@ export type LanguagePutAction = {
 
 export type PersistentSettingsAction = StoragePutAction | LanguagePutAction;
 
-export type MessagesPutAction = {
-  type: 'messages-put';
-  payload: Messages;
-};
-
-export type AppPutAction = {
-  type: 'app-put';
-  payload: {
-    name: string;
-    version: string;
-    iconDataURL: string;
-  };
-};
-
-export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
-
 export const initialPersistentSettingsState: PersistentSettingsState = {
   storage: {
     type: '',
     path: '',
   },
   language: '',
-};
-
-export const initialTemporalSettingsState: TemporalSettingsState = {
-  messages: English,
-  app: {
-    name: '',
-    version: '',
-    iconDataURL: '',
-  },
 };
 
 export const initialSettingsState: SettingsState = {
