@@ -6,6 +6,7 @@ import {
   getSettings,
   initializeGlobalStore,
   MESSAGE,
+  settingsStore,
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
@@ -46,7 +47,14 @@ const createWindow = (): void => {
   }
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('initialize-store', items, boxes, workState);
+    mainWindow.webContents.send(
+      'initialize-store',
+      items,
+      boxes,
+      workState,
+      settingsStore.getState()
+    );
+    subscribeSettingsStore(mainWindow);
 
     const unsubscribe = subscribeSettingsStore(mainWindow);
     mainWindow.on('close', () => {

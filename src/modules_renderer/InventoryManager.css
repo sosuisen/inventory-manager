@@ -8,3 +8,13 @@
   font-size: 32px;
   font-family: serif;
 }
+
+.appIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 7px;
+}
+
+.version {
+  font-size: 16px;
+}

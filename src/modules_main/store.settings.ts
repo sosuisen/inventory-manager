@@ -7,7 +7,7 @@
  */
 import path from 'path';
 import Store from 'electron-store';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import { combineReducers, createStore } from 'redux';
 import { selectPreferredLanguage, translate } from 'typed-intl';
 import {
@@ -21,13 +21,15 @@ import { emitter } from './event';
 import {
   dataDirName,
   initialPersistentSettingsState,
-  initialTemporalSettingsState,
   PersistentSettingsAction,
   PersistentSettingsState,
   PersistentSettingsStateKeys,
+} from './store.types.settings';
+import {
+  initialTemporalSettingsState,
   TemporalSettingsAction,
   TemporalSettingsState,
-} from './store.types.settings';
+} from '../modules_common/store.types';
 
 /**
  * i18n
@@ -114,7 +116,7 @@ const temporalSettings = (
       messages: action.payload,
     };
   }
-  else if (action.type === 'app-put') {
+  else if (action.type === 'appinfo-put') {
     // App info
     return {
       ...state,
@@ -133,16 +135,7 @@ const settingsGlobalReducer = combineReducers({
  * Global Redux Store
  */
 
-const settingsStore = createStore(settingsGlobalReducer);
-
-/**
- * Redux Dispatches
- */
-
-// Dispatch request from Renderer process
-ipcMain.handle('global-dispatch', (event, action: PersistentSettingsAction) => {
-  settingsStore.dispatch(action);
-});
+export const settingsStore = createStore(settingsGlobalReducer);
 
 /**
  * Add electron-store as as subscriber
@@ -188,7 +181,6 @@ settingsStore.subscribe(() => {
  * Add Renderer process as a subscriber
  */
 export const subscribeSettingsStore = (subscriber: BrowserWindow) => {
-  subscriber.webContents.send('settingsStoreChanged', settingsStore.getState());
   const unsubscribe = settingsStore.subscribe(() => {
     emitter.emit('updateTrayContextMenu');
     subscriber.webContents.send('globalStoreChanged', settingsStore.getState());
@@ -200,20 +192,18 @@ export const subscribeSettingsStore = (subscriber: BrowserWindow) => {
  * Initializing
  */
 // Temporal settings
-/*
-app
-  .getFileIcon(path.join(__dirname, '../assets/media_stickies_grad_icon.ico'))
-  .then(img => {
-    const appName = app.getName();
-    const appVersion = app.getVersion();
-    const dataURL = img.toDataURL();
-    store.dispatch({
-      type: 'app-put',
-      payload: { name: appName, version: appVersion, iconDataURL: dataURL },
-    });
-  })
-  .catch(e => console.error(e));
-*/
+
+const dataURL = nativeImage
+  .createFromPath(path.resolve(__dirname, '../../assets/inventory_manager_icon.ico'))
+  .toDataURL();
+const appName = app.getName();
+const appVersion = app.getVersion();
+console.log(dataURL);
+settingsStore.dispatch({
+  type: 'appinfo-put',
+  payload: { name: appName, version: appVersion, iconDataURL: dataURL },
+});
+
 // Persistent settings are deserialized from electron-store
 export const initializeGlobalStore = (preferredLanguage: string) => {
   const loadOrCreate = (key: string, defaultValue: any) => {
