@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import { Box, InventoryState, Item, WorkState } from '../modules_common/store.types';
+import { getSettings } from '../modules_main/store.settings';
 import window from './window';
 
 const generateId = () => {
@@ -288,6 +289,23 @@ export const boxAddAction = (name: string) => {
 
 export const boxDeleteAction = (_id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    // Cannot delete if the box has items.
+    if (getState().box[_id].items.length > 0) {
+      return;
+    }
+    // Cannot delete if the box is the last one.
+    const boxOrder = getState().work.boxOrder;
+    if (boxOrder.length === 1) {
+      return;
+    }
+    let prevBox = boxOrder[0];
+    for (let i = 0; i < boxOrder.length; i++) {
+      if (boxOrder[i] === _id) {
+        break;
+      }
+      prevBox = boxOrder[i];
+    }
+
     const boxAction: BoxDeleteAction = {
       type: 'box-delete',
       payload: _id,
@@ -301,11 +319,17 @@ export const boxDeleteAction = (_id: string) => {
     };
     window.api.db(boxCommand);
 
-    const workAction: WorkBoxOrderDeleteAction = {
+    const workDeleteBoxAction: WorkBoxOrderDeleteAction = {
       type: 'work-box-order-delete',
       payload: _id,
     };
-    dispatch(workAction);
+    dispatch(workDeleteBoxAction);
+
+    const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
+      type: 'work-current-box-update',
+      payload: prevBox,
+    };
+    dispatch(workCurrentBoxAction);
 
     const newWork = getState().work;
     const workCommand: DatabaseCommand = {
