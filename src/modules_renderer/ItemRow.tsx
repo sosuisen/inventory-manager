@@ -20,19 +20,19 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
 
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
-      <div styleName='col name'>{prop.item.name}</div>
-      <div styleName='col created_date'>
-        {getLocalDateAndTime(prop.item.created_date).substr(0, 16)}
-      </div>
-      <div styleName='col modified_date'>
-        {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
-      </div>
       <div styleName='col takeout'>
         <input
           type='radio'
           checked={prop.item.takeout}
           onClick={e => toggleTakeout()}
         ></input>
+      </div>
+      <div styleName='col name'>{prop.item.name}</div>
+      <div styleName='col created_date'>
+        {getLocalDateAndTime(prop.item.created_date).substr(0, 16)}
+      </div>
+      <div styleName='col modified_date'>
+        {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
       <div styleName='col delete'>
         <div styleName='deleteButton' onClick={deleteItem}>

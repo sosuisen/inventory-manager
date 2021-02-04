@@ -46,7 +46,7 @@ export const English: Messages = {
   name: 'Name',
   created_date: 'Created',
   modified_date: 'Modified',
-  takeout: 'Take out',
+  takeout: 'Check for taking out item or completion of todo',
 };
 
 export const Japanese: Messages = {
@@ -57,11 +57,11 @@ export const Japanese: Messages = {
   add: '追加',
   cancel: 'キャンセル',
   box: '箱',
-  item: '物品',
+  item: 'アイテム',
   name: '名前',
   created_date: '作成日時',
   modified_date: '変更日時',
-  takeout: '持出',
+  takeout: '物品を持出中または事項の完了をチェック',
 };
 
 export const availableLanguages = ['en', 'ja'];
