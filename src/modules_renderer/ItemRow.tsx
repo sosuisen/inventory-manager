@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from './utils';
 import { selectorCurrentBoxId } from './selector';
-import { itemDeleteAction } from './action';
+import { itemDeleteAction, toggleTakeoutAction } from './action';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
@@ -13,6 +13,11 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
   const deleteItem = useCallback(() => {
     dispatch(itemDeleteAction(currentBoxId, prop.item._id));
   }, [currentBoxId, prop.item._id, dispatch]);
+
+  const toggleTakeout = useCallback(() => {
+    dispatch(toggleTakeoutAction(prop.item._id));
+  }, [prop.item._id, dispatch]);
+
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
       <div styleName='col name'>{prop.item.name}</div>
@@ -23,7 +28,11 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
         {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
       <div styleName='col takeout'>
-        <input type='radio' checked={prop.item.takeout}></input>
+        <input
+          type='radio'
+          checked={prop.item.takeout}
+          onClick={e => toggleTakeout()}
+        ></input>
       </div>
       <div styleName='col delete'>
         <div styleName='deleteButton' onClick={deleteItem}>
