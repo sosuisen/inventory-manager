@@ -38,7 +38,7 @@ export const BoxRow = () => {
         styleName='addBoxButton'
         onClick={() => document.querySelector('dialog')!.setAttribute('open', 'true')}
       >
-        Add Box
+        <i className='far fa-plus-square'></i> Box
       </div>
       <dialog styleName='boxNameDialog'>
         <div styleName='dialogHeader'>

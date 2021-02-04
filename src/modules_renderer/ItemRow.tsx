@@ -16,14 +16,16 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
       <div styleName='col name'>{prop.item.name}</div>
-      <div styleName='col created_date'>{getLocalDateAndTime(prop.item.created_date)}</div>
+      <div styleName='col created_date'>
+        {getLocalDateAndTime(prop.item.created_date).substr(0, 16)}
+      </div>
       <div styleName='col modified_date'>
-        {getLocalDateAndTime(prop.item.modified_date)}
+        {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
       <div styleName='col takeout'>{prop.item.takeout.toString()}</div>
       <div styleName='col delete'>
         <div styleName='deleteButton' onClick={deleteItem}>
-          Delete
+          <i className='far fa-trash-alt'></i>
         </div>
       </div>
     </div>
