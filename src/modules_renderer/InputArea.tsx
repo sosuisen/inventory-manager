@@ -19,7 +19,9 @@ export const InputArea = () => {
   return (
     <div styleName='inputArea'>
       <div styleName='name'>
-        <div styleName='header'>Item name</div>
+        <div styleName='header'>
+          <i className='fas fa-shapes'></i>
+        </div>
         <input
           type='text'
           styleName='field'
@@ -34,7 +36,7 @@ export const InputArea = () => {
         ></input>
       </div>
       <div styleName='addButton' onClick={handleClick}>
-        Add
+        Add Item
       </div>
     </div>
   );

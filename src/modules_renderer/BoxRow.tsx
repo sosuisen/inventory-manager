@@ -31,7 +31,9 @@ export const BoxRow = () => {
 
   return (
     <div styleName='boxRow'>
-      <div styleName='header'>BOX</div>
+      <div styleName='header'>
+        <i className='fas fa-box-open'></i>
+      </div>
       <div
         styleName='addBoxButton'
         onClick={() => document.querySelector('dialog')!.setAttribute('open', 'true')}
