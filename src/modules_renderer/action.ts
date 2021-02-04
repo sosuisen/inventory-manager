@@ -225,6 +225,26 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
   };
 };
 
+export const toggleTakeoutAction = (id: string) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const itemAction: ItemUpdateAction = {
+      type: 'item-update',
+      payload: {
+        _id: id,
+        takeout: !getState().item[id].takeout,
+      },
+    };
+    dispatch(itemAction);
+
+    const newItem = getState().item[id];
+    const itemUpdateCommand: DatabaseCommand = {
+      action: 'item-update',
+      data: newItem,
+    };
+    window.api.db(itemUpdateCommand);
+  };
+};
+
 export const boxAddAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // put()
