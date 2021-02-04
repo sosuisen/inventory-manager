@@ -35,6 +35,7 @@ import {
  * i18n
  */
 const translations = translate(English).supporting('ja', Japanese);
+// const translations = translate(English);
 
 /**
  * Data store path

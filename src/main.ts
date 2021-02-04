@@ -80,6 +80,7 @@ const init = async () => {
   if (availableLanguages.includes(myLocale)) {
     preferredLanguage = myLocale;
   }
+
   // Load settings
   initializeGlobalStore(preferredLanguage as string);
 

@@ -2,12 +2,13 @@ import React, { useCallback, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import './InputArea.css';
-import { selectorCurrentBoxId } from './selector';
+import { selectorCurrentBoxId, selectorMessages } from './selector';
 import { itemAddAction } from './action';
 
 export const InputArea = () => {
   const [nameValue, setName] = useState('');
 
+  const messages = useSelector(selectorMessages);
   const currentBoxId = useSelector(selectorCurrentBoxId);
   const dispatch = useDispatch();
 
@@ -36,7 +37,7 @@ export const InputArea = () => {
         ></input>
       </div>
       <div styleName='addButton' onClick={handleClick}>
-        <i className='far fa-plus-square'></i> Item
+        <i className='far fa-plus-square'></i> {messages.item}
       </div>
     </div>
   );
