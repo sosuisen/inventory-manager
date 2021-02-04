@@ -312,10 +312,9 @@ export const boxDeleteAction = (_id: string) => {
     };
     dispatch(boxAction);
 
-    const newBox = getState().box[_id];
     const boxCommand: DatabaseCommand = {
       action: 'box-delete',
-      data: newBox,
+      data: _id,
     };
     window.api.db(boxCommand);
 

@@ -1,6 +1,10 @@
 import * as path from 'path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { DocumentNotFoundError, GitDocumentDB } from 'git-documentdb';
+import {
+  DocumentNotFoundError,
+  GitDocumentDB,
+  InvalidJsonObjectError,
+} from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -243,14 +247,17 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     default:
       return;
   }
-
   if (method === 'put') {
     const jsonObj = (command.data as unknown) as { _id: string };
     jsonObj._id = table + '/' + jsonObj._id;
-    gitDDB.put(jsonObj);
+    gitDDB
+      .put(jsonObj)
+      .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
   }
   else if (method === 'delete') {
     const id = table + '/' + command.data;
-    gitDDB.delete(id);
+    gitDDB
+      .delete(id)
+      .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
   }
 });
