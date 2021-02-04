@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectorCurrentBoxId, selectorOrderedBoxes } from './selector';
+import { selectorCurrentBoxId, selectorMessages, selectorOrderedBoxes } from './selector';
 import { BoxColumn } from './BoxColumn';
 import './BoxRow.css';
 import { boxAddAction } from './action';
@@ -13,6 +13,8 @@ export const BoxRow = () => {
   const boxList = boxes.map(box => (
     <BoxColumn box={box} currentBoxId={currentBoxId}></BoxColumn>
   ));
+
+  const messages = useSelector(selectorMessages);
 
   const dispatch = useDispatch();
 
@@ -38,11 +40,11 @@ export const BoxRow = () => {
         styleName='addBoxButton'
         onClick={() => document.querySelector('dialog')!.setAttribute('open', 'true')}
       >
-        <i className='far fa-plus-square'></i> Box
+        <i className='far fa-plus-square'></i> {messages.box}
       </div>
       <dialog styleName='boxNameDialog'>
         <div styleName='dialogHeader'>
-          Enter box name:
+          {messages.enterBoxName}:
           <input
             type='text'
             value={nameValue}
@@ -55,13 +57,13 @@ export const BoxRow = () => {
           ></input>
         </div>
         <div styleName='addButton' onClick={handleClick}>
-          Add
+          {messages.add}
         </div>
         <div
           styleName='cancelButton'
           onClick={() => document.querySelector('dialog')!.removeAttribute('open')}
         >
-          Cancel
+          {messages.cancel}
         </div>
       </dialog>
       {boxList}
