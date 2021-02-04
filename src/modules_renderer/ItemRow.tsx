@@ -22,7 +22,9 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
       <div styleName='col modified_date'>
         {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
-      <div styleName='col takeout'>{prop.item.takeout.toString()}</div>
+      <div styleName='col takeout'>
+        <input type='radio' checked={prop.item.takeout}></input>
+      </div>
       <div styleName='col delete'>
         <div styleName='deleteButton' onClick={deleteItem}>
           <i className='far fa-trash-alt'></i>
