@@ -198,7 +198,7 @@ const dataURL = nativeImage
   .toDataURL();
 const appName = app.getName();
 const appVersion = app.getVersion();
-console.log(dataURL);
+
 settingsStore.dispatch({
   type: 'appinfo-put',
   payload: { name: appName, version: appVersion, iconDataURL: dataURL },
