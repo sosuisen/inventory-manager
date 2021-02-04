@@ -155,6 +155,9 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
 export const itemAddAction = (boxId: string, nameValue: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (nameValue === '' || nameValue.match(/^\s+$/)) {
+      return;
+    }
     // put()
     const _id = generateId();
     const itemAction: ItemAddAction = {
