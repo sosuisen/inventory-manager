@@ -12,7 +12,9 @@ export const ItemList = () => {
 
   return (
     <div styleName='itemList'>
-      <div styleName='header'>ITEMS:</div>
+      <div styleName='header'>
+        <i className='fas fa-list'></i>
+      </div>
       {itemList}
     </div>
   );
