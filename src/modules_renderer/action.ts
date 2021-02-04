@@ -291,6 +291,7 @@ export const boxDeleteAction = (_id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     if (getState().box[_id].items.length > 0) {
+      document.getElementById('alertDialog')!.setAttribute('open', 'true');
       return;
     }
     // Cannot delete if the box is the last one.

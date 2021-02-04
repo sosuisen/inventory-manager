@@ -28,7 +28,7 @@ export const BoxRow = () => {
     }
     dispatch(boxAddAction(nameValue));
     setName('');
-    document.querySelector('dialog')!.removeAttribute('open');
+    document.getElementById('boxNameDialog')!.removeAttribute('open');
   }, [nameValue, boxes, dispatch]);
 
   const deleteBox = useCallback(() => {
@@ -37,34 +37,42 @@ export const BoxRow = () => {
 
   return (
     <div styleName='boxRow'>
-      <dialog styleName='boxNameDialog'>
-        <div styleName='dialogHeader'>
-          {messages.enterBoxName}
-          <div>
-            <input
-              type='text'
-              id='inputField'
-              styleName='inputField'
-              value={nameValue}
-              onChange={e => setName(e.target.value)}
-              onKeyPress={e => {
-                if (e.key === 'Enter') {
-                  addBox();
-                }
-              }}
-            ></input>
-          </div>
-          <div styleName='addButton' onClick={addBox}>
-            {messages.add}
-          </div>
-          <div
-            styleName='cancelButton'
-            onClick={() => document.querySelector('dialog')!.removeAttribute('open')}
-          >
-            {messages.cancel}
-          </div>
+      <dialog id='boxNameDialog' styleName='boxNameDialog'>
+        {messages.enterBoxName}
+        <div>
+          <input
+            type='text'
+            id='inputField'
+            styleName='inputField'
+            value={nameValue}
+            onChange={e => setName(e.target.value)}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                addBox();
+              }
+            }}
+          ></input>
+        </div>
+        <div styleName='addButton' onClick={addBox}>
+          {messages.add}
+        </div>
+        <div
+          styleName='cancelButton'
+          onClick={() => document.getElementById('boxNameDialog')!.removeAttribute('open')}
+        >
+          {messages.cancel}
         </div>
       </dialog>
+      <dialog id='alertDialog' styleName='alertDialog'>
+        {messages.cannotDeleteBoxIfNotEmpty}
+        <div
+          styleName='okButton'
+          onClick={() => document.getElementById('alertDialog')!.removeAttribute('open')}
+        >
+          {messages.ok}
+        </div>
+      </dialog>
+
       <div styleName='header'>
         <i className='fas fa-box-open'></i>
       </div>
@@ -72,7 +80,7 @@ export const BoxRow = () => {
       <div
         styleName='addBoxButton'
         onClick={() => {
-          document.querySelector('dialog')!.setAttribute('open', 'true');
+          document.getElementById('boxNameDialog')!.setAttribute('open', 'true');
           document.getElementById('inputField')!.focus();
         }}
       >

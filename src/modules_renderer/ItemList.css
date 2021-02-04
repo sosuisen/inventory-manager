@@ -16,27 +16,28 @@
   font-size: 16px;
   height: 26px;
 }
+
 .name {
-  font-size: 12px;
-  width: 400px;
+  width: 450px;
 }
 .created_date{
-  text-align: center;  
+  text-align: center;
+  padding-top: 9px;  
   font-size: 12px;
-  width: 110px;
+  width: 110px;  
 }
 .modified_date{
   text-align: center;  
+  padding-top: 9px;
   font-size: 12px;
   width: 110px;  
 }
 .takeout{
   text-align: center;
-  font-size: 12px;
-  width: 50px;
+  width: 30px;
 }
 .delete{
-
+  width: 20px;
 }
 .deleteButton{
   background-color: #f0f0f0;
@@ -44,4 +45,5 @@
   margin-top: -2px;
   cursor: pointer;
   border-radius: 7px;
+  width:14px;
 }
