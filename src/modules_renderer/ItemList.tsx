@@ -14,12 +14,14 @@ export const ItemList = () => {
   return (
     <div styleName='itemList'>
       <div styleName='row'>
+        <div styleName='col takeout'>
+          <i className='fas fa-exclamation-circle' title={messages.takeout}></i>
+        </div>
         <div styleName='col name'>
           <i className='fas fa-list'></i>&nbsp;&nbsp;&nbsp;{messages.name}
         </div>
         <div styleName='col created_date'>{messages.created_date}</div>
         <div styleName='col modified_date'>{messages.modified_date}</div>
-        <div styleName='col takeout'>{messages.takeout}</div>
         <div styleName='col delete'></div>
       </div>{' '}
       {itemList}
