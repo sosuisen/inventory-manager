@@ -30,6 +30,11 @@ if (require('electron-squirrel-startup')) {
 
 const createWindow = (): void => {
   // Create the browser window.
+  let icon = path.join(__dirname, '../assets/inventory_manager_icon.ico');
+  if (process.platform !== 'win32') {
+    // .ico cannot be loaded in ubuntu
+    icon = path.join(__dirname, '../assets/inventory_manager_icon-128x128.png');
+  }
   const mainWindow = new BrowserWindow({
     height: 900,
     width: 900,
@@ -38,7 +43,7 @@ const createWindow = (): void => {
       sandbox: true,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, '../assets/inventory_manager_icon.ico'),
+    icon: icon,
   });
 
   // and load the index.html of the app.
