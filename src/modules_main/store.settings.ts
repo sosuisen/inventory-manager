@@ -195,7 +195,11 @@ export const subscribeSettingsStore = (subscriber: BrowserWindow) => {
 // Temporal settings
 
 const dataURL = nativeImage
-  .createFromPath(path.resolve(__dirname, '../../assets/inventory_manager_icon.ico'))
+  // .ico cannot be loaded in ubuntu
+  //  .createFromPath(path.resolve(__dirname, '../../assets/inventory_manager_icon.ico'))
+  .createFromPath(
+    path.resolve(__dirname, '../../assets/inventory_manager_icon-128x128.png')
+  )
   .toDataURL();
 const appName = app.getName();
 const appVersion = app.getVersion();
