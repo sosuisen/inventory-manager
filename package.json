@@ -5,6 +5,7 @@
   "description": "Manage what's in the box",
   "main": "dist/main.js",
   "scripts": {
+    "initial-build": "npm run compile && npm run copy-static && npm run rebuild-native",
     "clean": "rm -r dist",
     "copy-static": "npm run clean && cp -r html dist && cp ./node_modules/react/umd/react.production.min.js ./dist/ && cp ./node_modules/react-dom/umd/react-dom.production.min.js ./dist/ && cp ./node_modules/react-redux/dist/react-redux.min.js ./dist/",
     "compile": "npm run lint && npx tsc -p tsconfig.main.production.json && npx webpack --config webpack.renderer.production.js",
@@ -14,7 +15,6 @@
     "/* debug-renderer */": "/* Please launch [Renderer (inventory-manager)] from VSCode debugger after compile-debug and [Main (inventory-manager)] */",
     "rebuild-native": "npx electron-rebuild -f",
     "make": "npm run copy-static && npm run compile && rm -rf ./installer/* && node --experimental-json-modules packager.mjs",
-    "publish": "electron-forge publish",
     "lint": "eslint --fix --ignore-path .gitignore ."
   },
   "keywords": [],
