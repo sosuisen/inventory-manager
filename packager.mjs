@@ -1,5 +1,5 @@
 import packager from 'electron-packager';
-import { rebuild } from 'electron-rebuild';
+import electronRebuild from 'electron-rebuild';
 import electronInstaller from 'electron-winstaller';
 import packageJson from './package.json';
 
@@ -33,7 +33,7 @@ const createInstaller = async () => {
     },
     // … other options
     afterCopy: [(buildPath, electronVersion, platform, arch, callback) => {
-      rebuild({ buildPath, electronVersion, arch })
+      electronRebuild.rebuild({ buildPath, electronVersion, arch })
         .then(() => callback())
         .catch((error) => callback(error));
     }],
