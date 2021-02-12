@@ -1,13 +1,8 @@
-import { nanoid } from 'nanoid';
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import { Box, InventoryState, Item, WorkState } from '../modules_common/store.types';
-import { getSettings } from '../modules_main/store.settings';
+import { generateId } from '../modules_common/utils';
 import window from './window';
-
-const generateId = () => {
-  return 'id' + nanoid(21); // 23 characters include only 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-
-};
 
 export interface InventoryActionBase {
   type: InventoryActionType;

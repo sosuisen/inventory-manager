@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid';
+
 // Returns UTC date with 'YYYY-MM-DD HH:mm:ss' format
 export const getCurrentDateAndTime = (): string => {
   return new Date().toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
@@ -12,4 +14,7 @@ export const getLocalDateAndTime = (utcDateAndTime: string): string => {
   const utcMsec = Date.parse(regularUTC);
   const localMsec = utcMsec - offset * 60 * 1000;
   return new Date(localMsec).toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
+};
+export const generateId = () => {
+  return 'id' + nanoid(21); // 23 characters include only 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-
 };

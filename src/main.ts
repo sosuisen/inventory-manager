@@ -1,10 +1,6 @@
 import * as path from 'path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import {
-  DocumentNotFoundError,
-  GitDocumentDB,
-  InvalidJsonObjectError,
-} from 'git-documentdb';
+import { DocumentNotFoundError, GitDocumentDB } from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -15,7 +11,7 @@ import {
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
 import { Box, Item, WorkState } from './modules_common/store.types';
-import { getCurrentDateAndTime } from './modules_renderer/utils';
+import { generateId, getCurrentDateAndTime } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
 const items: { [key: string]: Item } = {};
@@ -146,15 +142,16 @@ const init = async () => {
   }
   else {
     const date = getCurrentDateAndTime();
+    const _id = generateId();
     const firstBox: Box = {
-      _id: 'box/1',
-      name: '1',
+      _id: 'box/' + _id,
+      name: getSettings().temporalSettings.messages.firstBoxName,
       items: [],
       created_date: date,
       modified_date: date,
     };
     await gitDDB.put(firstBox);
-    firstBox._id = '1';
+    firstBox._id = _id;
     boxes[firstBox._id] = firstBox;
   }
 

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
-import { getLocalDateAndTime } from './utils';
+import { getLocalDateAndTime } from '../modules_common/utils';
 import { selectorCurrentBoxId } from './selector';
 import { itemDeleteAction, toggleTakeoutAction } from './action';
 import { Item } from '../modules_common/store.types';
