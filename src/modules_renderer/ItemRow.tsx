@@ -2,13 +2,15 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from '../modules_common/utils';
-import { selectorCurrentBoxId } from './selector';
+import { selectorCurrentBoxId, selectorMessages } from './selector';
 import { itemDeleteAction, toggleTakeoutAction } from './action';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
   const currentBoxId = useSelector(selectorCurrentBoxId);
   const dispatch = useDispatch();
+
+  const messages = useSelector(selectorMessages);
 
   const deleteItem = useCallback(() => {
     dispatch(itemDeleteAction(currentBoxId, prop.item._id));
@@ -34,7 +36,7 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
       <div styleName='col modified_date'>
         {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
-      <div styleName='col delete'>
+      <div styleName='col delete' title={messages.delete}>
         <div styleName='deleteButton' onClick={deleteItem}>
           <i className='far fa-trash-alt'></i>
         </div>

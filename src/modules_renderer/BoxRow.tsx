@@ -129,7 +129,7 @@ export const BoxRow = () => {
         <i className='far fa-plus-square'></i>
       </div>
 
-      <div styleName='deleteBoxButton' onClick={deleteBox}>
+      <div styleName='deleteBoxButton' onClick={deleteBox} title={messages.delete}>
         <i className='far fa-trash-alt'></i>
       </div>
 
@@ -139,6 +139,7 @@ export const BoxRow = () => {
           document.getElementById('boxRenameDialog')!.setAttribute('open', 'true');
           document.getElementById('renameInputField')!.focus();
         }}
+        title={messages.changeBoxName}
       >
         <i className='far fa-edit'></i>
       </div>
