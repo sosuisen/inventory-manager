@@ -287,6 +287,27 @@ export const boxAddAction = (name: string) => {
   };
 };
 
+export const boxRenameAction = (_id: string, name: string) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    // put()
+    const boxAction: BoxUpdateAction = {
+      type: 'box-update',
+      payload: {
+        _id: _id,
+        name,
+      },
+    };
+    dispatch(boxAction);
+
+    const newBox = getState().box[_id];
+    const boxUpdateCommand: DatabaseCommand = {
+      action: 'box-update',
+      data: newBox,
+    };
+    window.api.db(boxUpdateCommand);
+  };
+};
+
 export const boxDeleteAction = (_id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.

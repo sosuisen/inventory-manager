@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectorCurrentBoxId, selectorMessages, selectorOrderedBoxes } from './selector';
 import { BoxColumn } from './BoxColumn';
 import './BoxRow.css';
-import { boxAddAction, boxDeleteAction } from './action';
+import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
 
 export const BoxRow = () => {
   const [nameValue, setName] = useState('');
@@ -31,6 +31,19 @@ export const BoxRow = () => {
     document.getElementById('boxNameDialog')!.removeAttribute('open');
   }, [nameValue, boxes, dispatch]);
 
+  const renameBox = useCallback(() => {
+    if (nameValue === '') {
+      return;
+    }
+    const sameName = boxes.filter(box => box.name === nameValue);
+    if (sameName.length > 0) {
+      return;
+    }
+    dispatch(boxRenameAction(currentBoxId, nameValue));
+    setName('');
+    document.getElementById('boxRenameDialog')!.removeAttribute('open');
+  }, [currentBoxId, nameValue, dispatch]);
+
   const deleteBox = useCallback(() => {
     dispatch(boxDeleteAction(currentBoxId));
   }, [currentBoxId, dispatch]);
@@ -42,7 +55,7 @@ export const BoxRow = () => {
         <div>
           <input
             type='text'
-            id='inputField'
+            id='nameInputField'
             styleName='inputField'
             value={nameValue}
             onChange={e => setName(e.target.value)}
@@ -63,6 +76,35 @@ export const BoxRow = () => {
           {messages.cancel}
         </div>
       </dialog>
+      <dialog id='boxRenameDialog' styleName='boxNameDialog'>
+        {messages.enterBoxName}
+        <div>
+          <input
+            type='text'
+            id='renameInputField'
+            styleName='inputField'
+            value={nameValue}
+            onChange={e => setName(e.target.value)}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                addBox();
+              }
+            }}
+          ></input>
+        </div>
+        <div styleName='changeButton' onClick={renameBox}>
+          {messages.change}
+        </div>
+        <div
+          styleName='cancelButton'
+          onClick={() =>
+            document.getElementById('boxRenameDialog')!.removeAttribute('open')
+          }
+        >
+          {messages.cancel}
+        </div>
+      </dialog>
+
       <dialog id='alertDialog' styleName='alertDialog'>
         {messages.cannotDeleteBoxIfNotEmpty}
         <div
@@ -81,7 +123,7 @@ export const BoxRow = () => {
         styleName='addBoxButton'
         onClick={() => {
           document.getElementById('boxNameDialog')!.setAttribute('open', 'true');
-          document.getElementById('inputField')!.focus();
+          document.getElementById('nameInputField')!.focus();
         }}
       >
         <i className='far fa-plus-square'></i>
@@ -89,6 +131,16 @@ export const BoxRow = () => {
 
       <div styleName='deleteBoxButton' onClick={deleteBox}>
         <i className='far fa-trash-alt'></i>
+      </div>
+
+      <div
+        styleName='renameBoxButton'
+        onClick={() => {
+          document.getElementById('boxRenameDialog')!.setAttribute('open', 'true');
+          document.getElementById('renameInputField')!.focus();
+        }}
+      >
+        <i className='far fa-edit'></i>
       </div>
     </div>
   );

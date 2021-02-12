@@ -13,6 +13,7 @@ type MessagesMain = {
   add: string;
   ok: string;
   cancel: string;
+  change: string;
   box: string;
   item: string;
   name: string;
@@ -44,6 +45,7 @@ export const English: Messages = {
   add: 'Add',
   ok: 'Ok',
   cancel: 'Cancel',
+  change: 'Change',
   box: 'Box',
   item: 'Item',
   name: 'Name',
@@ -61,6 +63,7 @@ export const Japanese: Messages = {
   add: '追加',
   ok: 'Ok',
   cancel: 'キャンセル',
+  change: '変更',
   box: '箱',
   item: 'アイテム',
   name: '名前',
