@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import './InputArea.css';
@@ -16,13 +16,6 @@ export const InputArea = () => {
     dispatch(itemAddAction(currentBoxId, nameValue));
     setName('');
   }, [currentBoxId, nameValue, dispatch]);
-
-  useEffect(() => {
-    // scroll to bottom
-    var element = document.documentElement;
-    var bottom = element.scrollHeight - element.clientHeight;
-    window.scroll(0, bottom);
-  });
 
   return (
     <div styleName='inputArea'>
