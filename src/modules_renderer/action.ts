@@ -226,6 +226,10 @@ export const itemNameUpdateAction = (_id: string, nameValue: string, elm: HTMLEl
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
     }
+    if (nameValue === getState().item[_id].name) {
+      elm.blur();
+      return;
+    }
     // put()
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
