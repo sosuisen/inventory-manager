@@ -1,6 +1,7 @@
 .row {
   clear: both;
   height: 34px;
+  margin-top: 0px;
 }
 .color_bg {
   background-color: #e0ffe0;
@@ -32,13 +33,13 @@
 }
 .created_date{
   text-align: center;
-  padding-top: 9px;  
+  padding-top: 8px;  
   font-size: 12px;
   width: 110px;  
 }
 .modified_date{
   text-align: center;  
-  padding-top: 9px;
+  padding-top: 8px;
   font-size: 12px;
   width: 110px;  
 }

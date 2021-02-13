@@ -23,7 +23,7 @@ export const ItemList = () => {
         <div styleName='col created_date'>{messages.created_date}</div>
         <div styleName='col modified_date'>{messages.modified_date}</div>
         <div styleName='col delete'></div>
-      </div>{' '}
+      </div>
       {itemList}
     </div>
   );
