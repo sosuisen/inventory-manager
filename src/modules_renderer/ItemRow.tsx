@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from '../modules_common/utils';
@@ -7,8 +7,15 @@ import { itemDeleteAction, itemNameUpdateAction, toggleTakeoutAction } from './a
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
+  const [propNameValue, setPropName] = useState(prop.item.name);
   const [nameValue, setName] = useState(prop.item.name);
-
+  // Note: nameValue is not updated when prop.item.name is changed
+  // because useState initializes value only at once.
+  // So update nameValue by comparing old and current prop.item.name.
+  if (propNameValue !== prop.item.name) {
+    setPropName(prop.item.name);
+    setName(prop.item.name);
+  }
   const currentBoxId = useSelector(selectorCurrentBoxId);
   const messages = useSelector(selectorMessages);
 
