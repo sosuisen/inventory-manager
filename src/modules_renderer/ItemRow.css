@@ -13,6 +13,22 @@
 }
 .name {
   width: 450px;
+  padding: 0px;
+  margin: 0px;
+}
+.nameField {
+  background-color: transparent;
+  border: 0px;
+  width: 440px;
+  font-size: 16px;
+  margin: 3px 0px 0px 0px;
+  padding: 4px 3px 3px 7px;
+}
+.nameField:focus {
+  background-color: white;
+}
+.nameField:blur {
+  background-color: transparent;
 }
 .created_date{
   text-align: center;

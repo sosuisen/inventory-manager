@@ -221,6 +221,30 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
   };
 };
 
+export const itemNameUpdateAction = (_id: string, nameValue: string, elm: HTMLElement) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (nameValue === '' || nameValue.match(/^\s+$/)) {
+      return;
+    }
+    // put()
+    const itemAction: ItemUpdateAction = {
+      type: 'item-update',
+      payload: {
+        _id: _id,
+        name: nameValue,
+      },
+    };
+    dispatch(itemAction);
+    const newItem = getState().item[_id];
+    const itemCommand: DatabaseCommand = {
+      action: 'item-update',
+      data: newItem,
+    };
+    window.api.db(itemCommand);
+    elm.blur();
+  };
+};
+
 export const toggleTakeoutAction = (id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const itemAction: ItemUpdateAction = {

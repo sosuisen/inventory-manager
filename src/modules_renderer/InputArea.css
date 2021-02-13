@@ -14,8 +14,9 @@
 }
 .field {
   float: left;
-  margin-top: 2px;
+  margin-top: 0px;
   margin-left: 7px;
+  padding: 4px 3px 3px 7px;
   border: 1px solid #90c090;
 }
 .addButton {
