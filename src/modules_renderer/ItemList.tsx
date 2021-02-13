@@ -8,7 +8,8 @@ export const ItemList = () => {
   const messages = useSelector(selectorMessages);
   const currentItems = useSelector(selectorCurrentItems);
   const itemList = currentItems.map((item, index) => (
-    <ItemRow item={item} index={index}></ItemRow>
+    // must have key
+    <ItemRow key={item._id} item={item} index={index}></ItemRow>
   ));
 
   return (
