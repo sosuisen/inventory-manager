@@ -17,7 +17,7 @@ import {
   TemporalSettingsState,
   WorkState,
 } from '../modules_common/store.types';
-import { getCurrentDateAndTime } from './utils';
+import { getCurrentDateAndTime } from '../modules_common/utils';
 
 // eslint-disable-next-line default-param-last
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {

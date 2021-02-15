@@ -1,13 +1,8 @@
-import { nanoid } from 'nanoid';
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import { Box, InventoryState, Item, WorkState } from '../modules_common/store.types';
-import { getSettings } from '../modules_main/store.settings';
+import { generateId } from '../modules_common/utils';
 import window from './window';
-
-const generateId = () => {
-  return 'id' + nanoid(21); // 23 characters include only 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-
-};
 
 export interface InventoryActionBase {
   type: InventoryActionType;
@@ -223,6 +218,34 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
       data: newBox,
     };
     window.api.db(boxCommand);
+  };
+};
+
+export const itemNameUpdateAction = (_id: string, nameValue: string, elm: HTMLElement) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (nameValue === '' || nameValue.match(/^\s+$/)) {
+      return;
+    }
+    if (nameValue === getState().item[_id].name) {
+      elm.blur();
+      return;
+    }
+    // put()
+    const itemAction: ItemUpdateAction = {
+      type: 'item-update',
+      payload: {
+        _id: _id,
+        name: nameValue,
+      },
+    };
+    dispatch(itemAction);
+    const newItem = getState().item[_id];
+    const itemCommand: DatabaseCommand = {
+      action: 'item-update',
+      data: newItem,
+    };
+    window.api.db(itemCommand);
+    elm.blur();
   };
 };
 

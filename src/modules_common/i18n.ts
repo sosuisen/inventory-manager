@@ -7,6 +7,7 @@
  */
 
 type MessagesMain = {
+  firstBoxName: string;
   databaseCreateError: string;
   databaseOpenError: string;
   enterBoxName: string;
@@ -21,6 +22,8 @@ type MessagesMain = {
   modified_date: string;
   takeout: string;
   cannotDeleteBoxIfNotEmpty: string;
+  changeBoxName: string;
+  delete: string;
 };
 
 type MessagesLanguage = {
@@ -39,6 +42,7 @@ const LanguagesCommon: MessagesLanguage = {
 
 export const English: Messages = {
   ...LanguagesCommon,
+  firstBoxName: 'MyBox',
   databaseCreateError: 'Error: Cannot create database',
   databaseOpenError: 'Error: Cannot open database',
   enterBoxName: 'Enter box name',
@@ -53,10 +57,13 @@ export const English: Messages = {
   modified_date: 'Modified',
   takeout: 'Check for taking out item or completion of todo',
   cannotDeleteBoxIfNotEmpty: 'A box cannot be deleted if not empty.',
+  changeBoxName: 'Change box name',
+  delete: 'Delete',
 };
 
 export const Japanese: Messages = {
   ...LanguagesCommon,
+  firstBoxName: 'マイボックス',
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   databaseOpenError: 'エラー: データベースを開くことができませんでした。',
   enterBoxName: '箱の名前を入力してください',
@@ -71,6 +78,8 @@ export const Japanese: Messages = {
   modified_date: '変更日時',
   takeout: '物品を持出中または事項の完了をチェック',
   cannotDeleteBoxIfNotEmpty: '空でない箱は削除できません。',
+  changeBoxName: '箱の名前を変更',
+  delete: '削除',
 };
 
 export const availableLanguages = ['en', 'ja'];

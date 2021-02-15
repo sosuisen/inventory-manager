@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectorCurrentItems, selectorMessages } from './selector';
 import './ItemList.css';
@@ -7,9 +7,22 @@ import { ItemRow } from './ItemRow';
 export const ItemList = () => {
   const messages = useSelector(selectorMessages);
   const currentItems = useSelector(selectorCurrentItems);
+  const [itemLength, setItemLength] = useState(currentItems.length);
+
   const itemList = currentItems.map((item, index) => (
-    <ItemRow item={item} index={index}></ItemRow>
+    // must have key
+    <ItemRow key={item._id} item={item} index={index}></ItemRow>
   ));
+
+  useEffect(() => {
+    if (itemLength < currentItems.length) {
+      // Scroll to bottom after a new item is added.
+      var element = document.documentElement;
+      var bottom = element.scrollHeight - element.clientHeight;
+      window.scroll(0, bottom);
+    }
+    setItemLength(currentItems.length);
+  });
 
   return (
     <div styleName='itemList'>
@@ -23,7 +36,7 @@ export const ItemList = () => {
         <div styleName='col created_date'>{messages.created_date}</div>
         <div styleName='col modified_date'>{messages.modified_date}</div>
         <div styleName='col delete'></div>
-      </div>{' '}
+      </div>
       {itemList}
     </div>
   );

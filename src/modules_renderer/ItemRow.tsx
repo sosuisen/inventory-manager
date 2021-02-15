@@ -1,13 +1,17 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
-import { getLocalDateAndTime } from './utils';
-import { selectorCurrentBoxId } from './selector';
-import { itemDeleteAction, toggleTakeoutAction } from './action';
+import { getLocalDateAndTime } from '../modules_common/utils';
+import { selectorCurrentBoxId, selectorMessages } from './selector';
+import { itemDeleteAction, itemNameUpdateAction, toggleTakeoutAction } from './action';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
+  const [nameValue, setName] = useState(prop.item.name);
+
   const currentBoxId = useSelector(selectorCurrentBoxId);
+  const messages = useSelector(selectorMessages);
+
   const dispatch = useDispatch();
 
   const deleteItem = useCallback(() => {
@@ -18,6 +22,13 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
     dispatch(toggleTakeoutAction(prop.item._id));
   }, [prop.item._id, dispatch]);
 
+  const changeName = useCallback(
+    (elm: HTMLElement) => {
+      dispatch(itemNameUpdateAction(prop.item._id, nameValue, elm));
+    },
+    [nameValue, dispatch]
+  );
+
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
       <div styleName='col takeout'>
@@ -27,14 +38,28 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
           onClick={e => toggleTakeout()}
         ></input>
       </div>
-      <div styleName='col name'>{prop.item.name}</div>
+      <div styleName='col name'>
+        <input
+          type='text'
+          styleName='nameField'
+          className='nameField'
+          value={nameValue}
+          onChange={e => setName(e.target.value)}
+          onKeyPress={e => {
+            if (e.key === 'Enter') {
+              changeName((e.target as unknown) as HTMLElement);
+            }
+          }}
+          onBlur={e => changeName((e.target as unknown) as HTMLElement)}
+        ></input>
+      </div>
       <div styleName='col created_date'>
         {getLocalDateAndTime(prop.item.created_date).substr(0, 16)}
       </div>
       <div styleName='col modified_date'>
         {getLocalDateAndTime(prop.item.modified_date).substr(0, 16)}
       </div>
-      <div styleName='col delete'>
+      <div styleName='col delete' title={messages.delete}>
         <div styleName='deleteButton' onClick={deleteItem}>
           <i className='far fa-trash-alt'></i>
         </div>

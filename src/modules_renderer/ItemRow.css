@@ -1,6 +1,7 @@
 .row {
   clear: both;
   height: 34px;
+  margin-top: 0px;
 }
 .color_bg {
   background-color: #e0ffe0;
@@ -13,16 +14,32 @@
 }
 .name {
   width: 450px;
+  padding: 0px;
+  margin: 0px;
+}
+.nameField {
+  background-color: transparent;
+  border: 0px;
+  width: 440px;
+  font-size: 16px;
+  margin: 3px 0px 0px 0px;
+  padding: 4px 3px 3px 7px;
+}
+.nameField:focus {
+  background-color: white;
+}
+.nameField:blur {
+  background-color: transparent;
 }
 .created_date{
   text-align: center;
-  padding-top: 9px;  
+  padding-top: 8px;  
   font-size: 12px;
   width: 110px;  
 }
 .modified_date{
   text-align: center;  
-  padding-top: 9px;
+  padding-top: 8px;
   font-size: 12px;
   width: 110px;  
 }
