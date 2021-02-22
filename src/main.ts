@@ -76,6 +76,7 @@ const showErrorDialog = (label: MessageLabel) => {
   });
 };
 
+// eslint-disable-next-line complexity
 const init = async () => {
   // locale can be got after 'ready'
   const myLocale = app.getLocale();
@@ -90,10 +91,19 @@ const init = async () => {
   initializeGlobalStore(preferredLanguage as string);
 
   // Load inventory
-  gitDDB = new GitDocumentDB({
-    localDir: getSettings().persistentSettings.storage.path,
-    dbName: 'db',
-  });
+  try {
+    gitDDB = new GitDocumentDB({
+      local_dir: getSettings().persistentSettings.storage.path,
+      db_name: 'db',
+    });
+  } catch (err) {
+    showErrorDialog('databaseCreateError');
+    console.log(err);
+    app.exit();
+  }
+  if (!gitDDB) {
+    return;
+  }
 
   const dbInfo = await gitDDB.open().catch(e => {
     showErrorDialog('databaseCreateError');
@@ -106,7 +116,7 @@ const init = async () => {
   }
 
   const allItems = await gitDDB
-    .allDocs({ directory: 'item', include_docs: true })
+    .allDocs({ sub_directory: 'item', include_docs: true })
     .catch(e => {
       showErrorDialog('databaseOpenError');
       app.exit();
@@ -124,7 +134,7 @@ const init = async () => {
   }
 
   const allBoxes = await gitDDB
-    .allDocs({ directory: 'box', include_docs: true })
+    .allDocs({ sub_directory: 'box', include_docs: true })
     .catch(e => {
       showErrorDialog('databaseOpenError');
       app.exit();
