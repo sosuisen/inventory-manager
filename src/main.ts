@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { DocumentNotFoundError, GitDocumentDB } from 'git-documentdb';
+import { Collection, DocumentNotFoundError, GitDocumentDB } from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -14,9 +14,12 @@ import { Box, Item, WorkState } from './modules_common/store.types';
 import { generateId, getCurrentDateAndTime } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
-const items: { [key: string]: Item } = {};
-const boxes: { [key: string]: Box } = {};
-let workState: WorkState;
+let items: Collection;
+let boxes: Collection;
+let works: Collection;
+const loadedItems: { [key: string]: Item } = {};
+const loadedBoxes: { [key: string]: Box } = {};
+let loadedWorkState: WorkState;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -54,9 +57,9 @@ const createWindow = (): void => {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send(
       'initialize-store',
-      items,
-      boxes,
-      workState,
+      loadedItems,
+      loadedBoxes,
+      loadedWorkState,
       settingsStore.getState()
     );
     subscribeSettingsStore(mainWindow);
@@ -104,6 +107,9 @@ const init = async () => {
   if (!gitDDB) {
     return;
   }
+  items = gitDDB.collection('item');
+  boxes = gitDDB.collection('box');
+  works = gitDDB.collection('work');
 
   const dbInfo = await gitDDB.open().catch(e => {
     showErrorDialog('databaseCreateError');
@@ -115,38 +121,32 @@ const init = async () => {
     return;
   }
 
-  const allItems = await gitDDB
-    .allDocs({ sub_directory: 'item', include_docs: true })
-    .catch(e => {
-      showErrorDialog('databaseOpenError');
-      app.exit();
-    });
+  const allItems = await items.allDocs({ include_docs: true }).catch(e => {
+    showErrorDialog('databaseOpenError');
+    app.exit();
+  });
   if (!allItems) return;
 
   if (allItems.total_rows > 0) {
     allItems.rows?.forEach(item => {
       if (item.doc) {
         const doc = (item.doc as unknown) as Item;
-        doc._id = doc._id.replace(/^item\//, '');
-        items[doc._id] = doc;
+        loadedItems[doc._id] = doc;
       }
     });
   }
 
-  const allBoxes = await gitDDB
-    .allDocs({ sub_directory: 'box', include_docs: true })
-    .catch(e => {
-      showErrorDialog('databaseOpenError');
-      app.exit();
-    });
+  const allBoxes = await boxes.allDocs({ include_docs: true }).catch(e => {
+    showErrorDialog('databaseOpenError');
+    app.exit();
+  });
   if (!allBoxes) return;
 
   if (allBoxes.total_rows > 0) {
     allBoxes.rows?.forEach(box => {
       if (box.doc) {
         const doc = (box.doc as unknown) as Box;
-        doc._id = doc._id.replace(/^box\//, '');
-        boxes[doc._id] = doc;
+        loadedBoxes[doc._id] = doc;
       }
     });
   }
@@ -154,28 +154,27 @@ const init = async () => {
     const date = getCurrentDateAndTime();
     const _id = generateId();
     const firstBox: Box = {
-      _id: 'box/' + _id,
+      _id: _id,
       name: getSettings().temporalSettings.messages.firstBoxName,
       items: [],
       created_date: date,
       modified_date: date,
     };
-    await gitDDB.put(firstBox);
+    await boxes.put(firstBox);
     firstBox._id = _id;
-    boxes[firstBox._id] = firstBox;
+    loadedBoxes[firstBox._id] = firstBox;
   }
 
   const workId = 'user01';
-  workState = ((await gitDDB.get('work/' + workId).catch(async e => {
+  loadedWorkState = ((await works.get(workId).catch(async e => {
     if (e instanceof DocumentNotFoundError) {
       const firstWorkState: WorkState = {
         _id: workId,
-        boxOrder: Object.keys(boxes),
-        currentBox: Object.keys(boxes)[0],
+        boxOrder: Object.keys(loadedBoxes),
+        currentBox: Object.keys(loadedBoxes)[0],
       };
       const workStateForSave = JSON.parse(JSON.stringify(firstWorkState));
-      workStateForSave._id = 'work/' + workId;
-      await gitDDB.put(workStateForSave);
+      await works.put(workStateForSave);
       return firstWorkState;
     }
 
@@ -183,19 +182,15 @@ const init = async () => {
     app.exit();
   })) as unknown) as WorkState;
 
-  if (workState !== undefined) {
-    if (workState.boxOrder.length === 0 || workState.currentBox === undefined) {
-      workState = {
+  if (loadedWorkState !== undefined) {
+    if (loadedWorkState.boxOrder.length === 0 || loadedWorkState.currentBox === undefined) {
+      loadedWorkState = {
         _id: workId,
-        boxOrder: Object.keys(boxes),
-        currentBox: workState.boxOrder[0],
+        boxOrder: Object.keys(loadedBoxes),
+        currentBox: loadedWorkState.boxOrder[0],
       };
-      const workStateForSave = JSON.parse(JSON.stringify(workState));
-      workStateForSave._id = 'work/' + workId;
-      await gitDDB.put(workStateForSave);
-    }
-    else {
-      workState._id = workState._id.replace(/^work\//, '');
+      const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
+      await works.put(workStateForSave);
     }
   }
 
@@ -231,29 +226,29 @@ app.on('activate', async () => {
 
 // eslint-disable-next-line complexity
 ipcMain.handle('db', (e, command: DatabaseCommand) => {
-  let table = '';
+  let collection: Collection;
   let method = '';
   switch (command.action) {
     case 'item-add':
     case 'item-update':
-      table = 'item';
+      collection = items;
       method = 'put';
       break;
     case 'item-delete':
-      table = 'item';
+      collection = items;
       method = 'delete';
       break;
     case 'box-add':
     case 'box-update':
-      table = 'box';
+      collection = boxes;
       method = 'put';
       break;
     case 'box-delete':
-      table = 'box';
+      collection = boxes;
       method = 'delete';
       break;
     case 'work-update':
-      table = 'work';
+      collection = works;
       method = 'put';
       break;
     default:
@@ -261,14 +256,13 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
   }
   if (method === 'put') {
     const jsonObj = (command.data as unknown) as { _id: string };
-    jsonObj._id = table + '/' + jsonObj._id;
-    gitDDB
+    collection
       .put(jsonObj)
       .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
   }
   else if (method === 'delete') {
-    const id = table + '/' + command.data;
-    gitDDB
+    const id = command.data;
+    collection
       .delete(id)
       .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
   }
