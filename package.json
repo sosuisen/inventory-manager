@@ -57,13 +57,13 @@
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^6.0.1",
     "git-documentdb": "^0.2.2",
-    "nanoid": "^3.1.20",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.2",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "style-loader": "^1.2.1",
-    "typed-intl": "^1.0.3"
+    "typed-intl": "^1.0.3",
+    "ulid": "^2.3.0"
   }
 }
