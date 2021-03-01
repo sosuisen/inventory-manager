@@ -1,4 +1,5 @@
-import { nanoid } from 'nanoid';
+import { monotonicFactory } from 'ulid';
+const ulid = monotonicFactory();
 
 // Returns UTC date with 'YYYY-MM-DD HH:mm:ss' format
 export const getCurrentDateAndTime = (): string => {
@@ -21,5 +22,5 @@ export const getLocalDateAndTime = (utcDateAndTime: string): string => {
   //  return new Date(localMsec).toISOString().replace(/^(.+?)T(.+?)\..+?$/, '$1 $2');
 };
 export const generateId = () => {
-  return 'id' + nanoid(21); // 23 characters include only 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz-
+  return ulid(Date.now());
 };
