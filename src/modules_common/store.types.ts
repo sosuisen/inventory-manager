@@ -84,3 +84,45 @@ export type InventoryState = {
   work: WorkState;
   settings: TemporalSettingsState;
 };
+
+/**
+ * Changed file in merge operation
+ */
+export type ChangedFile = {
+  operation: WriteOperation;
+  data: JsonDocWithMetadata;
+};
+
+/**
+ * Write operation
+ */
+export type WriteOperation =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'create-merge'
+  | 'update-merge';
+
+export type JsonDocWithMetadata = DocMetadata & {
+  doc?: JsonDoc;
+};
+
+/**
+ * Type for a document metadata
+ *
+ * @remarks
+ * - id: id of a document. (You might be confused. Underscored '_id' is used only in a {@link JsonDoc} type. In other cases, 'id' is used. This is a custom of PouchDB/CouchDB.)
+ *
+ * - file_sha: SHA-1 hash of Git object (40 characters)
+ *
+ * - type: Default is 'json'.
+ */
+export type DocMetadata = {
+  id: string;
+  file_sha: string;
+  type?: 'json' | 'raw';
+};
+
+export type JsonDoc = {
+  [key: string]: any;
+};
