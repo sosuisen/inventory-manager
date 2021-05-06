@@ -1,7 +1,7 @@
 {
   "name": "inventory-manager",
   "productName": "Inventory Manager",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Manage what's in the box",
   "main": "dist/main.js",
   "scripts": {
@@ -54,9 +54,10 @@
   },
   "dependencies": {
     "babel-plugin-react-css-modules": "^5.2.6",
+    "dotenv": "^9.0.0",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^6.0.1",
-    "git-documentdb": "^0.2.9",
+    "git-documentdb": "^0.3.0-alpha.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.2",

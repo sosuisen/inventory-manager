@@ -1,6 +1,8 @@
 import * as path from 'path';
+import os from 'os';
+import dotenv from 'dotenv';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { Collection, DocumentNotFoundError, GitDocumentDB } from 'git-documentdb';
+import { Collection, GitDocumentDB, RemoteOptions } from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -111,14 +113,36 @@ const init = async () => {
   boxes = gitDDB.collection('box');
   works = gitDDB.collection('work');
 
-  const dbInfo = await gitDDB.open().catch(e => {
-    showErrorDialog('databaseCreateError');
-    console.error(e);
-    app.exit();
-  });
-
-  if (!dbInfo) {
-    return;
+  if (os.platform() === 'win32') {
+    dotenv.config({ path: 'c:\\inventory_manager_env' });
+  }
+  else {
+    dotenv.config({ path: '/tmp/inventory_manager_env' });
+  }
+  const remote_url = process.env.INVENTORY_MANAGER_URL;
+  const personal_access_token = process.env.INVENTORY_MANAGER_TOKEN;
+  let remoteOptions: RemoteOptions | undefined;
+  if (remote_url && personal_access_token) {
+    remoteOptions = {
+      remote_url: remote_url,
+      connection: {
+        type: 'github',
+        personal_access_token,
+        private: true,
+      },
+      live: true,
+    };
+  }
+  const dbInfo = await gitDDB.open();
+  if (!dbInfo.ok) {
+    await gitDDB.create(remoteOptions).catch(e => {
+      showErrorDialog('databaseCreateError');
+      console.error(e);
+      app.exit();
+    });
+  }
+  else if (remoteOptions) {
+    await gitDDB.sync(remoteOptions);
   }
 
   const allItems = await items.allDocs({ include_docs: true }).catch(e => {
@@ -166,32 +190,31 @@ const init = async () => {
   }
 
   const workId = 'user01';
-  loadedWorkState = ((await works.get(workId).catch(async e => {
-    if (e instanceof DocumentNotFoundError) {
-      const firstWorkState: WorkState = {
-        _id: workId,
-        boxOrder: Object.keys(loadedBoxes),
-        currentBox: Object.keys(loadedBoxes)[0],
-      };
-      const workStateForSave = JSON.parse(JSON.stringify(firstWorkState));
-      await works.put(workStateForSave);
-      return firstWorkState;
-    }
-
+  loadedWorkState = ((await works.get(workId).catch(() => {
     showErrorDialog('databaseOpenError');
     app.exit();
   })) as unknown) as WorkState;
 
-  if (loadedWorkState !== undefined) {
-    if (loadedWorkState.boxOrder.length === 0 || loadedWorkState.currentBox === undefined) {
-      loadedWorkState = {
-        _id: workId,
-        boxOrder: Object.keys(loadedBoxes),
-        currentBox: loadedWorkState.boxOrder[0],
-      };
-      const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
-      await works.put(workStateForSave);
-    }
+  if (loadedWorkState === undefined) {
+    loadedWorkState = {
+      _id: workId,
+      boxOrder: Object.keys(loadedBoxes),
+      currentBox: Object.keys(loadedBoxes)[0],
+    };
+    const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
+    await works.put(workStateForSave);
+  }
+  else if (
+    loadedWorkState.boxOrder.length === 0 ||
+    loadedWorkState.currentBox === undefined
+  ) {
+    loadedWorkState = {
+      _id: workId,
+      boxOrder: Object.keys(loadedBoxes),
+      currentBox: loadedWorkState.boxOrder[0],
+    };
+    const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
+    await works.put(workStateForSave);
   }
 
   createWindow();
