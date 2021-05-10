@@ -1,9 +1,48 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { ChangedFile } from 'git-documentdb';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
+
+const syncActionBuilder = (changes: ChangedFile[]) => {
+  // itemAddAction: ItemAddAction, BoxItemAddAction
+  // itemDeleteAction: ItemDeleteAction, BoxItemDeleteAction
+  // itemNameUpdateAction: ItemUpdateAction
+  // toggleTakeoutAction: ItemUpdateAction
+  // boxAddAction: BoxAddAction, WorkBoxOrderAddAction, WorkCurrentBoxUpdateAction
+  // boxRenameAction: BoxUpdateAction
+  // boxDeleteAction: BoxDeleteAction, WorkBoxOrderDeleteAction, WorkCurrentBoxUpdateAction
+  // boxSelectAction: WorkCurrentBoxUpdateAction
+  // eslint-disable-next-line complexity
+  changes.forEach(file => {
+    if (file.data.id.startsWith('item/')) {
+      if (file.operation.startsWith('create')) {
+      }
+      else if (file.operation.startsWith('update')) {
+      }
+      else if (file.operation.startsWith('delete')) {
+      }
+    }
+    else if (file.data.id.startsWith('box/')) {
+      if (file.operation.startsWith('create')) {
+      }
+      else if (file.operation.startsWith('update')) {
+      }
+      else if (file.operation.startsWith('delete')) {
+      }
+    }
+    else if (file.data.id.startsWith('work/')) {
+      if (file.operation.startsWith('create')) {
+      }
+      else if (file.operation.startsWith('update')) {
+      }
+      else if (file.operation.startsWith('delete')) {
+      }
+    }
+  });
+};
 
 // eslint-disable-next-line complexity
 window.addEventListener('message', event => {
@@ -43,6 +82,10 @@ window.addEventListener('message', event => {
       const domContainer = document.getElementById('react-container');
       ReactDOM.render(React.createElement(App), domContainer);
 
+      break;
+    }
+    case 'sync': {
+      syncActionBuilder(event.data.items);
       break;
     }
     default:

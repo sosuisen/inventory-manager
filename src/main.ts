@@ -2,7 +2,7 @@ import * as path from 'path';
 import os from 'os';
 import dotenv from 'dotenv';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { Collection, GitDocumentDB, RemoteOptions } from 'git-documentdb';
+import { ChangedFile, Collection, GitDocumentDB, RemoteOptions } from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -19,6 +19,8 @@ let gitDDB: GitDocumentDB;
 const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: string[] } = {};
 
+let mainWindow: BrowserWindow;
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   // eslint-disable-line global-require
@@ -32,7 +34,7 @@ const createWindow = (): void => {
     // .ico cannot be loaded in ubuntu
     icon = path.join(__dirname, '../assets/inventory_manager_icon-128x128.png');
   }
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 900,
     width: 900,
     webPreferences: {
@@ -130,6 +132,13 @@ const init = async () => {
   }
   else if (remoteOptions) {
     await gitDDB.sync(remoteOptions);
+  }
+
+  if (remoteOptions) {
+    const sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
+    sync.on('localChange', (changes: ChangedFile[]) => {
+      mainWindow.webContents.send('sync', changes);
+    });
   }
 
   const allItems = await gitDDB.allDocs({ include_docs: true }).catch(e => {
