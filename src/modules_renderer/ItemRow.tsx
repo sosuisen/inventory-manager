@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from '../modules_common/utils';
@@ -8,6 +8,7 @@ import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
   const [nameValue, setName] = useState(prop.item.name);
+  const [prevNameValue, setPrevName] = useState(prop.item.name);
 
   const currentBoxName = useSelector(selectorCurrentBoxName);
   const messages = useSelector(selectorMessages);
@@ -29,6 +30,12 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
     [nameValue, dispatch]
   );
 
+  useEffect(() => {
+    if (prevNameValue !== prop.item.name) {
+      setName(prop.item.name);
+    }
+    setPrevName(prop.item.name);
+  });
   return (
     <div styleName={prop.index % 2 === 0 ? 'row color_bg' : 'row'}>
       <div styleName='col takeout'>
