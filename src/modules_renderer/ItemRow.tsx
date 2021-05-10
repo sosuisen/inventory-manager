@@ -1,22 +1,22 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from '../modules_common/utils';
-import { selectorCurrentBoxId, selectorMessages } from './selector';
+import { selectorCurrentBoxName, selectorMessages } from './selector';
 import { itemDeleteAction, itemNameUpdateAction, toggleTakeoutAction } from './action';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
   const [nameValue, setName] = useState(prop.item.name);
 
-  const currentBoxId = useSelector(selectorCurrentBoxId);
+  const currentBoxName = useSelector(selectorCurrentBoxName);
   const messages = useSelector(selectorMessages);
 
   const dispatch = useDispatch();
 
   const deleteItem = useCallback(() => {
-    dispatch(itemDeleteAction(currentBoxId, prop.item._id));
-  }, [currentBoxId, prop.item._id, dispatch]);
+    dispatch(itemDeleteAction(currentBoxName, prop.item._id));
+  }, [currentBoxName, prop.item._id, dispatch]);
 
   const toggleTakeout = useCallback(() => {
     dispatch(toggleTakeoutAction(prop.item._id));

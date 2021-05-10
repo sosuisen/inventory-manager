@@ -1,30 +1,29 @@
-import { AppInfo, InventoryState } from '../modules_common/store.types';
+import { InventoryState } from '../modules_common/store.types';
 
-export const selectorCurrentBoxId = (state: InventoryState) => state.work.currentBox;
+export const selectorCurrentBoxName = (state: InventoryState) => state.work.currentBox;
 
 export const selectorCurrentBox = (state: InventoryState) => {
-  const currentBoxId = selectorCurrentBoxId(state);
-  if (currentBoxId === undefined) {
+  const currentBoxName = selectorCurrentBoxName(state);
+  if (currentBoxName === undefined) {
     return undefined;
   }
-  return state.box[state.work.currentBox];
+  return state.box[currentBoxName];
 };
 
-export const selectorCurrentBoxName = (state: InventoryState) => {
-  const box = selectorCurrentBox(state);
-  if (box) {
-    return box.name;
-  }
-  return '';
+export const selectorOrderedBoxes = (state: InventoryState) => {
+  return Object.keys(state.box).sort();
 };
-
-export const selectorOrderedBoxes = (state: InventoryState) =>
-  state.work.boxOrder.map(boxId => state.box[boxId]);
 
 export const selectorCurrentItems = (state: InventoryState) => {
   const box = state.box[state.work.currentBox];
   if (box) {
-    return box.items.map(_id => state.item[_id]);
+    return box
+      .map(_id => state.item[_id])
+      .sort((a, b) => {
+        if (a.created_date > b.created_date) return 1;
+        if (a.created_date < b.created_date) return -1;
+        return 0;
+      });
   }
   return [];
 };

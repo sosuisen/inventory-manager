@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { selectorCurrentBoxId, selectorCurrentItems, selectorMessages } from './selector';
+import { selectorCurrentBoxName, selectorCurrentItems, selectorMessages } from './selector';
 import './ItemList.css';
 import { ItemRow } from './ItemRow';
 
 export const ItemList = () => {
   const messages = useSelector(selectorMessages);
   const currentItems = useSelector(selectorCurrentItems);
-  const currentBoxId = useSelector(selectorCurrentBoxId);
-  const [prevBoxId, setPrevBoxId] = useState(currentBoxId);
+  const currentBoxName = useSelector(selectorCurrentBoxName);
+  const [prevBoxName, setPrevBoxName] = useState(currentBoxName);
   const [prevItemLength, setPrevItemLength] = useState(currentItems.length);
 
   const itemList = currentItems.map((item, index) => (
@@ -17,14 +17,14 @@ export const ItemList = () => {
   ));
 
   useEffect(() => {
-    if (prevItemLength < currentItems.length && prevBoxId === currentBoxId) {
+    if (prevItemLength < currentItems.length && prevBoxName === currentBoxName) {
       // Scroll to bottom after a new item is added.
       var element = document.documentElement;
       var bottom = element.scrollHeight - element.clientHeight;
       window.scroll(0, bottom);
     }
     setPrevItemLength(currentItems.length);
-    setPrevBoxId(currentBoxId);
+    setPrevBoxName(currentBoxName);
   });
 
   return (

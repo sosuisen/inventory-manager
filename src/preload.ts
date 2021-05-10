@@ -21,9 +21,6 @@ contextBridge.exposeInMainWorld('api', {
 /**
  * Command from Main process
  */
-ipcRenderer.on('initialize-store', (event, items, boxes, workState, settings) => {
-  window.postMessage(
-    { command: 'initialize-store', items, boxes, workState, settings },
-    'file://'
-  );
+ipcRenderer.on('initialize-store', (event, items, boxes, settings) => {
+  window.postMessage({ command: 'initialize-store', items, boxes, settings }, 'file://');
 });

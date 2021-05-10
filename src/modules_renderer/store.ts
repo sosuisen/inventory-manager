@@ -44,6 +44,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
         modified_date: date,
         name: action.payload.name ?? newState[action.payload._id].name,
         takeout: action.payload.takeout ?? newState[action.payload._id].takeout,
+        box: action.payload.box ?? newState[action.payload._id].box,
       };
       return newState;
     }
@@ -65,25 +66,13 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
     }
     case 'box-add': {
       const newState = { ...state };
-      const date = getCurrentDateAndTime();
-      newState[action.payload._id] = {
-        ...action.payload,
-        created_date: date,
-        modified_date: date,
-        items: [],
-      };
+      newState[action.payload.name] = [];
       return newState;
     }
     case 'box-update': {
       const newState = JSON.parse(JSON.stringify(state));
-      const date = getCurrentDateAndTime();
-      newState[action.payload._id] = {
-        ...state[action.payload._id],
-        ...action.payload,
-        modified_date: date,
-      };
-      newState[action.payload._id].items = [...state[action.payload._id].items];
-
+      newState[action.payload.new_name] = [...state[action.payload.old_name]];
+      delete newState[action.payload.old_name];
       return newState;
     }
     case 'box-delete': {
@@ -93,21 +82,17 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
     }
     case 'box-item-add': {
       const newState = JSON.parse(JSON.stringify(state));
-      const date = getCurrentDateAndTime();
-      newState[action.payload.box_id].items = [
-        ...state[action.payload.box_id].items,
+      newState[action.payload.box_name] = [
+        ...state[action.payload.box_name],
         action.payload.item_id,
       ];
-      newState[action.payload.box_id].modified_date = date;
       return newState;
     }
     case 'box-item-delete': {
       const newState = JSON.parse(JSON.stringify(state));
-      const date = getCurrentDateAndTime();
-      newState[action.payload.box_id].items = newState[action.payload.box_id].items.filter(
+      newState[action.payload.box_name] = newState[action.payload.box_name].filter(
         (id: string) => id !== action.payload.item_id
       );
-      newState[action.payload.box_id].modified_date = date;
       return newState;
     }
     default:
@@ -117,19 +102,12 @@ const boxReducer = (state: BoxState = {}, action: BoxAction) => {
 
 const workReducer = (
   // eslint-disable-next-line default-param-last
-  state: WorkState = { _id: '', boxOrder: [], currentBox: '' },
+  state: WorkState = { currentBox: '' },
   action: WorkAction
 ) => {
   switch (action.type) {
-    case 'work-init':
-      return { ...action.payload, boxOrder: [...action.payload.boxOrder] };
-    case 'work-box-order-add':
-      return { ...state, boxOrder: [...state.boxOrder, action.payload] };
-    case 'work-box-order-delete':
-      return { ...state, boxOrder: state.boxOrder.filter(id => id !== action.payload) };
-    case 'work-current-box-add':
     case 'work-current-box-update':
-      return { ...state, currentBox: action.payload };
+      return { currentBox: action.payload };
     default:
       return state;
   }

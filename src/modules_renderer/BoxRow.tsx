@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectorCurrentBoxId, selectorMessages, selectorOrderedBoxes } from './selector';
+import { selectorCurrentBoxName, selectorMessages, selectorOrderedBoxes } from './selector';
 import { BoxColumn } from './BoxColumn';
 import './BoxRow.css';
 import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
@@ -8,10 +8,10 @@ import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
 export const BoxRow = () => {
   const [nameValue, setName] = useState('');
 
-  const currentBoxId = useSelector(selectorCurrentBoxId);
+  const currentBoxName = useSelector(selectorCurrentBoxName);
   const boxes = useSelector(selectorOrderedBoxes);
   const boxList = boxes.map(box => (
-    <BoxColumn box={box} currentBoxId={currentBoxId}></BoxColumn>
+    <BoxColumn box={box} currentBoxName={currentBoxName}></BoxColumn>
   ));
 
   const messages = useSelector(selectorMessages);
@@ -22,7 +22,7 @@ export const BoxRow = () => {
     if (nameValue === '') {
       return;
     }
-    const sameName = boxes.filter(box => box.name === nameValue);
+    const sameName = boxes.filter(box => box === nameValue);
     if (sameName.length > 0) {
       return;
     }
@@ -35,18 +35,18 @@ export const BoxRow = () => {
     if (nameValue === '') {
       return;
     }
-    const sameName = boxes.filter(box => box.name === nameValue);
+    const sameName = boxes.filter(box => box === nameValue);
     if (sameName.length > 0) {
       return;
     }
-    dispatch(boxRenameAction(currentBoxId, nameValue));
+    dispatch(boxRenameAction(currentBoxName, nameValue));
     setName('');
     document.getElementById('boxRenameDialog')!.removeAttribute('open');
-  }, [currentBoxId, nameValue, dispatch]);
+  }, [currentBoxName, nameValue, dispatch]);
 
   const deleteBox = useCallback(() => {
-    dispatch(boxDeleteAction(currentBoxId));
-  }, [currentBoxId, dispatch]);
+    dispatch(boxDeleteAction(currentBoxName));
+  }, [currentBoxName, dispatch]);
 
   return (
     <div styleName='boxRow'>

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
-import { AppInfo, Box, Item, WorkState } from './modules_common/store.types';
+import { AppInfo, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 
 // eslint-disable-next-line complexity
@@ -12,9 +12,9 @@ window.addEventListener('message', event => {
   switch (event.data.command) {
     case 'initialize-store': {
       const items: { [key: string]: Item } = event.data.items;
-      const boxes: { [key: string]: Box } = event.data.boxes;
-      const workState: WorkState = event.data.workState;
-
+      const boxes: { [key: string]: string[] } = event.data.boxes;
+      const boxArray = Object.keys(boxes).sort();
+      const currentBox = boxArray[0];
       inventoryStore.dispatch({
         type: 'item-init',
         payload: items,
@@ -24,8 +24,8 @@ window.addEventListener('message', event => {
         payload: boxes,
       });
       inventoryStore.dispatch({
-        type: 'work-init',
-        payload: workState,
+        type: 'work-current-box-update',
+        payload: currentBox,
       });
 
       const appInfo = (event.data.settings.temporalSettings.app as unknown) as AppInfo;

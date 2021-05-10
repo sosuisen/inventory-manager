@@ -1,7 +1,8 @@
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
-import { Box, InventoryState, Item, WorkState } from '../modules_common/store.types';
+import { InventoryState, Item, WorkState } from '../modules_common/store.types';
 import { generateId } from '../modules_common/utils';
+import { getSettings } from '../modules_main/store.settings';
 import window from './window';
 
 export interface InventoryActionBase {
@@ -21,6 +22,7 @@ export interface ItemAddAction extends InventoryActionBase {
   payload: {
     _id: string;
     name: string;
+    box: string;
   };
 }
 
@@ -30,6 +32,7 @@ export interface ItemUpdateAction extends InventoryActionBase {
     _id: string;
     name?: string;
     takeout?: boolean;
+    box?: string;
   };
 }
 
@@ -38,87 +41,6 @@ export interface ItemUpdateAction extends InventoryActionBase {
  */
 export interface ItemDeleteAction extends InventoryActionBase {
   type: 'item-delete';
-  payload: string;
-}
-
-export interface BoxInitAction extends InventoryActionBase {
-  type: 'box-init';
-  payload: {
-    [key: string]: Box;
-  };
-}
-
-export interface BoxAddAction extends InventoryActionBase {
-  type: 'box-add';
-  payload: {
-    _id: string;
-    name: string;
-  };
-}
-
-export interface BoxUpdateAction extends InventoryActionBase {
-  type: 'box-update';
-  payload: {
-    _id: string;
-    name: string;
-  };
-}
-
-export interface BoxDeleteAction extends InventoryActionBase {
-  type: 'box-delete';
-  payload: string;
-}
-
-export interface BoxItemAddAction extends InventoryActionBase {
-  type: 'box-item-add';
-  payload: {
-    box_id: string;
-    item_id: string;
-  };
-}
-
-export interface BoxItemDeleteAction extends InventoryActionBase {
-  type: 'box-item-delete';
-  payload: {
-    box_id: string;
-    item_id: string;
-  };
-}
-
-export interface WorkInitAction extends InventoryActionBase {
-  type: 'work-init';
-  payload: WorkState;
-}
-
-/**
- * payload: _id of box
- */
-export interface WorkBoxOrderAddAction extends InventoryActionBase {
-  type: 'work-box-order-add';
-  payload: string;
-}
-
-/**
- * payload: _id of box
- */
-export interface WorkBoxOrderDeleteAction extends InventoryActionBase {
-  type: 'work-box-order-delete';
-  payload: string;
-}
-
-/**
- * payload: _id of box
- */
-export interface WorkCurrentBoxAddAction extends InventoryActionBase {
-  type: 'work-current-box-add';
-  payload: string;
-}
-
-/**
- * payload: _id of box
- */
-export interface WorkCurrentBoxUpdateAction extends InventoryActionBase {
-  type: 'work-current-box-update';
   payload: string;
 }
 
@@ -136,12 +58,59 @@ export type BoxAction =
   | BoxItemAddAction
   | BoxItemDeleteAction;
 
-export type WorkAction =
-  | WorkInitAction
-  | WorkBoxOrderAddAction
-  | WorkBoxOrderDeleteAction
-  | WorkCurrentBoxAddAction
-  | WorkCurrentBoxUpdateAction;
+export interface BoxInitAction extends InventoryActionBase {
+  type: 'box-init';
+  payload: {
+    [key: string]: string[];
+  };
+}
+
+export interface BoxAddAction extends InventoryActionBase {
+  type: 'box-add';
+  payload: {
+    name: string;
+  };
+}
+export interface BoxUpdateAction extends InventoryActionBase {
+  type: 'box-update';
+  payload: {
+    old_name: string;
+    new_name: string;
+  };
+}
+
+export interface BoxDeleteAction extends InventoryActionBase {
+  type: 'box-delete';
+  payload: string;
+}
+
+export interface BoxItemAddAction extends InventoryActionBase {
+  type: 'box-item-add';
+  payload: {
+    box_name: string;
+    item_id: string;
+  };
+}
+
+export interface BoxItemDeleteAction extends InventoryActionBase {
+  type: 'box-item-delete';
+  payload: {
+    box_name: string;
+    item_id: string;
+  };
+}
+
+export interface WorkInitAction extends InventoryActionBase {
+  type: 'work-init';
+  payload: WorkState;
+}
+
+export interface WorkCurrentBoxUpdateAction extends InventoryActionBase {
+  type: 'work-current-box-update';
+  payload: string;
+}
+
+export type WorkAction = WorkInitAction | WorkCurrentBoxUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
@@ -149,7 +118,7 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
  * Action creators (redux-thunk)
  */
 
-export const itemAddAction = (boxId: string, nameValue: string) => {
+export const itemAddAction = (boxName: string, nameValue: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
@@ -161,36 +130,62 @@ export const itemAddAction = (boxId: string, nameValue: string) => {
       payload: {
         _id: _id,
         name: nameValue,
+        box: boxName,
       },
     };
     dispatch(itemAction);
+
+    const box = getState().box[boxName];
+    if (!box) {
+      const boxAction: BoxAddAction = {
+        type: 'box-add',
+        payload: {
+          name: boxName,
+        },
+      };
+      dispatch(boxAction);
+    }
+
+    const boxAction: BoxItemAddAction = {
+      type: 'box-item-add',
+      payload: {
+        box_name: boxName,
+        item_id: _id,
+      },
+    };
+    dispatch(boxAction);
+
     const newItem = getState().item[_id];
     const itemCommand: DatabaseCommand = {
       action: 'item-add',
       data: newItem,
     };
     window.api.db(itemCommand);
-
-    const boxAction: BoxItemAddAction = {
-      type: 'box-item-add',
-      payload: {
-        box_id: boxId,
-        item_id: _id,
-      },
-    };
-    dispatch(boxAction);
-
-    const newBox = getState().box[boxId];
-    const boxCommand: DatabaseCommand = {
-      action: 'box-update',
-      data: newBox,
-    };
-    window.api.db(boxCommand);
   };
 };
 
-export const itemDeleteAction = (boxId: string, itemId: string) => {
+export const itemDeleteAction = (boxName: string, itemId: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (getState().box[boxName].length === 1) {
+      const name = getState().settings.messages.firstItemName;
+      const itemAction: ItemUpdateAction = {
+        type: 'item-update',
+        payload: {
+          _id: itemId,
+          name,
+          takeout: false,
+        },
+      };
+      dispatch(itemAction);
+      const newItem = getState().item[itemId];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-update',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+      return;
+    }
+
     const itemAction: ItemDeleteAction = {
       type: 'item-delete',
       payload: itemId,
@@ -200,7 +195,7 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
     const boxAction: BoxItemDeleteAction = {
       type: 'box-item-delete',
       payload: {
-        box_id: boxId,
+        box_name: boxName,
         item_id: itemId,
       },
     };
@@ -211,13 +206,6 @@ export const itemDeleteAction = (boxId: string, itemId: string) => {
       data: itemId,
     };
     window.api.db(itemDeleteCommand);
-
-    const newBox = getState().box[boxId];
-    const boxCommand: DatabaseCommand = {
-      action: 'box-update',
-      data: newBox,
-    };
-    window.api.db(boxCommand);
   };
 };
 
@@ -271,103 +259,110 @@ export const toggleTakeoutAction = (id: string) => {
 
 export const boxAddAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    // put()
     const _id = generateId();
+    const itemName = getState().settings.messages.firstItemName;
+    const itemAction: ItemAddAction = {
+      type: 'item-add',
+      payload: {
+        _id: _id,
+        name: itemName,
+        box: name,
+      },
+    };
+    dispatch(itemAction);
+
     const boxAction: BoxAddAction = {
       type: 'box-add',
       payload: {
-        _id: _id,
-        name,
+        name: name,
       },
     };
     dispatch(boxAction);
 
-    const newBox = getState().box[_id];
-    const boxCreateCommand: DatabaseCommand = {
-      action: 'box-add',
-      data: newBox,
+    const boxItemAction: BoxItemAddAction = {
+      type: 'box-item-add',
+      payload: {
+        box_name: name,
+        item_id: _id,
+      },
     };
-    window.api.db(boxCreateCommand);
-
-    const workBoxOrderAction: WorkBoxOrderAddAction = {
-      type: 'work-box-order-add',
-      payload: _id,
-    };
-    dispatch(workBoxOrderAction);
+    dispatch(boxItemAction);
 
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: _id,
+      payload: name,
     };
     dispatch(workCurrentBoxAction);
 
-    const newWork = getState().work;
-    const workCommand: DatabaseCommand = {
-      action: 'work-update',
-      data: newWork,
+    const newItem = getState().item[_id];
+    const itemCommand: DatabaseCommand = {
+      action: 'item-add',
+      data: newItem,
     };
-    window.api.db(workCommand);
+    window.api.db(itemCommand);
   };
 };
 
-export const boxRenameAction = (_id: string, name: string) => {
+export const boxRenameAction = (old_name: string, new_name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    // put()
+    const items = getState().box[old_name];
+    items.forEach(_id => {
+      const itemAction: ItemUpdateAction = {
+        type: 'item-update',
+        payload: {
+          _id: _id,
+          box: new_name,
+        },
+      };
+      dispatch(itemAction);
+      const newItem = getState().item[_id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-update',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+    });
     const boxAction: BoxUpdateAction = {
       type: 'box-update',
       payload: {
-        _id: _id,
-        name,
+        old_name,
+        new_name,
       },
     };
     dispatch(boxAction);
-
-    const newBox = getState().box[_id];
-    const boxUpdateCommand: DatabaseCommand = {
-      action: 'box-update',
-      data: newBox,
-    };
-    window.api.db(boxUpdateCommand);
   };
 };
 
-export const boxDeleteAction = (_id: string) => {
+export const boxDeleteAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
-    if (getState().box[_id].items.length > 0) {
+    const items = getState().box[name];
+    if (
+      items.length > 1 ||
+      (items.length === 1 &&
+        getState().item[items[0]].name !== getState().settings.messages.firstItemName)
+    ) {
       document.getElementById('alertDialog')!.setAttribute('open', 'true');
       return;
     }
     // Cannot delete if the box is the last one.
-    const boxOrder = getState().work.boxOrder;
-    if (boxOrder.length === 1) {
+    const boxes = Object.keys(getState().box).sort();
+    if (boxes.length === 1) {
       return;
     }
-    let prevBox = boxOrder[0];
-    for (let i = 0; i < boxOrder.length; i++) {
-      if (boxOrder[i] === _id) {
+    let prevBox = boxes[0];
+    for (let i = 0; i < boxes.length; i++) {
+      if (boxes[i] === name) {
         break;
       }
-      prevBox = boxOrder[i];
+      prevBox = boxes[i];
     }
 
     const boxAction: BoxDeleteAction = {
       type: 'box-delete',
-      payload: _id,
+      payload: name,
     };
     dispatch(boxAction);
-
-    const boxCommand: DatabaseCommand = {
-      action: 'box-delete',
-      data: _id,
-    };
-    window.api.db(boxCommand);
-
-    const workDeleteBoxAction: WorkBoxOrderDeleteAction = {
-      type: 'work-box-order-delete',
-      payload: _id,
-    };
-    dispatch(workDeleteBoxAction);
 
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
@@ -375,28 +370,28 @@ export const boxDeleteAction = (_id: string) => {
     };
     dispatch(workCurrentBoxAction);
 
-    const newWork = getState().work;
-    const workCommand: DatabaseCommand = {
-      action: 'work-update',
-      data: newWork,
-    };
-    window.api.db(workCommand);
+    if (items.length === 1) {
+      const itemAction: ItemDeleteAction = {
+        type: 'item-delete',
+        payload: items[0],
+      };
+      dispatch(itemAction);
+
+      const itemDeleteCommand: DatabaseCommand = {
+        action: 'item-delete',
+        data: items[0],
+      };
+      window.api.db(itemDeleteCommand);
+    }
   };
 };
 
-export const boxSelectAction = (_id: string) => {
+export const boxSelectAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const workAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: _id,
+      payload: name,
     };
     dispatch(workAction);
-
-    const newWork = getState().work;
-    const workCommand: DatabaseCommand = {
-      action: 'work-update',
-      data: newWork,
-    };
-    window.api.db(workCommand);
   };
 };

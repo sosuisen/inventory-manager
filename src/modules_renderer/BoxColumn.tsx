@@ -2,21 +2,20 @@ import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { boxSelectAction } from './action';
 import './BoxColumn.css';
-import { Box } from '../modules_common/store.types';
 
-export const BoxColumn = (prop: { box: Box; currentBoxId: string }) => {
+export const BoxColumn = (prop: { box: string; currentBoxName: string }) => {
   const dispatch = useDispatch();
 
   const selectBox = useCallback(() => {
-    dispatch(boxSelectAction(prop.box._id));
-  }, [prop.box._id, dispatch]);
+    dispatch(boxSelectAction(prop.box));
+  }, [prop.box, dispatch]);
 
   return (
     <div
-      styleName={prop.box._id === prop.currentBoxId ? 'col selected' : 'col'}
+      styleName={prop.box === prop.currentBoxName ? 'col selected' : 'col'}
       onClick={selectBox}
     >
-      {prop.box.name}
+      {prop.box}
     </div>
   );
 };

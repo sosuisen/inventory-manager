@@ -22,6 +22,6 @@ export type InventoryActionType = ItemActionType | BoxActionType | WorkActionTyp
  * Action to Database
  */
 export type DatabaseCommand = {
-  action: InventoryActionType;
+  action: ItemActionType;
   data: any;
 };

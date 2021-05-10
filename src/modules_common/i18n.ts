@@ -7,6 +7,7 @@
  */
 
 type MessagesMain = {
+  firstItemName: string;
   firstBoxName: string;
   databaseCreateError: string;
   databaseOpenError: string;
@@ -42,6 +43,7 @@ const LanguagesCommon: MessagesLanguage = {
 
 export const English: Messages = {
   ...LanguagesCommon,
+  firstItemName: 'Please enter new item.',
   firstBoxName: 'MyBox',
   databaseCreateError: 'Error: Cannot create database',
   databaseOpenError: 'Error: Cannot open database',
@@ -63,6 +65,7 @@ export const English: Messages = {
 
 export const Japanese: Messages = {
   ...LanguagesCommon,
+  firstItemName: '新しいアイテムを入力してください',
   firstBoxName: 'マイボックス',
   databaseCreateError: 'エラー：データベースを作成できませんでした。',
   databaseOpenError: 'エラー: データベースを開くことができませんでした。',

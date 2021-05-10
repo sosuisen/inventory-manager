@@ -17,15 +17,8 @@ export interface AppInfo {
 export interface Item {
   _id: string;
   name: string;
+  box: string;
   takeout: boolean;
-  created_date: string;
-  modified_date: string;
-}
-
-export interface Box {
-  _id: string;
-  name: string;
-  items: string[];
   created_date: string;
   modified_date: string;
 }
@@ -35,12 +28,10 @@ export type ItemState = {
 };
 
 export type BoxState = {
-  [_id: string]: Box;
+  [name: string]: string[];
 };
 
 export type WorkState = {
-  _id: string;
-  boxOrder: string[];
   currentBox: string;
 };
 

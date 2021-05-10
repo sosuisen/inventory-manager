@@ -12,16 +12,12 @@ import {
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
-import { Box, Item, WorkState } from './modules_common/store.types';
+import { Item } from './modules_common/store.types';
 import { generateId, getCurrentDateAndTime } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
-let items: Collection;
-let boxes: Collection;
-let works: Collection;
-const loadedItems: { [key: string]: Item } = {};
-const loadedBoxes: { [key: string]: Box } = {};
-let loadedWorkState: WorkState;
+const items: { [key: string]: Item } = {};
+const boxes: { [key: string]: string[] } = {};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -57,13 +53,7 @@ const createWindow = (): void => {
   }
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send(
-      'initialize-store',
-      loadedItems,
-      loadedBoxes,
-      loadedWorkState,
-      settingsStore.getState()
-    );
+    mainWindow.webContents.send('initialize-store', items, boxes, settingsStore.getState());
     subscribeSettingsStore(mainWindow);
 
     const unsubscribe = subscribeSettingsStore(mainWindow);
@@ -109,9 +99,6 @@ const init = async () => {
   if (!gitDDB) {
     return;
   }
-  items = gitDDB.collection('item');
-  boxes = gitDDB.collection('box');
-  works = gitDDB.collection('work');
 
   if (os.platform() === 'win32') {
     dotenv.config({ path: 'c:\\inventory_manager_env' });
@@ -145,7 +132,7 @@ const init = async () => {
     await gitDDB.sync(remoteOptions);
   }
 
-  const allItems = await items.allDocs({ include_docs: true }).catch(e => {
+  const allItems = await gitDDB.allDocs({ include_docs: true }).catch(e => {
     showErrorDialog('databaseOpenError');
     app.exit();
   });
@@ -155,68 +142,31 @@ const init = async () => {
     allItems.rows?.forEach(item => {
       if (item.doc) {
         const doc = (item.doc as unknown) as Item;
-        loadedItems[doc._id] = doc;
-      }
-    });
-  }
-
-  const allBoxes = await boxes.allDocs({ include_docs: true }).catch(e => {
-    showErrorDialog('databaseOpenError');
-    app.exit();
-  });
-  if (!allBoxes) return;
-
-  if (allBoxes.total_rows > 0) {
-    allBoxes.rows?.forEach(box => {
-      if (box.doc) {
-        const doc = (box.doc as unknown) as Box;
-        loadedBoxes[doc._id] = doc;
+        items[doc._id] = doc;
+        if (!boxes[doc.box]) {
+          boxes[doc.box] = [];
+        }
+        boxes[doc.box].push(doc._id);
       }
     });
   }
   else {
-    const date = getCurrentDateAndTime();
     const _id = generateId();
-    const firstBox: Box = {
-      _id: _id,
-      name: getSettings().temporalSettings.messages.firstBoxName,
-      items: [],
+    const name = getSettings().temporalSettings.messages.firstItemName;
+    const box = getSettings().temporalSettings.messages.firstBoxName;
+    const date = getCurrentDateAndTime();
+    const firstDoc: Item = {
+      _id,
+      name,
+      box,
       created_date: date,
       modified_date: date,
+      takeout: false,
     };
-    await boxes.put(firstBox);
-    firstBox._id = _id;
-    loadedBoxes[firstBox._id] = firstBox;
+    items[firstDoc._id] = firstDoc;
+    boxes[box] = [];
+    boxes[box].push(_id);
   }
-
-  const workId = 'user01';
-  loadedWorkState = ((await works.get(workId).catch(() => {
-    showErrorDialog('databaseOpenError');
-    app.exit();
-  })) as unknown) as WorkState;
-
-  if (loadedWorkState === undefined) {
-    loadedWorkState = {
-      _id: workId,
-      boxOrder: Object.keys(loadedBoxes),
-      currentBox: Object.keys(loadedBoxes)[0],
-    };
-    const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
-    await works.put(workStateForSave);
-  }
-  else if (
-    loadedWorkState.boxOrder.length === 0 ||
-    loadedWorkState.currentBox === undefined
-  ) {
-    loadedWorkState = {
-      _id: workId,
-      boxOrder: Object.keys(loadedBoxes),
-      currentBox: loadedWorkState.boxOrder[0],
-    };
-    const workStateForSave = JSON.parse(JSON.stringify(loadedWorkState));
-    await works.put(workStateForSave);
-  }
-
   createWindow();
 };
 
@@ -250,43 +200,23 @@ app.on('activate', async () => {
 // eslint-disable-next-line complexity
 ipcMain.handle('db', (e, command: DatabaseCommand) => {
   let collection: Collection;
-  let method = '';
+  const method = '';
   switch (command.action) {
     case 'item-add':
-    case 'item-update':
-      collection = items;
-      method = 'put';
+    case 'item-update': {
+      const jsonObj = (command.data as unknown) as { _id: string };
+      gitDDB
+        .put(jsonObj)
+        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
-    case 'item-delete':
-      collection = items;
-      method = 'delete';
+    }
+    case 'item-delete': {
+      const id = command.data;
+      gitDDB
+        .delete(id)
+        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
-    case 'box-add':
-    case 'box-update':
-      collection = boxes;
-      method = 'put';
-      break;
-    case 'box-delete':
-      collection = boxes;
-      method = 'delete';
-      break;
-    case 'work-update':
-      collection = works;
-      method = 'put';
-      break;
+    }
     default:
-      return;
-  }
-  if (method === 'put') {
-    const jsonObj = (command.data as unknown) as { _id: string };
-    collection
-      .put(jsonObj)
-      .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
-  }
-  else if (method === 'delete') {
-    const id = command.data;
-    collection
-      .delete(id)
-      .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
   }
 });
