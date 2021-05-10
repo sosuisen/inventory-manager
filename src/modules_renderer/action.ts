@@ -330,6 +330,12 @@ export const boxRenameAction = (old_name: string, new_name: string) => {
       },
     };
     dispatch(boxAction);
+
+    const workAction: WorkCurrentBoxUpdateAction = {
+      type: 'work-current-box-update',
+      payload: new_name,
+    };
+    dispatch(workAction);
   };
 };
 
