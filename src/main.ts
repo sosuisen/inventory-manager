@@ -134,7 +134,7 @@ const init = async () => {
     await gitDDB.sync(remoteOptions);
   }
 
-  if (remoteOptions) {
+  if (remoteOptions && remoteOptions.remote_url) {
     const sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
     sync.on('localChange', (changes: ChangedFile[]) => {
       mainWindow.webContents.send('sync', changes);
