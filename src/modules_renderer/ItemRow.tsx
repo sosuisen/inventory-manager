@@ -42,6 +42,7 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
         <input
           type='text'
           styleName='nameField'
+          placeholder={messages.firstItemName}
           className='nameField'
           value={nameValue}
           onChange={e => setName(e.target.value)}

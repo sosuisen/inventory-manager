@@ -161,7 +161,7 @@ const init = async () => {
   }
   else {
     const _id = generateId();
-    const name = getSettings().temporalSettings.messages.firstItemName;
+    const name = '';
     const box = getSettings().temporalSettings.messages.firstBoxName;
     const date = getCurrentDateAndTime();
     const firstDoc: Item = {

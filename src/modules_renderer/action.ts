@@ -167,7 +167,7 @@ export const itemAddAction = (boxName: string, nameValue: string) => {
 export const itemDeleteAction = (boxName: string, itemId: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (getState().box[boxName].length === 1) {
-      const name = getState().settings.messages.firstItemName;
+      const name = '';
       const itemAction: ItemUpdateAction = {
         type: 'item-update',
         payload: {
@@ -260,7 +260,7 @@ export const toggleTakeoutAction = (id: string) => {
 export const boxAddAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const _id = generateId();
-    const itemName = getState().settings.messages.firstItemName;
+    const itemName = '';
     const itemAction: ItemAddAction = {
       type: 'item-add',
       payload: {
@@ -337,11 +337,7 @@ export const boxDeleteAction = (name: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[name];
-    if (
-      items.length > 1 ||
-      (items.length === 1 &&
-        getState().item[items[0]].name !== getState().settings.messages.firstItemName)
-    ) {
+    if (items.length > 1 || (items.length === 1 && getState().item[items[0]].name !== '')) {
       document.getElementById('alertDialog')!.setAttribute('open', 'true');
       return;
     }
