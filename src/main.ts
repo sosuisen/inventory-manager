@@ -2,7 +2,13 @@ import * as path from 'path';
 import os from 'os';
 import dotenv from 'dotenv';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { ChangedFile, Collection, GitDocumentDB, RemoteOptions } from 'git-documentdb';
+import {
+  ChangedFile,
+  Collection,
+  GitDocumentDB,
+  RemoteOptions,
+  Sync,
+} from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
   getSettings,
@@ -16,6 +22,7 @@ import { Item } from './modules_common/store.types';
 import { generateId, getCurrentDateAndTime } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
+let sync: Sync;
 const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: string[] } = {};
 
@@ -102,11 +109,15 @@ const init = async () => {
     return;
   }
 
+  let remoteConfigFile = 'inventory_manager_env';
+  if (!app.isPackaged) {
+    remoteConfigFile += '_dev';
+  }
   if (os.platform() === 'win32') {
-    dotenv.config({ path: 'c:\\inventory_manager_env' });
+    dotenv.config({ path: path.resolve('c:\\', remoteConfigFile) });
   }
   else {
-    dotenv.config({ path: '/tmp/inventory_manager_env' });
+    dotenv.config({ path: path.resolve('/tmp/', remoteConfigFile) });
   }
   const remote_url = process.env.INVENTORY_MANAGER_URL;
   const personal_access_token = process.env.INVENTORY_MANAGER_TOKEN;
@@ -135,7 +146,7 @@ const init = async () => {
   }
 
   if (remoteOptions && remoteOptions.remote_url) {
-    const sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
+    sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
     sync.on('localChange', (changes: ChangedFile[]) => {
       mainWindow.webContents.send('sync', changes);
     });
@@ -216,6 +227,11 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
       const jsonObj = (command.data as unknown) as { _id: string };
       gitDDB
         .put(jsonObj)
+        .then(() => {
+          if (sync) {
+            sync.trySync();
+          }
+        })
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
@@ -223,6 +239,11 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
       const id = command.data;
       gitDDB
         .delete(id)
+        .then(() => {
+          if (sync) {
+            sync.trySync();
+          }
+        })
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }

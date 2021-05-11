@@ -48,6 +48,13 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
       };
       return newState;
     }
+    case 'item-replace': {
+      const newState = { ...state };
+      newState[action.payload._id] = {
+        ...action.payload,
+      };
+      return newState;
+    }
     case 'item-delete': {
       const newState = { ...state };
       delete newState[action.payload];
@@ -59,7 +66,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
 };
 
 // eslint-disable-next-line default-param-last
-const boxReducer = (state: BoxState = {}, action: BoxAction) => {
+const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
   switch (action.type) {
     case 'box-init': {
       return { ...action.payload };

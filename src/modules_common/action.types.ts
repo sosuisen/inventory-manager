@@ -1,7 +1,12 @@
 /**
  * Redux Action Types
  */
-type ItemActionType = 'item-init' | 'item-add' | 'item-update' | 'item-delete';
+type ItemActionType =
+  | 'item-init'
+  | 'item-add'
+  | 'item-update'
+  | 'item-replace'
+  | 'item-delete';
 type BoxActionType =
   | 'box-init'
   | 'box-add'

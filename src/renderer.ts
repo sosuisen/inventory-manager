@@ -1,45 +1,38 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { ChangedFile } from 'git-documentdb';
+import { useDispatch } from 'react-redux';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
+import {
+  boxRenameAction,
+  itemAddAction,
+  itemDeleteAction,
+  itemReplaceAction,
+} from './modules_renderer/action';
 
 const syncActionBuilder = (changes: ChangedFile[]) => {
-  // itemAddAction: ItemAddAction, BoxItemAddAction
-  // itemDeleteAction: ItemDeleteAction, BoxItemDeleteAction
-  // itemNameUpdateAction: ItemUpdateAction
-  // toggleTakeoutAction: ItemUpdateAction
-  // boxAddAction: BoxAddAction, WorkBoxOrderAddAction, WorkCurrentBoxUpdateAction
-  // boxRenameAction: BoxUpdateAction
-  // boxDeleteAction: BoxDeleteAction, WorkBoxOrderDeleteAction, WorkCurrentBoxUpdateAction
-  // boxSelectAction: WorkCurrentBoxUpdateAction
+  const dispatch = useDispatch();
   // eslint-disable-next-line complexity
   changes.forEach(file => {
-    if (file.data.id.startsWith('item/')) {
-      if (file.operation.startsWith('create')) {
+    if (file.operation.startsWith('create')) {
+      dispatch(itemAddAction(file.data.doc!.box, file.data.doc!.name, false));
+    }
+    else if (file.operation.startsWith('update')) {
+      const oldBox = inventoryStore.getState().item[file.data.id].box;
+      const newBox = file.data.doc!.box;
+      if (oldBox === newBox) {
+        dispatch(itemReplaceAction(file.data.doc as Item, false));
       }
-      else if (file.operation.startsWith('update')) {
-      }
-      else if (file.operation.startsWith('delete')) {
+      else {
+        // Currently, this occurs only when box was renamed in remote site.
+        dispatch(boxRenameAction(oldBox, newBox, false));
       }
     }
-    else if (file.data.id.startsWith('box/')) {
-      if (file.operation.startsWith('create')) {
-      }
-      else if (file.operation.startsWith('update')) {
-      }
-      else if (file.operation.startsWith('delete')) {
-      }
-    }
-    else if (file.data.id.startsWith('work/')) {
-      if (file.operation.startsWith('create')) {
-      }
-      else if (file.operation.startsWith('update')) {
-      }
-      else if (file.operation.startsWith('delete')) {
-      }
+    else if (file.operation.startsWith('delete')) {
+      dispatch(itemDeleteAction(file.data.doc!.box, file.data.id, false, true));
     }
   });
 };

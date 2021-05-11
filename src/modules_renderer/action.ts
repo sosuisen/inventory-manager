@@ -2,7 +2,6 @@ import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import { InventoryState, Item, WorkState } from '../modules_common/store.types';
 import { generateId } from '../modules_common/utils';
-import { getSettings } from '../modules_main/store.settings';
 import window from './window';
 
 export interface InventoryActionBase {
@@ -36,6 +35,11 @@ export interface ItemUpdateAction extends InventoryActionBase {
   };
 }
 
+export interface ItemReplaceAction extends InventoryActionBase {
+  type: 'item-replace';
+  payload: Item;
+}
+
 /**
  * payload: _id of item
  */
@@ -48,6 +52,7 @@ export type ItemAction =
   | ItemInitAction
   | ItemAddAction
   | ItemUpdateAction
+  | ItemReplaceAction
   | ItemDeleteAction;
 
 export type BoxAction =
@@ -118,7 +123,7 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
  * Action creators (redux-thunk)
  */
 
-export const itemAddAction = (boxName: string, nameValue: string) => {
+export const itemAddAction = (boxName: string, nameValue: string, serialize = true) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
@@ -155,18 +160,25 @@ export const itemAddAction = (boxName: string, nameValue: string) => {
     };
     dispatch(boxAction);
 
-    const newItem = getState().item[_id];
-    const itemCommand: DatabaseCommand = {
-      action: 'item-add',
-      data: newItem,
-    };
-    window.api.db(itemCommand);
+    if (serialize) {
+      const newItem = getState().item[_id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-add',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+    }
   };
 };
 
-export const itemDeleteAction = (boxName: string, itemId: string) => {
+export const itemDeleteAction = (
+  boxName: string,
+  itemId: string,
+  serialize = true,
+  forced = false
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (getState().box[boxName].length === 1) {
+    if (!forced && getState().box[boxName].length === 1) {
       const name = '';
       const itemAction: ItemUpdateAction = {
         type: 'item-update',
@@ -177,12 +189,15 @@ export const itemDeleteAction = (boxName: string, itemId: string) => {
         },
       };
       dispatch(itemAction);
-      const newItem = getState().item[itemId];
-      const itemCommand: DatabaseCommand = {
-        action: 'item-update',
-        data: newItem,
-      };
-      window.api.db(itemCommand);
+
+      if (serialize) {
+        const newItem = getState().item[itemId];
+        const itemCommand: DatabaseCommand = {
+          action: 'item-update',
+          data: newItem,
+        };
+        window.api.db(itemCommand);
+      }
       return;
     }
 
@@ -201,15 +216,45 @@ export const itemDeleteAction = (boxName: string, itemId: string) => {
     };
     dispatch(boxAction);
 
-    const itemDeleteCommand: DatabaseCommand = {
-      action: 'item-delete',
-      data: itemId,
-    };
-    window.api.db(itemDeleteCommand);
+    if (getState().box[boxName].length === 0) {
+      // Delete box
+      const boxes = Object.keys(getState().box).sort();
+      let prevBox = boxes[0];
+      for (let i = 0; i < boxes.length; i++) {
+        if (boxes[i] === boxName) {
+          break;
+        }
+        prevBox = boxes[i];
+      }
+      const boxDeleteAction: BoxDeleteAction = {
+        type: 'box-delete',
+        payload: boxName,
+      };
+      dispatch(boxDeleteAction);
+
+      const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
+        type: 'work-current-box-update',
+        payload: prevBox,
+      };
+      dispatch(workCurrentBoxAction);
+    }
+
+    if (serialize) {
+      const itemDeleteCommand: DatabaseCommand = {
+        action: 'item-delete',
+        data: itemId,
+      };
+      window.api.db(itemDeleteCommand);
+    }
   };
 };
 
-export const itemNameUpdateAction = (_id: string, nameValue: string, elm: HTMLElement) => {
+export const itemNameUpdateAction = (
+  _id: string,
+  nameValue: string,
+  elm: HTMLElement,
+  serialize = true
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
@@ -227,17 +272,20 @@ export const itemNameUpdateAction = (_id: string, nameValue: string, elm: HTMLEl
       },
     };
     dispatch(itemAction);
-    const newItem = getState().item[_id];
-    const itemCommand: DatabaseCommand = {
-      action: 'item-update',
-      data: newItem,
-    };
-    window.api.db(itemCommand);
+
+    if (serialize) {
+      const newItem = getState().item[_id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-update',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+    }
     elm.blur();
   };
 };
 
-export const toggleTakeoutAction = (id: string) => {
+export const toggleTakeoutAction = (id: string, serialize = true) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
@@ -248,16 +296,37 @@ export const toggleTakeoutAction = (id: string) => {
     };
     dispatch(itemAction);
 
-    const newItem = getState().item[id];
-    const itemUpdateCommand: DatabaseCommand = {
-      action: 'item-update',
-      data: newItem,
-    };
-    window.api.db(itemUpdateCommand);
+    if (serialize) {
+      const newItem = getState().item[id];
+      const itemUpdateCommand: DatabaseCommand = {
+        action: 'item-update',
+        data: newItem,
+      };
+      window.api.db(itemUpdateCommand);
+    }
   };
 };
 
-export const boxAddAction = (name: string) => {
+export const itemReplaceAction = (item: Item, serialize = true) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const itemAction: ItemReplaceAction = {
+      type: 'item-replace',
+      payload: item,
+    };
+    dispatch(itemAction);
+
+    if (serialize) {
+      const newItem = getState().item[item._id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-update',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+    }
+  };
+};
+
+export const boxAddAction = (name: string, serialize = true) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const _id = generateId();
     const itemName = '';
@@ -294,16 +363,18 @@ export const boxAddAction = (name: string) => {
     };
     dispatch(workCurrentBoxAction);
 
-    const newItem = getState().item[_id];
-    const itemCommand: DatabaseCommand = {
-      action: 'item-add',
-      data: newItem,
-    };
-    window.api.db(itemCommand);
+    if (serialize) {
+      const newItem = getState().item[_id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-add',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
+    }
   };
 };
 
-export const boxRenameAction = (old_name: string, new_name: string) => {
+export const boxRenameAction = (old_name: string, new_name: string, serialize = true) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const items = getState().box[old_name];
     items.forEach(_id => {
@@ -315,12 +386,15 @@ export const boxRenameAction = (old_name: string, new_name: string) => {
         },
       };
       dispatch(itemAction);
-      const newItem = getState().item[_id];
-      const itemCommand: DatabaseCommand = {
-        action: 'item-update',
-        data: newItem,
-      };
-      window.api.db(itemCommand);
+
+      if (serialize) {
+        const newItem = getState().item[_id];
+        const itemCommand: DatabaseCommand = {
+          action: 'item-update',
+          data: newItem,
+        };
+        window.api.db(itemCommand);
+      }
     });
     const boxAction: BoxUpdateAction = {
       type: 'box-update',
@@ -339,7 +413,7 @@ export const boxRenameAction = (old_name: string, new_name: string) => {
   };
 };
 
-export const boxDeleteAction = (name: string) => {
+export const boxDeleteAction = (name: string, serialize = true) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[name];
@@ -379,11 +453,13 @@ export const boxDeleteAction = (name: string) => {
       };
       dispatch(itemAction);
 
-      const itemDeleteCommand: DatabaseCommand = {
-        action: 'item-delete',
-        data: items[0],
-      };
-      window.api.db(itemDeleteCommand);
+      if (serialize) {
+        const itemDeleteCommand: DatabaseCommand = {
+          action: 'item-delete',
+          data: items[0],
+        };
+        window.api.db(itemDeleteCommand);
+      }
     }
   };
 };
