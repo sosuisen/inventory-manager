@@ -35,6 +35,11 @@ export interface ItemUpdateAction extends InventoryActionBase {
   };
 }
 
+export interface ItemInsertAction extends InventoryActionBase {
+  type: 'item-insert';
+  payload: Item;
+}
+
 export interface ItemReplaceAction extends InventoryActionBase {
   type: 'item-replace';
   payload: Item;
@@ -52,16 +57,9 @@ export type ItemAction =
   | ItemInitAction
   | ItemAddAction
   | ItemUpdateAction
+  | ItemInsertAction
   | ItemReplaceAction
   | ItemDeleteAction;
-
-export type BoxAction =
-  | BoxInitAction
-  | BoxAddAction
-  | BoxUpdateAction
-  | BoxDeleteAction
-  | BoxItemAddAction
-  | BoxItemDeleteAction;
 
 export interface BoxInitAction extends InventoryActionBase {
   type: 'box-init';
@@ -104,6 +102,14 @@ export interface BoxItemDeleteAction extends InventoryActionBase {
     item_id: string;
   };
 }
+
+export type BoxAction =
+  | BoxInitAction
+  | BoxAddAction
+  | BoxUpdateAction
+  | BoxDeleteAction
+  | BoxItemAddAction
+  | BoxItemDeleteAction;
 
 export interface WorkInitAction extends InventoryActionBase {
   type: 'work-init';
@@ -201,12 +207,6 @@ export const itemDeleteAction = (
       return;
     }
 
-    const itemAction: ItemDeleteAction = {
-      type: 'item-delete',
-      payload: itemId,
-    };
-    dispatch(itemAction);
-
     const boxAction: BoxItemDeleteAction = {
       type: 'box-item-delete',
       payload: {
@@ -215,6 +215,12 @@ export const itemDeleteAction = (
       },
     };
     dispatch(boxAction);
+
+    const itemAction: ItemDeleteAction = {
+      type: 'item-delete',
+      payload: itemId,
+    };
+    dispatch(itemAction);
 
     if (getState().box[boxName].length === 0) {
       // Delete box
@@ -303,6 +309,45 @@ export const toggleTakeoutAction = (id: string, serialize = true) => {
         data: newItem,
       };
       window.api.db(itemUpdateCommand);
+    }
+  };
+};
+
+export const itemInsertAction = (boxName: string, item: Item, serialize = true) => {
+  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const itemAction: ItemInsertAction = {
+      type: 'item-insert',
+      payload: item,
+    };
+    dispatch(itemAction);
+
+    const box = getState().box[boxName];
+    if (!box) {
+      const boxAction: BoxAddAction = {
+        type: 'box-add',
+        payload: {
+          name: boxName,
+        },
+      };
+      dispatch(boxAction);
+    }
+
+    const boxAction: BoxItemAddAction = {
+      type: 'box-item-add',
+      payload: {
+        box_name: boxName,
+        item_id: item._id,
+      },
+    };
+    dispatch(boxAction);
+
+    if (serialize) {
+      const newItem = getState().item[item._id];
+      const itemCommand: DatabaseCommand = {
+        action: 'item-add',
+        data: newItem,
+      };
+      window.api.db(itemCommand);
     }
   };
 };

@@ -48,6 +48,13 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
       };
       return newState;
     }
+    case 'item-insert': {
+      const newState = { ...state };
+      newState[action.payload._id] = {
+        ...action.payload,
+      };
+      return newState;
+    }
     case 'item-replace': {
       const newState = { ...state };
       newState[action.payload._id] = {

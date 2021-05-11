@@ -5,6 +5,7 @@ type ItemActionType =
   | 'item-init'
   | 'item-add'
   | 'item-update'
+  | 'item-insert'
   | 'item-replace'
   | 'item-delete';
 type BoxActionType =
