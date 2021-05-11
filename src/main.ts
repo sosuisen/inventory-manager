@@ -135,6 +135,7 @@ const init = async () => {
           name: true,
         },
       },
+      conflict_resolve_strategy: 'ours-prop',
       live: true,
     };
   }
