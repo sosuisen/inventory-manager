@@ -130,6 +130,11 @@ const init = async () => {
         personal_access_token,
         private: true,
       },
+      diff_options: {
+        plainTextProperties: {
+          name: true,
+        },
+      },
       live: true,
     };
   }
