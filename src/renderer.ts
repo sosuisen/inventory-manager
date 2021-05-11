@@ -7,7 +7,6 @@ import { AppInfo, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
   boxRenameAction,
-  itemAddAction,
   itemDeleteAction,
   itemInsertAction,
   itemReplaceAction,

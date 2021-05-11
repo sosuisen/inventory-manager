@@ -57,7 +57,7 @@
     "dotenv": "^9.0.0",
     "electron-squirrel-startup": "^1.0.0",
     "electron-store": "^6.0.1",
-    "git-documentdb": "^0.3.0-alpha.4",
+    "git-documentdb": "^0.3.0-alpha.6",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-redux": "^7.2.2",
