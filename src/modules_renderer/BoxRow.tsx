@@ -118,16 +118,7 @@ export const BoxRow = () => {
       <div styleName='header'>
         <i className='fas fa-box-open'></i>
       </div>
-      {boxList}
-      <div
-        styleName='addBoxButton'
-        onClick={() => {
-          document.getElementById('boxNameDialog')!.setAttribute('open', 'true');
-          document.getElementById('nameInputField')!.focus();
-        }}
-      >
-        <i className='far fa-plus-square'></i>
-      </div>
+      <div styleName='boxList'>{boxList}</div>
 
       <div styleName='deleteBoxButton' onClick={deleteBox} title={messages.delete}>
         <i className='far fa-trash-alt'></i>
@@ -142,6 +133,16 @@ export const BoxRow = () => {
         title={messages.changeBoxName}
       >
         <i className='far fa-edit'></i>
+      </div>
+
+      <div
+        styleName='addBoxButton'
+        onClick={() => {
+          document.getElementById('boxNameDialog')!.setAttribute('open', 'true');
+          document.getElementById('nameInputField')!.focus();
+        }}
+      >
+        <i className='far fa-plus-square'></i>
       </div>
     </div>
   );
