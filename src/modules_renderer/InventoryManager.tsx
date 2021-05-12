@@ -18,7 +18,6 @@ export const InventoryManager = () => {
       <InputArea />
       <ItemList />
       <br style={{ clear: 'both' }}></br>
-      <InputArea />
     </div>
   );
 };

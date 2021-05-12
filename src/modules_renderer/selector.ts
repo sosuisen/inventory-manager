@@ -1,4 +1,4 @@
-import { InventoryState } from '../modules_common/store.types';
+import { InventoryState, Item } from '../modules_common/store.types';
 
 export const selectorCurrentBoxName = (state: InventoryState) => state.work.currentBox;
 
@@ -14,18 +14,22 @@ export const selectorOrderedBoxes = (state: InventoryState) => {
   return Object.keys(state.box).sort();
 };
 
-export const selectorCurrentItems = (state: InventoryState) => {
+export const selectorCurrentItems = (state: InventoryState): [Item[], string] => {
   const box = state.box[state.work.currentBox];
   if (box) {
-    return box
+    const items = box
       .map(_id => state.item[_id])
       .sort((a, b) => {
         if (a.created_date > b.created_date) return 1;
         if (a.created_date < b.created_date) return -1;
         return 0;
       });
+    if (items.length > 0) {
+      return [items, items[0].name];
+    }
+    return [items, undefined];
   }
-  return [];
+  return [[], undefined];
 };
 
 export const selectorAppInfo = (state: InventoryState) => {
