@@ -234,6 +234,7 @@ app.on('activate', async () => {
 ipcMain.handle('db', (e, command: DatabaseCommand) => {
   let collection: Collection;
   const method = '';
+  // eslint-disable-next-line default-case
   switch (command.action) {
     case 'item-add':
     case 'item-update': {
@@ -260,6 +261,8 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
-    default:
+    case 'sync': {
+      sync.trySync();
+    }
   }
 });
