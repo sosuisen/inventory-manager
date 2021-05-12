@@ -471,14 +471,19 @@ export const boxDeleteAction = (name: string, serialize = true) => {
     if (boxes.length === 1) {
       return;
     }
-    let prevBox = boxes[0];
-    for (let i = 0; i < boxes.length; i++) {
-      if (boxes[i] === name) {
-        break;
-      }
-      prevBox = boxes[i];
-    }
 
+    let prevBox = boxes[0];
+    if (prevBox === name) {
+      prevBox = boxes[1];
+    }
+    else {
+      for (let i = 0; i < boxes.length; i++) {
+        if (boxes[i] === name) {
+          break;
+        }
+        prevBox = boxes[i];
+      }
+    }
     const boxAction: BoxDeleteAction = {
       type: 'box-delete',
       payload: name,
