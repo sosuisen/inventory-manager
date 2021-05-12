@@ -15,7 +15,7 @@ export const InventoryManager = () => {
       <div styleName='header'>
         <img styleName='appIcon' src={appInfo.iconDataURL}></img>
         {appInfo.name} <span styleName='version'>{appInfo.version}</span>
-        <Sync working={sync.syncWorking} info={sync.syncInfo}></Sync>
+        <Sync synchronizing={sync.synchronizing} info={sync.syncInfo}></Sync>
       </div>
       <BoxRow />
       <InputArea />

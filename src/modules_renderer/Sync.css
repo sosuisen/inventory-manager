@@ -14,6 +14,7 @@
   color: #c0c0c0;
   margin-top: 12px;
   float: right;
+  cursor: pointer;
 }
 
 @keyframes rotate01 {
@@ -27,9 +28,10 @@
   display: inline-block;
   margin: 0;
   padding: 7px 10px;
-  min-width: 120px;
+  min-width: 40px;
   max-width: 100%;
-  font-size: 10px;
+  font-size: 14px;
+  font-family: Meiryo, sans-serif;
   background: #e0edff;
   border-radius: 10px;
   animation: fadeIn 0.7s cubic-bezier(0.33, 1, 0.68, 1) 1 forwards;
@@ -49,9 +51,9 @@
   position: absolute;
   top: 50%;
   left: 100%;
-  margin-top: -15px;
-  border: 15px solid transparent;
-  border-left: 15px solid #e0edff;
+  margin-top: -10px;
+  border: 10px solid transparent;
+  border-left: 10px solid #e0edff;
 }
 
 .balloon p {

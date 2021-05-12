@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
-import { InventoryState, Item, WorkState } from '../modules_common/store.types';
+import { InventoryState, Item, SyncInfo, WorkState } from '../modules_common/store.types';
 import { generateId } from '../modules_common/utils';
 import window from './window';
 
@@ -121,12 +121,21 @@ export interface WorkCurrentBoxUpdateAction extends InventoryActionBase {
   payload: string;
 }
 
-export interface WorkSyncUpdateAction extends InventoryActionBase {
-  type: 'work-sync-update';
-  payload: { syncWorking?: boolean; syncInfo?: string };
+export interface WorkSynchronizingUpdateAction extends InventoryActionBase {
+  type: 'work-synchronizing-update';
+  payload: boolean;
 }
 
-export type WorkAction = WorkInitAction | WorkCurrentBoxUpdateAction | WorkSyncUpdateAction;
+export interface WorkSyncInfoUpdateAction extends InventoryActionBase {
+  type: 'work-sync-info-update';
+  payload: SyncInfo | undefined;
+}
+
+export type WorkAction =
+  | WorkInitAction
+  | WorkCurrentBoxUpdateAction
+  | WorkSynchronizingUpdateAction
+  | WorkSyncInfoUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
@@ -139,7 +148,32 @@ export const itemAddAction = (boxName: string, nameValue: string, serialize = tr
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
     }
-    // put()
+    if (
+      getState().box[boxName].length === 1 &&
+      getState().item[getState().box[boxName][0]].name === ''
+    ) {
+      // Update first empty item
+      const _id = getState().box[boxName][0];
+      const itemAction: ItemUpdateAction = {
+        type: 'item-update',
+        payload: {
+          _id,
+          name: nameValue,
+        },
+      };
+      dispatch(itemAction);
+
+      if (serialize) {
+        const newItem = getState().item[_id];
+        const itemCommand: DatabaseCommand = {
+          action: 'item-update',
+          data: newItem,
+        };
+        window.api.db(itemCommand);
+      }
+      return;
+    }
+
     const _id = generateId();
     const itemAction: ItemAddAction = {
       type: 'item-add',

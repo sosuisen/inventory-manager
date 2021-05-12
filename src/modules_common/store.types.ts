@@ -8,6 +8,12 @@
 
 import { English, Messages } from './i18n';
 
+export type SyncInfo = {
+  create: number;
+  update: number;
+  delete: number;
+};
+
 export interface AppInfo {
   name: string;
   version: string;
@@ -33,8 +39,8 @@ export type BoxState = {
 
 export type WorkState = {
   currentBox: string;
-  syncWorking: boolean;
-  syncInfo: string;
+  synchronizing: boolean;
+  syncInfo?: SyncInfo;
 };
 
 export type MessagesPutAction = {

@@ -58,22 +58,18 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     }
   });
   inventoryStore.dispatch({
-    type: 'work-sync-update',
+    type: 'work-sync-info-update',
     payload: {
-      syncInfo: `${inventoryStore.getState().settings.messages.syncCreate}${
-        counter.create
-      }<br />${inventoryStore.getState().settings.messages.syncUpdate}${counter.update}${
-        inventoryStore.getState().settings.messages.syncDelete
-      }${counter.delete}`,
+      create: counter.create,
+      update: counter.update,
+      delete: counter.delete,
     },
   });
 
   setTimeout(() => {
     inventoryStore.dispatch({
-      type: 'work-sync-update',
-      payload: {
-        syncInfo: '',
-      },
+      type: 'work-sync-info-update',
+      payload: undefined,
     });
   }, 3000);
 };
@@ -125,20 +121,16 @@ window.addEventListener('message', event => {
 
     case 'sync-start': {
       inventoryStore.dispatch({
-        type: 'work-sync-update',
-        payload: {
-          syncWorking: true,
-        },
+        type: 'work-synchronizing-update',
+        payload: true,
       });
       break;
     }
 
     case 'sync-complete': {
       inventoryStore.dispatch({
-        type: 'work-sync-update',
-        payload: {
-          syncWorking: false,
-        },
+        type: 'work-synchronizing-update',
+        payload: false,
       });
       break;
     }

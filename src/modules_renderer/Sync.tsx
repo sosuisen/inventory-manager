@@ -1,16 +1,39 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { DatabaseCommand } from '../modules_common/action.types';
+import { SyncInfo } from '../modules_common/store.types';
+import { selectorMessages } from './selector';
 import './Sync.css';
+import window from './window';
 
-export const Sync = (prop: { working: boolean; info: string }) => {
+const handleClick = () => {
+  const syncCommand: DatabaseCommand = {
+    action: 'sync',
+    data: '',
+  };
+  window.api.db(syncCommand);
+};
+
+export const Sync = (prop: { synchronizing: boolean; info: SyncInfo | undefined }) => {
+  const messages = useSelector(selectorMessages);
+
   return (
     <div styleName='sync'>
-      {prop.info !== '' ? <div styleName='balloon'>{prop.info}</div> : ''}
-      {prop.working ? (
+      {prop.info !== undefined ? (
+        <div styleName='balloon'>
+          {prop.info.create > 0 ? <div>{messages.syncCreate + prop.info.create}</div> : ''}
+          {prop.info.update > 0 ? <div>{messages.syncUpdate + prop.info.update}</div> : ''}
+          {prop.info.delete > 0 ? <div>{messages.syncDelete + prop.info.delete}</div> : ''}
+        </div>
+      ) : (
+        ''
+      )}
+      {prop.synchronizing ? (
         <div styleName='syncIcon'>
           <i className='fas fa-sync'></i>
         </div>
       ) : (
-        <div styleName='syncIconPause'>
+        <div styleName='syncIconPause' onClick={handleClick}>
           <i className='fas fa-sync'></i>
         </div>
       )}

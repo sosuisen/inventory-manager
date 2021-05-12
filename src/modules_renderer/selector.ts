@@ -44,7 +44,7 @@ export const selectorMessages = (state: InventoryState) => {
 
 export const selectorSync = (state: InventoryState) => {
   return {
-    syncWorking: state.work.syncWorking,
+    synchronizing: state.work.synchronizing,
     syncInfo: state.work.syncInfo,
   };
 };
