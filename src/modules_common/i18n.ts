@@ -25,6 +25,9 @@ type MessagesMain = {
   cannotDeleteBoxIfNotEmpty: string;
   changeBoxName: string;
   delete: string;
+  syncCreate: string;
+  syncUpdate: string;
+  syncDelete: string;
 };
 
 type MessagesLanguage = {
@@ -61,6 +64,9 @@ export const English: Messages = {
   cannotDeleteBoxIfNotEmpty: 'A box cannot be deleted if not empty.',
   changeBoxName: 'Change box name',
   delete: 'Delete',
+  syncCreate: 'Create: ',
+  syncUpdate: 'Update: ',
+  syncDelete: 'Delete: ',
 };
 
 export const Japanese: Messages = {
@@ -83,6 +89,9 @@ export const Japanese: Messages = {
   cannotDeleteBoxIfNotEmpty: '空でない箱は削除できません。',
   changeBoxName: '箱の名前を変更',
   delete: '削除',
+  syncCreate: '新規: ',
+  syncUpdate: '更新: ',
+  syncDelete: '削除: ',
 };
 
 export const availableLanguages = ['en', 'ja'];

@@ -33,6 +33,8 @@ export type BoxState = {
 
 export type WorkState = {
   currentBox: string;
+  syncWorking: boolean;
+  syncInfo: string;
 };
 
 export type MessagesPutAction = {

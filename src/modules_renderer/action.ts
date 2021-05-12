@@ -121,7 +121,12 @@ export interface WorkCurrentBoxUpdateAction extends InventoryActionBase {
   payload: string;
 }
 
-export type WorkAction = WorkInitAction | WorkCurrentBoxUpdateAction;
+export interface WorkSyncUpdateAction extends InventoryActionBase {
+  type: 'work-sync-update';
+  payload: { syncWorking?: boolean; syncInfo?: string };
+}
+
+export type WorkAction = WorkInitAction | WorkCurrentBoxUpdateAction | WorkSyncUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 

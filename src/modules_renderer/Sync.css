@@ -1,0 +1,60 @@
+.sync {
+  float: right;
+  font-size: 16px;
+}
+
+.syncIcon {
+  color: #909090;
+  margin-top: 12px;
+  float: right;
+  animation: rotate01 2s linear infinite;
+}
+
+.syncIconPause {
+  color: #c0c0c0;
+  margin-top: 12px;
+  float: right;
+}
+
+@keyframes rotate01 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }  
+}
+
+.balloon {
+  position: absolute;
+  right: 80px;
+  display: inline-block;
+  margin: 0;
+  padding: 7px 10px;
+  min-width: 120px;
+  max-width: 100%;
+  font-size: 10px;
+  background: #e0edff;
+  border-radius: 10px;
+  animation: fadeIn 0.7s cubic-bezier(0.33, 1, 0.68, 1) 1 forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.balloon:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-top: -15px;
+  border: 15px solid transparent;
+  border-left: 15px solid #e0edff;
+}
+
+.balloon p {
+  margin: 0;
+  padding: 0;
+}

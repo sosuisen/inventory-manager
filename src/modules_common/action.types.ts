@@ -15,13 +15,7 @@ type BoxActionType =
   | 'box-delete'
   | 'box-item-add'
   | 'box-item-delete';
-type WorkActionType =
-  | 'work-init'
-  | 'work-box-order-add'
-  | 'work-box-order-delete'
-  | 'work-current-box-add'
-  | 'work-current-box-update'
-  | 'work-update';
+type WorkActionType = 'work-init' | 'work-current-box-update' | 'work-sync-update';
 export type InventoryActionType = ItemActionType | BoxActionType | WorkActionType;
 
 /**

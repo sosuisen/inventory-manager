@@ -135,6 +135,7 @@ const init = async () => {
           name: true,
         },
       },
+      interval: 10000,
       conflict_resolve_strategy: 'ours-prop',
       live: true,
     };
@@ -155,6 +156,12 @@ const init = async () => {
     sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
     sync.on('localChange', (changes: ChangedFile[]) => {
       mainWindow.webContents.send('sync', changes);
+    });
+    sync.on('start', () => {
+      mainWindow.webContents.send('sync-start');
+    });
+    sync.on('complete', () => {
+      mainWindow.webContents.send('sync-complete');
     });
   }
 

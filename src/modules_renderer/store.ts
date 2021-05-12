@@ -116,12 +116,18 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
 
 const workReducer = (
   // eslint-disable-next-line default-param-last
-  state: WorkState = { currentBox: '' },
+  state: WorkState = { currentBox: '', syncWorking: false, syncInfo: '' },
   action: WorkAction
 ) => {
   switch (action.type) {
     case 'work-current-box-update':
-      return { currentBox: action.payload };
+      return { ...state, currentBox: action.payload };
+    case 'work-sync-update':
+      return {
+        ...state,
+        syncWorking: action.payload.syncWorking ?? state.syncWorking,
+        syncInfo: action.payload.syncInfo ?? state.syncInfo,
+      };
     default:
       return state;
   }

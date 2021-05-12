@@ -28,3 +28,11 @@ ipcRenderer.on('initialize-store', (event, items, boxes, settings) => {
 ipcRenderer.on('sync', (event, changes) => {
   window.postMessage({ command: 'sync', changes }, 'file://');
 });
+
+ipcRenderer.on('sync-start', () => {
+  window.postMessage({ command: 'sync-start' }, 'file://');
+});
+
+ipcRenderer.on('sync-complete', () => {
+  window.postMessage({ command: 'sync-complete' }, 'file://');
+});

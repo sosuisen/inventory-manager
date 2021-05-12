@@ -14,7 +14,9 @@ export const selectorOrderedBoxes = (state: InventoryState) => {
   return Object.keys(state.box).sort();
 };
 
-export const selectorCurrentItems = (state: InventoryState): [Item[], string] => {
+export const selectorCurrentItems = (
+  state: InventoryState
+): [Item[], string | undefined] => {
   const box = state.box[state.work.currentBox];
   if (box) {
     const items = box
@@ -38,4 +40,11 @@ export const selectorAppInfo = (state: InventoryState) => {
 
 export const selectorMessages = (state: InventoryState) => {
   return state.settings.messages;
+};
+
+export const selectorSync = (state: InventoryState) => {
+  return {
+    syncWorking: state.work.syncWorking,
+    syncInfo: state.work.syncInfo,
+  };
 };

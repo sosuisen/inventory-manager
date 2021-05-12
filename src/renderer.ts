@@ -14,6 +14,11 @@ import {
 
 const syncActionBuilder = (changes: ChangedFile[]) => {
   // eslint-disable-next-line complexity
+  const counter = {
+    create: 0,
+    update: 0,
+    delete: 0,
+  };
   changes.forEach(file => {
     if (file.operation.startsWith('create')) {
       itemInsertAction(
@@ -21,6 +26,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         file.data.doc! as Item,
         false
       )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.create++;
     }
     else if (file.operation.startsWith('update')) {
       const oldBox = inventoryStore.getState().item[file.data.id].box;
@@ -39,6 +45,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
           false
         )(inventoryStore.dispatch, inventoryStore.getState);
       }
+      counter.update++;
     }
     else if (file.operation.startsWith('delete')) {
       itemDeleteAction(
@@ -47,8 +54,28 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         false,
         true
       )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.delete++;
     }
   });
+  inventoryStore.dispatch({
+    type: 'work-sync-update',
+    payload: {
+      syncInfo: `${inventoryStore.getState().settings.messages.syncCreate}${
+        counter.create
+      }<br />${inventoryStore.getState().settings.messages.syncUpdate}${counter.update}${
+        inventoryStore.getState().settings.messages.syncDelete
+      }${counter.delete}`,
+    },
+  });
+
+  setTimeout(() => {
+    inventoryStore.dispatch({
+      type: 'work-sync-update',
+      payload: {
+        syncInfo: '',
+      },
+    });
+  }, 3000);
 };
 
 // eslint-disable-next-line complexity
@@ -95,6 +122,27 @@ window.addEventListener('message', event => {
       syncActionBuilder(event.data.changes);
       break;
     }
+
+    case 'sync-start': {
+      inventoryStore.dispatch({
+        type: 'work-sync-update',
+        payload: {
+          syncWorking: true,
+        },
+      });
+      break;
+    }
+
+    case 'sync-complete': {
+      inventoryStore.dispatch({
+        type: 'work-sync-update',
+        payload: {
+          syncWorking: false,
+        },
+      });
+      break;
+    }
+
     default:
       break;
   }
