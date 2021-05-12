@@ -48,6 +48,7 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
       <div styleName='col name'>
         <input
           type='text'
+          id={prop.item._id}
           styleName='nameField'
           placeholder={messages.firstItemName}
           className='nameField'
