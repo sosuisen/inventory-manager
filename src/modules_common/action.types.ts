@@ -19,7 +19,9 @@ type WorkActionType =
   | 'work-init'
   | 'work-current-box-update'
   | 'work-synchronizing-update'
-  | 'work-sync-info-update';
+  | 'work-sync-info-update'
+  | 'work-change-from-update';
+
 export type InventoryActionType = ItemActionType | BoxActionType | WorkActionType;
 
 type SyncActionType = 'sync';

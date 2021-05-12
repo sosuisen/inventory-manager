@@ -4,13 +4,16 @@ import { selectorCurrentBoxName, selectorCurrentItems, selectorMessages } from '
 import './ItemList.css';
 import { ItemRow } from './ItemRow';
 import { itemAddAction } from './action';
+import { inventoryStore } from './store';
 
 export const ItemList = () => {
-  const [nameValue, setName] = useState('');
   const dispatch = useDispatch();
+
   const messages = useSelector(selectorMessages);
   const [currentItems, firstItemName] = useSelector(selectorCurrentItems);
   const currentBoxName = useSelector(selectorCurrentBoxName);
+
+  const [nameValue, setName] = useState('');
   const [prevFirstItemName, setPrevFirstItemName] = useState(firstItemName);
   const [prevBoxName, setPrevBoxName] = useState('');
   const [prevItemLength, setPrevItemLength] = useState(currentItems.length);
@@ -27,7 +30,10 @@ export const ItemList = () => {
 
   // eslint-disable-next-line complexity
   useEffect(() => {
-    if (prevBoxName !== currentBoxName) {
+    if (inventoryStore.getState().work.changeFrom === 'remote') {
+      // nop
+    }
+    else if (prevBoxName !== currentBoxName) {
       document.getElementById('nameField')!.focus();
     }
     else if (prevBoxName === currentBoxName) {

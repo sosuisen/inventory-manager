@@ -1,6 +1,12 @@
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
-import { InventoryState, Item, SyncInfo, WorkState } from '../modules_common/store.types';
+import {
+  ChangeFrom,
+  InventoryState,
+  Item,
+  SyncInfo,
+  WorkState,
+} from '../modules_common/store.types';
 import { generateId } from '../modules_common/utils';
 import window from './window';
 
@@ -131,11 +137,17 @@ export interface WorkSyncInfoUpdateAction extends InventoryActionBase {
   payload: SyncInfo | undefined;
 }
 
+export interface WorkChangeFromUpdateAction extends InventoryActionBase {
+  type: 'work-change-from-update';
+  payload: ChangeFrom;
+}
+
 export type WorkAction =
   | WorkInitAction
   | WorkCurrentBoxUpdateAction
   | WorkSynchronizingUpdateAction
-  | WorkSyncInfoUpdateAction;
+  | WorkSyncInfoUpdateAction
+  | WorkChangeFromUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
@@ -143,11 +155,21 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
  * Action creators (redux-thunk)
  */
 
-export const itemAddAction = (boxName: string, nameValue: string, serialize = true) => {
+export const itemAddAction = (
+  boxName: string,
+  nameValue: string,
+  changeFrom: ChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
     }
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     if (
       getState().box[boxName].length === 1 &&
       getState().item[getState().box[boxName][0]].name === ''
@@ -163,7 +185,7 @@ export const itemAddAction = (boxName: string, nameValue: string, serialize = tr
       };
       dispatch(itemAction);
 
-      if (serialize) {
+      if (changeFrom === 'local') {
         const newItem = getState().item[_id];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -205,7 +227,7 @@ export const itemAddAction = (boxName: string, nameValue: string, serialize = tr
     };
     dispatch(boxAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -219,10 +241,16 @@ export const itemAddAction = (boxName: string, nameValue: string, serialize = tr
 export const itemDeleteAction = (
   boxName: string,
   itemId: string,
-  serialize = true,
+  changeFrom: ChangeFrom = 'local',
   forced = false
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     if (!forced && getState().box[boxName].length === 1) {
       const name = '';
       const itemAction: ItemUpdateAction = {
@@ -235,7 +263,7 @@ export const itemDeleteAction = (
       };
       dispatch(itemAction);
 
-      if (serialize) {
+      if (changeFrom === 'local') {
         const newItem = getState().item[itemId];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -284,7 +312,7 @@ export const itemDeleteAction = (
       dispatch(workCurrentBoxAction);
     }
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const itemDeleteCommand: DatabaseCommand = {
         action: 'item-delete',
         data: itemId,
@@ -298,7 +326,7 @@ export const itemNameUpdateAction = (
   _id: string,
   nameValue: string,
   elm: HTMLElement,
-  serialize = true
+  changeFrom: ChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
@@ -308,6 +336,13 @@ export const itemNameUpdateAction = (
       elm.blur();
       return;
     }
+
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     // put()
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
@@ -318,7 +353,7 @@ export const itemNameUpdateAction = (
     };
     dispatch(itemAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-update',
@@ -330,8 +365,14 @@ export const itemNameUpdateAction = (
   };
 };
 
-export const toggleTakeoutAction = (id: string, serialize = true) => {
+export const toggleTakeoutAction = (id: string, changeFrom: ChangeFrom = 'local') => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
       payload: {
@@ -341,7 +382,7 @@ export const toggleTakeoutAction = (id: string, serialize = true) => {
     };
     dispatch(itemAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[id];
       const itemUpdateCommand: DatabaseCommand = {
         action: 'item-update',
@@ -352,8 +393,18 @@ export const toggleTakeoutAction = (id: string, serialize = true) => {
   };
 };
 
-export const itemInsertAction = (boxName: string, item: Item, serialize = true) => {
+export const itemInsertAction = (
+  boxName: string,
+  item: Item,
+  changeFrom: ChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     const itemAction: ItemInsertAction = {
       type: 'item-insert',
       payload: item,
@@ -380,7 +431,7 @@ export const itemInsertAction = (boxName: string, item: Item, serialize = true) 
     };
     dispatch(boxAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -391,15 +442,21 @@ export const itemInsertAction = (boxName: string, item: Item, serialize = true) 
   };
 };
 
-export const itemReplaceAction = (item: Item, serialize = true) => {
+export const itemReplaceAction = (item: Item, changeFrom: ChangeFrom = 'local') => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     const itemAction: ItemReplaceAction = {
       type: 'item-replace',
       payload: item,
     };
     dispatch(itemAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
         action: 'item-update',
@@ -410,8 +467,14 @@ export const itemReplaceAction = (item: Item, serialize = true) => {
   };
 };
 
-export const boxAddAction = (name: string, serialize = true) => {
+export const boxAddAction = (name: string, changeFrom: ChangeFrom = 'local') => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     const _id = generateId();
     const itemName = '';
     const itemAction: ItemAddAction = {
@@ -447,7 +510,7 @@ export const boxAddAction = (name: string, serialize = true) => {
     };
     dispatch(workCurrentBoxAction);
 
-    if (serialize) {
+    if (changeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -458,8 +521,18 @@ export const boxAddAction = (name: string, serialize = true) => {
   };
 };
 
-export const boxRenameAction = (old_name: string, new_name: string, serialize = true) => {
+export const boxRenameAction = (
+  old_name: string,
+  new_name: string,
+  changeFrom: ChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
+
     const items = getState().box[old_name];
     items.forEach(_id => {
       const itemAction: ItemUpdateAction = {
@@ -471,7 +544,7 @@ export const boxRenameAction = (old_name: string, new_name: string, serialize = 
       };
       dispatch(itemAction);
 
-      if (serialize) {
+      if (changeFrom === 'local') {
         const newItem = getState().item[_id];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -497,7 +570,7 @@ export const boxRenameAction = (old_name: string, new_name: string, serialize = 
   };
 };
 
-export const boxDeleteAction = (name: string, serialize = true) => {
+export const boxDeleteAction = (name: string, changeFrom: ChangeFrom = 'local') => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[name];
@@ -510,6 +583,12 @@ export const boxDeleteAction = (name: string, serialize = true) => {
     if (boxes.length === 1) {
       return;
     }
+
+    const changeFromAction: WorkChangeFromUpdateAction = {
+      type: 'work-change-from-update',
+      payload: changeFrom,
+    };
+    dispatch(changeFromAction);
 
     let prevBox = boxes[0];
     if (prevBox === name) {
@@ -542,7 +621,7 @@ export const boxDeleteAction = (name: string, serialize = true) => {
       };
       dispatch(itemAction);
 
-      if (serialize) {
+      if (changeFrom === 'local') {
         const itemDeleteCommand: DatabaseCommand = {
           action: 'item-delete',
           data: items[0],

@@ -24,7 +24,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
       itemInsertAction(
         file.data.doc!.box,
         file.data.doc! as Item,
-        false
+        'remote'
       )(inventoryStore.dispatch, inventoryStore.getState);
       counter.create++;
     }
@@ -32,7 +32,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
       const oldBox = inventoryStore.getState().item[file.data.id].box;
       const newBox = file.data.doc!.box;
       if (oldBox === newBox) {
-        itemReplaceAction(file.data.doc as Item, false)(
+        itemReplaceAction(file.data.doc as Item, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );
@@ -42,7 +42,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         boxRenameAction(
           oldBox,
           newBox,
-          false
+          'remote'
         )(inventoryStore.dispatch, inventoryStore.getState);
       }
       counter.update++;
@@ -51,7 +51,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
       itemDeleteAction(
         file.data.doc!.box,
         file.data.id,
-        false,
+        'remote',
         true
       )(inventoryStore.dispatch, inventoryStore.getState);
       counter.delete++;

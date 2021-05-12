@@ -120,6 +120,7 @@ const workReducer = (
     currentBox: '',
     synchronizing: false,
     syncInfo: undefined,
+    changeFrom: 'local',
   },
   action: WorkAction
 ) => {
@@ -135,6 +136,11 @@ const workReducer = (
       return {
         ...state,
         syncInfo: action.payload,
+      };
+    case 'work-change-from-update':
+      return {
+        ...state,
+        changeFrom: action.payload,
       };
     default:
       return state;
