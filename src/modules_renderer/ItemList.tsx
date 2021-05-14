@@ -33,23 +33,21 @@ export const ItemList = () => {
 
   // eslint-disable-next-line complexity
   useEffect(() => {
-    if (inventoryStore.getState().work.latestChangeFrom === 'remote') {
-      // nop
-    }
-    else if (prevBoxName !== currentBoxName) {
+    if (prevBoxName !== currentBoxName) {
       document.getElementById('nameField')!.focus();
     }
     else if (prevBoxName === currentBoxName) {
       if (inventoryStore.getState().work.itemAdded) {
-        // Scroll to bottom after a new item is added.
-        var element = document.documentElement;
-        var bottom = element.scrollHeight - element.clientHeight;
-        window.scroll(0, bottom);
+        if (inventoryStore.getState().work.latestChangeFrom === 'local') {
+          // Scroll to bottom after a new item is added.
+          var element = document.documentElement;
+          var bottom = element.scrollHeight - element.clientHeight;
+          window.scroll(0, bottom);
 
-        // Focus inline input field
-        const inlineField = document.getElementById('inlineNameField');
-        if (inlineField) inlineField.focus();
-
+          // Focus inline input field
+          const inlineField = document.getElementById('inlineNameField');
+          if (inlineField) inlineField.focus();
+        }
         const workAction: WorkItemAddedUpdateAction = {
           type: 'work-item-added-update',
           payload: false,
@@ -58,10 +56,11 @@ export const ItemList = () => {
       }
 
       if (inventoryStore.getState().work.itemDeleted) {
-        // Focus inline input field
-        const inlineField = document.getElementById('inlineNameField');
-        if (inlineField) inlineField.focus();
-
+        if (inventoryStore.getState().work.latestChangeFrom === 'local') {
+          // Focus inline input field
+          const inlineField = document.getElementById('inlineNameField');
+          if (inlineField) inlineField.focus();
+        }
         const workAction: WorkItemDeletedUpdateAction = {
           type: 'work-item-deleted-update',
           payload: false,

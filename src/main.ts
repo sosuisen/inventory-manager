@@ -183,21 +183,8 @@ const init = async () => {
     });
   }
   else {
-    const _id = generateId();
-    const name = '';
     const box = getSettings().temporalSettings.messages.firstBoxName;
-    const date = getCurrentDateAndTime();
-    const firstDoc: Item = {
-      _id,
-      name,
-      box,
-      created_date: date,
-      modified_date: date,
-      takeout: false,
-    };
-    items[firstDoc._id] = firstDoc;
     boxes[box] = [];
-    boxes[box].push(_id);
   }
   createWindow();
 };
