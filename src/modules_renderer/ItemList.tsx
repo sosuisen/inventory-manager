@@ -3,18 +3,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectorCurrentBoxName, selectorCurrentItems, selectorMessages } from './selector';
 import './ItemList.css';
 import { ItemRow } from './ItemRow';
-import { itemAddAction } from './action';
+import {
+  itemAddAction,
+  WorkItemAddedUpdateAction,
+  WorkItemDeletedUpdateAction,
+} from './action';
 import { inventoryStore } from './store';
 
 export const ItemList = () => {
   const dispatch = useDispatch();
 
   const messages = useSelector(selectorMessages);
-  const [currentItems, firstItemName] = useSelector(selectorCurrentItems);
+  const currentItems = useSelector(selectorCurrentItems);
   const currentBoxName = useSelector(selectorCurrentBoxName);
 
   const [nameValue, setName] = useState('');
-  const [prevFirstItemName, setPrevFirstItemName] = useState(firstItemName);
   const [prevBoxName, setPrevBoxName] = useState('');
   const [prevItemLength, setPrevItemLength] = useState(currentItems.length);
 
@@ -37,7 +40,7 @@ export const ItemList = () => {
       document.getElementById('nameField')!.focus();
     }
     else if (prevBoxName === currentBoxName) {
-      if (prevItemLength < currentItems.length) {
+      if (inventoryStore.getState().work.itemAdded) {
         // Scroll to bottom after a new item is added.
         var element = document.documentElement;
         var bottom = element.scrollHeight - element.clientHeight;
@@ -46,26 +49,27 @@ export const ItemList = () => {
         // Focus inline input field
         const inlineField = document.getElementById('inlineNameField');
         if (inlineField) inlineField.focus();
+
+        const workAction: WorkItemAddedUpdateAction = {
+          type: 'work-item-added-update',
+          payload: false,
+        };
+        dispatch(workAction);
       }
 
-      if (prevFirstItemName === '' && firstItemName !== '') {
+      if (inventoryStore.getState().work.itemDeleted) {
         // Focus inline input field
         const inlineField = document.getElementById('inlineNameField');
         if (inlineField) inlineField.focus();
-      }
 
-      if (!(document.activeElement instanceof HTMLInputElement)) {
-        // Focus inline input field
-        const inlineField = document.getElementById('inlineNameField');
-        if (inlineField) inlineField.focus();
-        else if (currentItems.length === 1 && firstItemName === '') {
-          const nameField = document.getElementById(currentItems[0]._id);
-          if (nameField) nameField.focus();
-        }
+        const workAction: WorkItemDeletedUpdateAction = {
+          type: 'work-item-deleted-update',
+          payload: false,
+        };
+        dispatch(workAction);
       }
     }
 
-    setPrevFirstItemName(firstItemName);
     setPrevItemLength(currentItems.length);
     setPrevBoxName(currentBoxName);
   });
@@ -111,7 +115,7 @@ export const ItemList = () => {
       </div>
       {/* body */}
       {itemList}
-      {currentItems.length > 1 || firstItemName !== '' ? newLine : ''}
+      {newLine}
     </div>
   );
 };

@@ -182,32 +182,6 @@ export const itemAddAction = (
     };
     dispatch(latestChangeFromAction);
 
-    if (
-      getState().box[boxName].length === 1 &&
-      getState().item[getState().box[boxName][0]].name === ''
-    ) {
-      // Update first empty item
-      const _id = getState().box[boxName][0];
-      const itemAction: ItemUpdateAction = {
-        type: 'item-update',
-        payload: {
-          _id,
-          name: nameValue,
-        },
-      };
-      dispatch(itemAction);
-
-      if (latestChangeFrom === 'local') {
-        const newItem = getState().item[_id];
-        const itemCommand: DatabaseCommand = {
-          action: 'item-update',
-          data: newItem,
-        };
-        window.api.db(itemCommand);
-      }
-      return;
-    }
-
     const _id = generateId();
     const itemAction: ItemAddAction = {
       type: 'item-add',
@@ -269,29 +243,6 @@ export const itemDeleteAction = (
     };
     dispatch(latestChangeFromAction);
 
-    if (!forced && getState().box[boxName].length === 1) {
-      const name = '';
-      const itemAction: ItemUpdateAction = {
-        type: 'item-update',
-        payload: {
-          _id: itemId,
-          name,
-          takeout: false,
-        },
-      };
-      dispatch(itemAction);
-
-      if (latestChangeFrom === 'local') {
-        const newItem = getState().item[itemId];
-        const itemCommand: DatabaseCommand = {
-          action: 'item-update',
-          data: newItem,
-        };
-        window.api.db(itemCommand);
-      }
-      return;
-    }
-
     const boxAction: BoxItemDeleteAction = {
       type: 'box-item-delete',
       payload: {
@@ -312,29 +263,6 @@ export const itemDeleteAction = (
       payload: true,
     };
     dispatch(workAction);
-
-    if (getState().box[boxName].length === 0) {
-      // Delete box
-      const boxes = Object.keys(getState().box).sort();
-      let prevBox = boxes[0];
-      for (let i = 0; i < boxes.length; i++) {
-        if (boxes[i] === boxName) {
-          break;
-        }
-        prevBox = boxes[i];
-      }
-      const boxDeleteAction: BoxDeleteAction = {
-        type: 'box-delete',
-        payload: boxName,
-      };
-      dispatch(boxDeleteAction);
-
-      const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
-        type: 'work-current-box-update',
-        payload: prevBox,
-      };
-      dispatch(workCurrentBoxAction);
-    }
 
     if (latestChangeFrom === 'local') {
       const itemDeleteCommand: DatabaseCommand = {
@@ -458,6 +386,12 @@ export const itemInsertAction = (
     };
     dispatch(boxAction);
 
+    const workAction: WorkItemAddedUpdateAction = {
+      type: 'work-item-added-update',
+      payload: true,
+    };
+    dispatch(workAction);
+
     if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
@@ -508,18 +442,6 @@ export const boxAddAction = (
     };
     dispatch(latestChangeFromAction);
 
-    const _id = generateId();
-    const itemName = '';
-    const itemAction: ItemAddAction = {
-      type: 'item-add',
-      payload: {
-        _id: _id,
-        name: itemName,
-        box: name,
-      },
-    };
-    dispatch(itemAction);
-
     const boxAction: BoxAddAction = {
       type: 'box-add',
       payload: {
@@ -528,29 +450,11 @@ export const boxAddAction = (
     };
     dispatch(boxAction);
 
-    const boxItemAction: BoxItemAddAction = {
-      type: 'box-item-add',
-      payload: {
-        box_name: name,
-        item_id: _id,
-      },
-    };
-    dispatch(boxItemAction);
-
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
       payload: name,
     };
     dispatch(workCurrentBoxAction);
-
-    if (latestChangeFrom === 'local') {
-      const newItem = getState().item[_id];
-      const itemCommand: DatabaseCommand = {
-        action: 'item-add',
-        data: newItem,
-      };
-      window.api.db(itemCommand);
-    }
   };
 };
 
@@ -610,7 +514,7 @@ export const boxDeleteAction = (
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[name];
-    if (items.length > 1 || (items.length === 1 && getState().item[items[0]].name !== '')) {
+    if (items.length > 0) {
       document.getElementById('alertDialog')!.setAttribute('open', 'true');
       return;
     }
@@ -649,22 +553,6 @@ export const boxDeleteAction = (
       payload: prevBox,
     };
     dispatch(workCurrentBoxAction);
-
-    if (items.length === 1) {
-      const itemAction: ItemDeleteAction = {
-        type: 'item-delete',
-        payload: items[0],
-      };
-      dispatch(itemAction);
-
-      if (latestChangeFrom === 'local') {
-        const itemDeleteCommand: DatabaseCommand = {
-          action: 'item-delete',
-          data: items[0],
-        };
-        window.api.db(itemDeleteCommand);
-      }
-    }
   };
 };
 

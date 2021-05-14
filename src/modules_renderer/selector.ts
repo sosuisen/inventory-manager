@@ -14,9 +14,7 @@ export const selectorOrderedBoxes = (state: InventoryState) => {
   return Object.keys(state.box).sort();
 };
 
-export const selectorCurrentItems = (
-  state: InventoryState
-): [Item[], string | undefined] => {
+export const selectorCurrentItems = (state: InventoryState): Item[] => {
   const box = state.box[state.work.currentBox];
   if (box) {
     const items = box
@@ -26,12 +24,9 @@ export const selectorCurrentItems = (
         if (a.created_date < b.created_date) return -1;
         return 0;
       });
-    if (items.length > 0) {
-      return [items, items[0].name];
-    }
-    return [items, undefined];
+    return items;
   }
-  return [[], undefined];
+  return [];
 };
 
 export const selectorAppInfo = (state: InventoryState) => {
