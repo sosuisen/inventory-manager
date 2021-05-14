@@ -20,7 +20,9 @@ type WorkActionType =
   | 'work-current-box-update'
   | 'work-synchronizing-update'
   | 'work-sync-info-update'
-  | 'work-change-from-update';
+  | 'work-latest-change-from-update'
+  | 'work-item-added-update'
+  | 'work-item-deleted-update';
 
 export type InventoryActionType = ItemActionType | BoxActionType | WorkActionType;
 

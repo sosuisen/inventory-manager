@@ -30,7 +30,7 @@ export const ItemList = () => {
 
   // eslint-disable-next-line complexity
   useEffect(() => {
-    if (inventoryStore.getState().work.changeFrom === 'remote') {
+    if (inventoryStore.getState().work.latestChangeFrom === 'remote') {
       // nop
     }
     else if (prevBoxName !== currentBoxName) {

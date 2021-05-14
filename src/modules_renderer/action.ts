@@ -1,9 +1,9 @@
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import {
-  ChangeFrom,
   InventoryState,
   Item,
+  LatestChangeFrom,
   SyncInfo,
   WorkState,
 } from '../modules_common/store.types';
@@ -137,9 +137,19 @@ export interface WorkSyncInfoUpdateAction extends InventoryActionBase {
   payload: SyncInfo | undefined;
 }
 
-export interface WorkChangeFromUpdateAction extends InventoryActionBase {
-  type: 'work-change-from-update';
-  payload: ChangeFrom;
+export interface WorkLatestChangeFromUpdateAction extends InventoryActionBase {
+  type: 'work-latest-change-from-update';
+  payload: LatestChangeFrom;
+}
+
+export interface WorkItemAddedUpdateAction extends InventoryActionBase {
+  type: 'work-item-added-update';
+  payload: boolean;
+}
+
+export interface WorkItemDeletedUpdateAction extends InventoryActionBase {
+  type: 'work-item-deleted-update';
+  payload: boolean;
 }
 
 export type WorkAction =
@@ -147,7 +157,9 @@ export type WorkAction =
   | WorkCurrentBoxUpdateAction
   | WorkSynchronizingUpdateAction
   | WorkSyncInfoUpdateAction
-  | WorkChangeFromUpdateAction;
+  | WorkLatestChangeFromUpdateAction
+  | WorkItemAddedUpdateAction
+  | WorkItemDeletedUpdateAction;
 
 export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
@@ -158,17 +170,17 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
 export const itemAddAction = (
   boxName: string,
   nameValue: string,
-  changeFrom: ChangeFrom = 'local'
+  latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
       return;
     }
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     if (
       getState().box[boxName].length === 1 &&
@@ -185,7 +197,7 @@ export const itemAddAction = (
       };
       dispatch(itemAction);
 
-      if (changeFrom === 'local') {
+      if (latestChangeFrom === 'local') {
         const newItem = getState().item[_id];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -227,7 +239,13 @@ export const itemAddAction = (
     };
     dispatch(boxAction);
 
-    if (changeFrom === 'local') {
+    const workAction: WorkItemAddedUpdateAction = {
+      type: 'work-item-added-update',
+      payload: true,
+    };
+    dispatch(workAction);
+
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -241,15 +259,15 @@ export const itemAddAction = (
 export const itemDeleteAction = (
   boxName: string,
   itemId: string,
-  changeFrom: ChangeFrom = 'local',
+  latestChangeFrom: LatestChangeFrom = 'local',
   forced = false
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     if (!forced && getState().box[boxName].length === 1) {
       const name = '';
@@ -263,7 +281,7 @@ export const itemDeleteAction = (
       };
       dispatch(itemAction);
 
-      if (changeFrom === 'local') {
+      if (latestChangeFrom === 'local') {
         const newItem = getState().item[itemId];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -289,6 +307,12 @@ export const itemDeleteAction = (
     };
     dispatch(itemAction);
 
+    const workAction: WorkItemDeletedUpdateAction = {
+      type: 'work-item-deleted-update',
+      payload: true,
+    };
+    dispatch(workAction);
+
     if (getState().box[boxName].length === 0) {
       // Delete box
       const boxes = Object.keys(getState().box).sort();
@@ -312,7 +336,7 @@ export const itemDeleteAction = (
       dispatch(workCurrentBoxAction);
     }
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const itemDeleteCommand: DatabaseCommand = {
         action: 'item-delete',
         data: itemId,
@@ -326,7 +350,7 @@ export const itemNameUpdateAction = (
   _id: string,
   nameValue: string,
   elm: HTMLElement,
-  changeFrom: ChangeFrom = 'local'
+  latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (nameValue === '' || nameValue.match(/^\s+$/)) {
@@ -337,11 +361,11 @@ export const itemNameUpdateAction = (
       return;
     }
 
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     // put()
     const itemAction: ItemUpdateAction = {
@@ -353,7 +377,7 @@ export const itemNameUpdateAction = (
     };
     dispatch(itemAction);
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-update',
@@ -365,13 +389,16 @@ export const itemNameUpdateAction = (
   };
 };
 
-export const toggleTakeoutAction = (id: string, changeFrom: ChangeFrom = 'local') => {
+export const toggleTakeoutAction = (
+  id: string,
+  latestChangeFrom: LatestChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
@@ -382,7 +409,7 @@ export const toggleTakeoutAction = (id: string, changeFrom: ChangeFrom = 'local'
     };
     dispatch(itemAction);
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[id];
       const itemUpdateCommand: DatabaseCommand = {
         action: 'item-update',
@@ -396,14 +423,14 @@ export const toggleTakeoutAction = (id: string, changeFrom: ChangeFrom = 'local'
 export const itemInsertAction = (
   boxName: string,
   item: Item,
-  changeFrom: ChangeFrom = 'local'
+  latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     const itemAction: ItemInsertAction = {
       type: 'item-insert',
@@ -431,7 +458,7 @@ export const itemInsertAction = (
     };
     dispatch(boxAction);
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -442,13 +469,16 @@ export const itemInsertAction = (
   };
 };
 
-export const itemReplaceAction = (item: Item, changeFrom: ChangeFrom = 'local') => {
+export const itemReplaceAction = (
+  item: Item,
+  latestChangeFrom: LatestChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     const itemAction: ItemReplaceAction = {
       type: 'item-replace',
@@ -456,7 +486,7 @@ export const itemReplaceAction = (item: Item, changeFrom: ChangeFrom = 'local') 
     };
     dispatch(itemAction);
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
         action: 'item-update',
@@ -467,13 +497,16 @@ export const itemReplaceAction = (item: Item, changeFrom: ChangeFrom = 'local') 
   };
 };
 
-export const boxAddAction = (name: string, changeFrom: ChangeFrom = 'local') => {
+export const boxAddAction = (
+  name: string,
+  latestChangeFrom: LatestChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     const _id = generateId();
     const itemName = '';
@@ -510,7 +543,7 @@ export const boxAddAction = (name: string, changeFrom: ChangeFrom = 'local') => 
     };
     dispatch(workCurrentBoxAction);
 
-    if (changeFrom === 'local') {
+    if (latestChangeFrom === 'local') {
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
@@ -524,14 +557,14 @@ export const boxAddAction = (name: string, changeFrom: ChangeFrom = 'local') => 
 export const boxRenameAction = (
   old_name: string,
   new_name: string,
-  changeFrom: ChangeFrom = 'local'
+  latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     const items = getState().box[old_name];
     items.forEach(_id => {
@@ -544,7 +577,7 @@ export const boxRenameAction = (
       };
       dispatch(itemAction);
 
-      if (changeFrom === 'local') {
+      if (latestChangeFrom === 'local') {
         const newItem = getState().item[_id];
         const itemCommand: DatabaseCommand = {
           action: 'item-update',
@@ -570,7 +603,10 @@ export const boxRenameAction = (
   };
 };
 
-export const boxDeleteAction = (name: string, changeFrom: ChangeFrom = 'local') => {
+export const boxDeleteAction = (
+  name: string,
+  latestChangeFrom: LatestChangeFrom = 'local'
+) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[name];
@@ -584,11 +620,11 @@ export const boxDeleteAction = (name: string, changeFrom: ChangeFrom = 'local') 
       return;
     }
 
-    const changeFromAction: WorkChangeFromUpdateAction = {
-      type: 'work-change-from-update',
-      payload: changeFrom,
+    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+      type: 'work-latest-change-from-update',
+      payload: latestChangeFrom,
     };
-    dispatch(changeFromAction);
+    dispatch(latestChangeFromAction);
 
     let prevBox = boxes[0];
     if (prevBox === name) {
@@ -621,7 +657,7 @@ export const boxDeleteAction = (name: string, changeFrom: ChangeFrom = 'local') 
       };
       dispatch(itemAction);
 
-      if (changeFrom === 'local') {
+      if (latestChangeFrom === 'local') {
         const itemDeleteCommand: DatabaseCommand = {
           action: 'item-delete',
           data: items[0],

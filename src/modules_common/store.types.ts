@@ -37,13 +37,15 @@ export type BoxState = {
   [name: string]: string[];
 };
 
-export type ChangeFrom = 'local' | 'remote';
+export type LatestChangeFrom = 'local' | 'remote';
 
 export type WorkState = {
   currentBox: string;
   synchronizing: boolean;
   syncInfo?: SyncInfo;
-  changeFrom: ChangeFrom;
+  latestChangeFrom: LatestChangeFrom;
+  itemAdded: boolean;
+  itemDeleted: boolean;
 };
 
 export type MessagesPutAction = {

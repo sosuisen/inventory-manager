@@ -120,7 +120,9 @@ const workReducer = (
     currentBox: '',
     synchronizing: false,
     syncInfo: undefined,
-    changeFrom: 'local',
+    latestChangeFrom: 'local',
+    itemAdded: false,
+    itemDeleted: false,
   },
   action: WorkAction
 ) => {
@@ -137,10 +139,20 @@ const workReducer = (
         ...state,
         syncInfo: action.payload,
       };
-    case 'work-change-from-update':
+    case 'work-latest-change-from-update':
       return {
         ...state,
-        changeFrom: action.payload,
+        latestChangeFrom: action.payload,
+      };
+    case 'work-item-added-update':
+      return {
+        ...state,
+        itemAdded: action.payload,
+      };
+    case 'work-item-deleted-update':
+      return {
+        ...state,
+        itemDeleted: action.payload,
       };
     default:
       return state;
