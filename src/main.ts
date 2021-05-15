@@ -99,6 +99,13 @@ const init = async () => {
     gitDDB = new GitDocumentDB({
       local_dir: getSettings().persistentSettings.storage.path,
       db_name: 'db',
+      schema: {
+        json: {
+          plainTextProperties: {
+            name: true,
+          },
+        },
+      },
     });
   } catch (err) {
     showErrorDialog('databaseCreateError');
@@ -130,18 +137,13 @@ const init = async () => {
         personal_access_token,
         private: true,
       },
-      diff_options: {
-        plainTextProperties: {
-          name: true,
-        },
-      },
-      conflict_resolve_strategy: 'ours-prop',
+      conflict_resolve_strategy: 'ours-diff',
       live: true,
     };
   }
   const dbInfo = await gitDDB.open();
   if (!dbInfo.ok) {
-    await gitDDB.create(remoteOptions).catch(e => {
+    await gitDDB.createDB(remoteOptions).catch(e => {
       showErrorDialog('databaseCreateError');
       console.error(e);
       app.exit();
