@@ -19,7 +19,7 @@ import {
 } from '../modules_common/store.types';
 import { getCurrentDateAndTime } from '../modules_common/utils';
 
-// eslint-disable-next-line default-param-last
+// eslint-disable-next-line default-param-last, complexity
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
   switch (action.type) {
     case 'item-init': {
@@ -38,7 +38,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
     }
     case 'item-update': {
       const newState = { ...state };
-      const date = getCurrentDateAndTime();
+      const date = action.payload.modified_date ?? getCurrentDateAndTime();
       newState[action.payload._id] = {
         ...newState[action.payload._id],
         modified_date: date,

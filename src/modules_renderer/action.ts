@@ -38,6 +38,7 @@ export interface ItemUpdateAction extends InventoryActionBase {
     name?: string;
     takeout?: boolean;
     box?: string;
+    modified_date?: string;
   };
 }
 
@@ -472,11 +473,14 @@ export const boxRenameAction = (
 
     const items = getState().box[old_name];
     items.forEach(_id => {
+      const oldItem = getState().item[_id];
+      const modified_date = oldItem.modified_date;
       const itemAction: ItemUpdateAction = {
         type: 'item-update',
         payload: {
           _id: _id,
           box: new_name,
+          modified_date, // don't change modified_date
         },
       };
       dispatch(itemAction);
