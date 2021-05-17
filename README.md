@@ -8,6 +8,26 @@ Electron app to manage what's in the box
 Use Inventory Manager to...
 - Record what item is where.
 - Manage whether an item is inside or outside of the box.
-- Save your inventory to Git repository.
+- Save your inventory to Git repository and sync automatically.
 
-NOTE: This is an example application of [git-documentdb](https://github.com/sosuisen/git-documentdb).
+This is an example application of [git-documentdb](https://github.com/sosuisen/git-documentdb).
+
+NOTE for v0.2: Create JSON config file to synchronize with GitHub.
+
+**Windows:**
+
+ C:\tmp\inventory_manager_env
+
+**Others:**
+
+ /tmp/inventory_manager_env
+
+```
+{
+  "INVENTORY_MANAGER_TOKEN": "Enter your personal access token with checked [repo]",
+  "INVENTORY_MANAGER_URL": "https://github.com/enter_your_account_name/git-documentdb-example-sync.git"
+}
+```
+
+
+ 
