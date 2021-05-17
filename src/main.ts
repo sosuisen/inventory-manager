@@ -1,6 +1,6 @@
 import * as path from 'path';
 import os from 'os';
-import dotenv from 'dotenv';
+import { readJsonSync } from 'fs-extra';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import {
   ChangedFile,
@@ -19,7 +19,6 @@ import {
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
 import { Item } from './modules_common/store.types';
-import { generateId, getCurrentDateAndTime } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
 let sync: Sync;
@@ -99,6 +98,13 @@ const init = async () => {
     gitDDB = new GitDocumentDB({
       local_dir: getSettings().persistentSettings.storage.path,
       db_name: 'db',
+      schema: {
+        json: {
+          plainTextProperties: {
+            name: true,
+          },
+        },
+      },
     });
   } catch (err) {
     showErrorDialog('databaseCreateError');
@@ -113,11 +119,16 @@ const init = async () => {
   if (!app.isPackaged) {
     remoteConfigFile += '_dev';
   }
+  let configPath;
   if (os.platform() === 'win32') {
-    dotenv.config({ path: path.resolve('c:\\', remoteConfigFile) });
+    configPath = path.resolve('c:\\tmp\\', remoteConfigFile);
   }
   else {
-    dotenv.config({ path: path.resolve('/tmp/', remoteConfigFile) });
+    configPath = path.resolve('/tmp/', remoteConfigFile);
+  }
+  const envConfig = readJsonSync(configPath);
+  for (const k in envConfig) {
+    process.env[k] = envConfig[k];
   }
   const remote_url = process.env.INVENTORY_MANAGER_URL;
   const personal_access_token = process.env.INVENTORY_MANAGER_TOKEN;
@@ -130,18 +141,13 @@ const init = async () => {
         personal_access_token,
         private: true,
       },
-      diff_options: {
-        plainTextProperties: {
-          name: true,
-        },
-      },
-      conflict_resolve_strategy: 'ours-prop',
+      conflict_resolution_strategy: 'ours-diff',
       live: true,
     };
   }
   const dbInfo = await gitDDB.open();
   if (!dbInfo.ok) {
-    await gitDDB.create(remoteOptions).catch(e => {
+    await gitDDB.createDB(remoteOptions).catch(e => {
       showErrorDialog('databaseCreateError');
       console.error(e);
       app.exit();
