@@ -23,7 +23,6 @@ export interface AppInfo {
 export interface Item {
   _id: string;
   name: string;
-  box: string;
   takeout: boolean;
   created_date: string;
   modified_date: string;
@@ -33,8 +32,12 @@ export type ItemState = {
   [_id: string]: Item;
 };
 
+export interface Box {
+  name: string;
+  items: string[];
+}
 export type BoxState = {
-  [name: string]: string[];
+  [name: string]: Box;
 };
 
 export type LatestChangeFrom = 'local' | 'remote';

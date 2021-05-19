@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectorCurrentBoxName, selectorCurrentItems, selectorMessages } from './selector';
+import { selectorCurrentBoxId, selectorCurrentItems, selectorMessages } from './selector';
 import './ItemList.css';
 import { ItemRow } from './ItemRow';
 import {
@@ -15,11 +15,10 @@ export const ItemList = () => {
 
   const messages = useSelector(selectorMessages);
   const currentItems = useSelector(selectorCurrentItems);
-  const currentBoxName = useSelector(selectorCurrentBoxName);
+  const currentBoxId = useSelector(selectorCurrentBoxId);
 
   const [nameValue, setName] = useState('');
-  const [prevBoxName, setPrevBoxName] = useState('');
-  const [prevItemLength, setPrevItemLength] = useState(currentItems.length);
+  const [prevBoxId, setPrevBoxId] = useState('');
 
   const itemList = currentItems.map((item, index) => (
     // must have key
@@ -27,16 +26,16 @@ export const ItemList = () => {
   ));
 
   const handleClick = useCallback(() => {
-    dispatch(itemAddAction(currentBoxName, nameValue));
+    dispatch(itemAddAction(currentBoxId, nameValue));
     setName('');
-  }, [currentBoxName, nameValue, dispatch]);
+  }, [currentBoxId, nameValue, dispatch]);
 
   // eslint-disable-next-line complexity
   useEffect(() => {
-    if (prevBoxName !== currentBoxName) {
+    if (prevBoxId !== currentBoxId) {
       document.getElementById('nameField')!.focus();
     }
-    else if (prevBoxName === currentBoxName) {
+    else if (prevBoxId === currentBoxId) {
       if (inventoryStore.getState().work.itemAdded) {
         if (inventoryStore.getState().work.latestChangeFrom === 'local') {
           // Scroll to bottom after a new item is added.
@@ -68,9 +67,7 @@ export const ItemList = () => {
         dispatch(workAction);
       }
     }
-
-    setPrevItemLength(currentItems.length);
-    setPrevBoxName(currentBoxName);
+    setPrevBoxId(currentBoxId);
   });
 
   const newLine = (

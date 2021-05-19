@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { ChangedFile } from 'git-documentdb';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
-import { AppInfo, Item } from './modules_common/store.types';
+import { AppInfo, Box, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
   boxRenameAction,
@@ -81,7 +81,7 @@ window.addEventListener('message', event => {
   switch (event.data.command) {
     case 'initialize-store': {
       const items: { [key: string]: Item } = event.data.items;
-      const boxes: { [key: string]: string[] } = event.data.boxes;
+      const boxes: { [key: string]: Box } = event.data.boxes;
       const boxArray = Object.keys(boxes).sort();
       const currentBox = boxArray[0];
       inventoryStore.dispatch({

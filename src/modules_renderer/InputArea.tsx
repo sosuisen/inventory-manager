@@ -2,20 +2,20 @@ import React, { useCallback, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import './InputArea.css';
-import { selectorCurrentBoxName, selectorMessages } from './selector';
+import { selectorCurrentBoxId, selectorMessages } from './selector';
 import { itemAddAction } from './action';
 
 export const InputArea = () => {
   const [nameValue, setName] = useState('');
 
   const messages = useSelector(selectorMessages);
-  const currentBoxName = useSelector(selectorCurrentBoxName);
+  const currentBoxId = useSelector(selectorCurrentBoxId);
   const dispatch = useDispatch();
 
   const handleClick = useCallback(() => {
-    dispatch(itemAddAction(currentBoxName, nameValue));
+    dispatch(itemAddAction(currentBoxId, nameValue));
     setName('');
-  }, [currentBoxName, nameValue, dispatch]);
+  }, [currentBoxId, nameValue, dispatch]);
 
   return (
     <div styleName='inputArea'>

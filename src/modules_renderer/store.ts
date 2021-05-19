@@ -17,7 +17,7 @@ import {
   TemporalSettingsState,
   WorkState,
 } from '../modules_common/store.types';
-import { getCurrentDateAndTime } from '../modules_common/utils';
+import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
 
 // eslint-disable-next-line default-param-last, complexity
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
@@ -44,7 +44,6 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
         modified_date: date,
         name: action.payload.name ?? newState[action.payload._id].name,
         takeout: action.payload.takeout ?? newState[action.payload._id].takeout,
-        box: action.payload.box ?? newState[action.payload._id].box,
       };
       return newState;
     }
@@ -80,13 +79,21 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     }
     case 'box-add': {
       const newState = { ...state };
-      newState[action.payload.name] = [];
+      const id = action.payload.id ?? generateId();
+      const name =
+        action.payload.name ?? inventoryStore.getState().settings.messages.firstBoxName;
+      newState[id] = {
+        name: action.payload.name,
+        items: [],
+      };
       return newState;
     }
     case 'box-update': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.new_name] = [...state[action.payload.old_name]];
-      delete newState[action.payload.old_name];
+      newState[action.payload.id] = {
+        name: action.payload.name,
+        items: [...state[action.payload.id].items],
+      };
       return newState;
     }
     case 'box-delete': {
@@ -96,15 +103,12 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     }
     case 'box-item-add': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.box_name] = [
-        ...state[action.payload.box_name],
-        action.payload.item_id,
-      ];
+      newState[action.payload.box_id].items.push(action.payload.item_id);
       return newState;
     }
     case 'box-item-delete': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.box_name] = newState[action.payload.box_name].filter(
+      newState[action.payload.box_id] = newState[action.payload.box_id].filter(
         (id: string) => id !== action.payload.item_id
       );
       return newState;

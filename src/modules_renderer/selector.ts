@@ -1,13 +1,13 @@
 import { InventoryState, Item } from '../modules_common/store.types';
 
-export const selectorCurrentBoxName = (state: InventoryState) => state.work.currentBox;
+export const selectorCurrentBoxId = (state: InventoryState) => state.work.currentBox;
 
 export const selectorCurrentBox = (state: InventoryState) => {
-  const currentBoxName = selectorCurrentBoxName(state);
-  if (currentBoxName === undefined) {
+  const currentBoxId = selectorCurrentBoxId(state);
+  if (currentBoxId === undefined) {
     return undefined;
   }
-  return state.box[currentBoxName];
+  return state.box[currentBoxId];
 };
 
 export const selectorOrderedBoxes = (state: InventoryState) => {
@@ -17,7 +17,7 @@ export const selectorOrderedBoxes = (state: InventoryState) => {
 export const selectorCurrentItems = (state: InventoryState): Item[] => {
   const box = state.box[state.work.currentBox];
   if (box) {
-    const items = box
+    const items = box.items
       .map(_id => state.item[_id])
       .sort((a, b) => {
         if (a.created_date > b.created_date) return 1;

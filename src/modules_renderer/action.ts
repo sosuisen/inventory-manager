@@ -1,6 +1,7 @@
 import { Dispatch } from 'redux';
 import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
 import {
+  Box,
   InventoryState,
   Item,
   LatestChangeFrom,
@@ -27,7 +28,6 @@ export interface ItemAddAction extends InventoryActionBase {
   payload: {
     _id: string;
     name: string;
-    box: string;
   };
 }
 
@@ -71,21 +71,22 @@ export type ItemAction =
 export interface BoxInitAction extends InventoryActionBase {
   type: 'box-init';
   payload: {
-    [key: string]: string[];
+    [name: string]: Box;
   };
 }
 
 export interface BoxAddAction extends InventoryActionBase {
   type: 'box-add';
   payload: {
-    name: string;
+    id?: string;
+    name?: string;
   };
 }
 export interface BoxUpdateAction extends InventoryActionBase {
   type: 'box-update';
   payload: {
-    old_name: string;
-    new_name: string;
+    id: string;
+    name: string;
   };
 }
 
@@ -97,7 +98,7 @@ export interface BoxDeleteAction extends InventoryActionBase {
 export interface BoxItemAddAction extends InventoryActionBase {
   type: 'box-item-add';
   payload: {
-    box_name: string;
+    box_id: string;
     item_id: string;
   };
 }
@@ -105,7 +106,7 @@ export interface BoxItemAddAction extends InventoryActionBase {
 export interface BoxItemDeleteAction extends InventoryActionBase {
   type: 'box-item-delete';
   payload: {
-    box_name: string;
+    box_id: string;
     item_id: string;
   };
 }
@@ -169,7 +170,7 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
  */
 
 export const itemAddAction = (
-  boxName: string,
+  boxId: string,
   nameValue: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -189,17 +190,16 @@ export const itemAddAction = (
       payload: {
         _id: _id,
         name: nameValue,
-        box: boxName,
       },
     };
     dispatch(itemAction);
 
-    const box = getState().box[boxName];
+    const box = getState().box[boxId];
     if (!box) {
       const boxAction: BoxAddAction = {
         type: 'box-add',
         payload: {
-          name: boxName,
+          id: boxId,
         },
       };
       dispatch(boxAction);
@@ -208,7 +208,7 @@ export const itemAddAction = (
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
       payload: {
-        box_name: boxName,
+        box_id: boxId,
         item_id: _id,
       },
     };
@@ -224,7 +224,10 @@ export const itemAddAction = (
       const newItem = getState().item[_id];
       const itemCommand: DatabaseCommand = {
         action: 'item-add',
-        data: newItem,
+        data: {
+          boxId: boxId,
+          item: newItem,
+        },
       };
       window.api.db(itemCommand);
     }
@@ -232,7 +235,7 @@ export const itemAddAction = (
 };
 
 export const itemDeleteAction = (
-  boxName: string,
+  boxId: string,
   itemId: string,
   latestChangeFrom: LatestChangeFrom = 'local',
   forced = false
@@ -247,7 +250,7 @@ export const itemDeleteAction = (
     const boxAction: BoxItemDeleteAction = {
       type: 'box-item-delete',
       payload: {
-        box_name: boxName,
+        box_id: boxId,
         item_id: itemId,
       },
     };
@@ -350,7 +353,7 @@ export const toggleTakeoutAction = (
 };
 
 export const itemInsertAction = (
-  boxName: string,
+  boxId: string,
   item: Item,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -367,12 +370,12 @@ export const itemInsertAction = (
     };
     dispatch(itemAction);
 
-    const box = getState().box[boxName];
+    const box = getState().box[boxId];
     if (!box) {
       const boxAction: BoxAddAction = {
         type: 'box-add',
         payload: {
-          name: boxName,
+          id: boxId,
         },
       };
       dispatch(boxAction);
@@ -381,7 +384,7 @@ export const itemInsertAction = (
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
       payload: {
-        box_name: boxName,
+        box_id: boxId,
         item_id: item._id,
       },
     };
@@ -460,8 +463,8 @@ export const boxAddAction = (
 };
 
 export const boxRenameAction = (
-  old_name: string,
-  new_name: string,
+  id: string,
+  name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
@@ -471,7 +474,7 @@ export const boxRenameAction = (
     };
     dispatch(latestChangeFromAction);
 
-    const items = getState().box[old_name];
+    const items = getState().box[id].items;
     items.forEach(_id => {
       const oldItem = getState().item[_id];
       const modified_date = oldItem.modified_date;
@@ -479,7 +482,7 @@ export const boxRenameAction = (
         type: 'item-update',
         payload: {
           _id: _id,
-          box: new_name,
+          box: name,
           modified_date, // don't change modified_date
         },
       };
@@ -497,34 +500,39 @@ export const boxRenameAction = (
     const boxAction: BoxUpdateAction = {
       type: 'box-update',
       payload: {
-        old_name,
-        new_name,
+        id,
+        name,
       },
     };
     dispatch(boxAction);
 
     const workAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: new_name,
+      payload: name,
     };
     dispatch(workAction);
   };
 };
 
 export const boxDeleteAction = (
-  name: string,
+  id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
-    const items = getState().box[name];
+    const items = getState().box[id].items;
     if (items.length > 0) {
       document.getElementById('alertDialog')!.setAttribute('open', 'true');
       return;
     }
     // Cannot delete if the box is the last one.
-    const boxes = Object.keys(getState().box).sort();
-    if (boxes.length === 1) {
+    const boxState = getState().box;
+    const boxIds = Object.keys(boxState).sort((a, b) => {
+      if (boxState[a].name > boxState[b].name) return 1;
+      if (boxState[a].name < boxState[b].name) return -1;
+      return 0;
+    });
+    if (boxIds.length === 1) {
       return;
     }
 
@@ -534,37 +542,37 @@ export const boxDeleteAction = (
     };
     dispatch(latestChangeFromAction);
 
-    let prevBox = boxes[0];
-    if (prevBox === name) {
-      prevBox = boxes[1];
+    let prevBoxId = boxIds[0];
+    if (prevBoxId === id) {
+      prevBoxId = boxIds[1];
     }
     else {
-      for (let i = 0; i < boxes.length; i++) {
-        if (boxes[i] === name) {
+      for (let i = 0; i < boxIds.length; i++) {
+        if (boxIds[i] === id) {
           break;
         }
-        prevBox = boxes[i];
+        prevBoxId = boxIds[i];
       }
     }
     const boxAction: BoxDeleteAction = {
       type: 'box-delete',
-      payload: name,
+      payload: id,
     };
     dispatch(boxAction);
 
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: prevBox,
+      payload: prevBoxId,
     };
     dispatch(workCurrentBoxAction);
   };
 };
 
-export const boxSelectAction = (name: string) => {
+export const boxSelectAction = (id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const workAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: name,
+      payload: id,
     };
     dispatch(workAction);
   };

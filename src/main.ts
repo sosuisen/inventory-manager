@@ -18,12 +18,13 @@ import {
   subscribeSettingsStore,
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/action.types';
-import { Item } from './modules_common/store.types';
+import { Box, Item } from './modules_common/store.types';
+import { generateId } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
 let sync: Sync;
 const items: { [key: string]: Item } = {};
-const boxes: { [key: string]: string[] } = {};
+const boxes: { [key: string]: Box } = {};
 
 let mainWindow: BrowserWindow;
 
@@ -170,27 +171,26 @@ const init = async () => {
     });
   }
 
-  const allItems = await gitDDB.allDocs({ include_docs: true }).catch(e => {
-    showErrorDialog('databaseOpenError');
-    app.exit();
-  });
-  if (!allItems) return;
-
-  if (allItems.total_rows > 0) {
-    allItems.rows?.forEach(item => {
-      if (item.doc) {
-        const doc = (item.doc as unknown) as Item;
-        items[doc._id] = doc;
-        if (!boxes[doc.box]) {
-          boxes[doc.box] = [];
-        }
-        boxes[doc.box].push(doc._id);
-      }
+  const cols = await gitDDB.getCollections();
+  cols.forEach(async col => {
+    const box = col.collectionPath().slice(0, -1);
+    const boxItems = ((await col.allDocs({ include_docs: true })).rows.map(
+      row => row.doc
+    ) as unknown) as Item[];
+    boxes[box].items = [];
+    boxItems.forEach(item => {
+      items[item._id] = item;
+      boxes[box].items.push(item._id);
     });
-  }
-  else {
-    const box = getSettings().temporalSettings.messages.firstBoxName;
-    boxes[box] = [];
+    boxes[box].name =
+      (await gitDDB.get(box)).name ?? getSettings().temporalSettings.messages.firstBoxName;
+  });
+
+  if (cols.length === 0) {
+    const box = generateId();
+    const boxName = getSettings().temporalSettings.messages.firstBoxName;
+    boxes[box].name = boxName;
+    boxes[box].items = [];
   }
   createWindow();
 };
@@ -230,8 +230,10 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
   switch (command.action) {
     case 'item-add':
     case 'item-update': {
-      const jsonObj = (command.data as unknown) as { _id: string };
+      const boxId = command.data.boxId;
+      const jsonObj = (command.data.item as unknown) as { _id: string };
       gitDDB
+        .collection(boxId)
         .put(jsonObj)
         .then(() => {
           if (sync) {
