@@ -11,7 +11,7 @@ type ItemActionType =
 type BoxActionType =
   | 'box-init'
   | 'box-add'
-  | 'box-update'
+  | 'box-name-update'
   | 'box-delete'
   | 'box-item-add'
   | 'box-item-delete';
@@ -26,12 +26,17 @@ type WorkActionType =
 
 export type InventoryActionType = ItemActionType | BoxActionType | WorkActionType;
 
-type SyncActionType = 'sync';
-
 /**
  * Action to Database
  */
 export type DatabaseCommand = {
-  action: ItemActionType | SyncActionType;
+  action:
+    | 'db-item-add'
+    | 'db-item-update'
+    | 'db-item-delete'
+    | 'db-box-add'
+    | 'db-box-delete'
+    | 'db-box-name-update'
+    | 'db-sync';
   data: any;
 };

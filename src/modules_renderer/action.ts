@@ -8,7 +8,7 @@ import {
   SyncInfo,
   WorkState,
 } from '../modules_common/store.types';
-import { generateId } from '../modules_common/utils';
+import { generateId, getBoxId } from '../modules_common/utils';
 import window from './window';
 
 export interface InventoryActionBase {
@@ -78,12 +78,12 @@ export interface BoxInitAction extends InventoryActionBase {
 export interface BoxAddAction extends InventoryActionBase {
   type: 'box-add';
   payload: {
-    id?: string;
-    name?: string;
+    id: string;
+    name: string;
   };
 }
-export interface BoxUpdateAction extends InventoryActionBase {
-  type: 'box-update';
+export interface BoxNameUpdateAction extends InventoryActionBase {
+  type: 'box-name-update';
   payload: {
     id: string;
     name: string;
@@ -97,24 +97,18 @@ export interface BoxDeleteAction extends InventoryActionBase {
 
 export interface BoxItemAddAction extends InventoryActionBase {
   type: 'box-item-add';
-  payload: {
-    box_id: string;
-    item_id: string;
-  };
+  payload: string;
 }
 
 export interface BoxItemDeleteAction extends InventoryActionBase {
   type: 'box-item-delete';
-  payload: {
-    box_id: string;
-    item_id: string;
-  };
+  payload: string;
 }
 
 export type BoxAction =
   | BoxInitAction
   | BoxAddAction
-  | BoxUpdateAction
+  | BoxNameUpdateAction
   | BoxDeleteAction
   | BoxItemAddAction
   | BoxItemDeleteAction;
@@ -171,11 +165,11 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
 
 export const itemAddAction = (
   boxId: string,
-  nameValue: string,
+  name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (nameValue === '' || nameValue.match(/^\s+$/)) {
+    if (name === '' || name.match(/^\s+$/)) {
       return;
     }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
@@ -184,12 +178,12 @@ export const itemAddAction = (
     };
     dispatch(latestChangeFromAction);
 
-    const _id = generateId();
+    const id = 'item/' + boxId + '/' + generateId();
     const itemAction: ItemAddAction = {
       type: 'item-add',
       payload: {
-        _id: _id,
-        name: nameValue,
+        _id: id,
+        name,
       },
     };
     dispatch(itemAction);
@@ -200,6 +194,7 @@ export const itemAddAction = (
         type: 'box-add',
         payload: {
           id: boxId,
+          name: getState().settings.messages.firstBoxName,
         },
       };
       dispatch(boxAction);
@@ -207,10 +202,7 @@ export const itemAddAction = (
 
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
-      payload: {
-        box_id: boxId,
-        item_id: _id,
-      },
+      payload: id,
     };
     dispatch(boxAction);
 
@@ -221,11 +213,10 @@ export const itemAddAction = (
     dispatch(workAction);
 
     if (latestChangeFrom === 'local') {
-      const newItem = getState().item[_id];
+      const newItem = getState().item[id];
       const itemCommand: DatabaseCommand = {
-        action: 'item-add',
+        action: 'db-item-add',
         data: {
-          boxId: boxId,
           item: newItem,
         },
       };
@@ -235,10 +226,8 @@ export const itemAddAction = (
 };
 
 export const itemDeleteAction = (
-  boxId: string,
-  itemId: string,
-  latestChangeFrom: LatestChangeFrom = 'local',
-  forced = false
+  id: string,
+  latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
@@ -249,16 +238,13 @@ export const itemDeleteAction = (
 
     const boxAction: BoxItemDeleteAction = {
       type: 'box-item-delete',
-      payload: {
-        box_id: boxId,
-        item_id: itemId,
-      },
+      payload: id,
     };
     dispatch(boxAction);
 
     const itemAction: ItemDeleteAction = {
       type: 'item-delete',
-      payload: itemId,
+      payload: id,
     };
     dispatch(itemAction);
 
@@ -270,8 +256,8 @@ export const itemDeleteAction = (
 
     if (latestChangeFrom === 'local') {
       const itemDeleteCommand: DatabaseCommand = {
-        action: 'item-delete',
-        data: itemId,
+        action: 'db-item-delete',
+        data: id,
       };
       window.api.db(itemDeleteCommand);
     }
@@ -279,16 +265,16 @@ export const itemDeleteAction = (
 };
 
 export const itemNameUpdateAction = (
-  _id: string,
-  nameValue: string,
+  id: string,
+  name: string,
   elm: HTMLElement,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (nameValue === '' || nameValue.match(/^\s+$/)) {
+    if (name === '' || name.match(/^\s+$/)) {
       return;
     }
-    if (nameValue === getState().item[_id].name) {
+    if (name === getState().item[id].name) {
       elm.blur();
       return;
     }
@@ -299,20 +285,19 @@ export const itemNameUpdateAction = (
     };
     dispatch(latestChangeFromAction);
 
-    // put()
     const itemAction: ItemUpdateAction = {
       type: 'item-update',
       payload: {
-        _id: _id,
-        name: nameValue,
+        _id: id,
+        name,
       },
     };
     dispatch(itemAction);
 
     if (latestChangeFrom === 'local') {
-      const newItem = getState().item[_id];
+      const newItem = getState().item[id];
       const itemCommand: DatabaseCommand = {
-        action: 'item-update',
+        action: 'db-item-update',
         data: newItem,
       };
       window.api.db(itemCommand);
@@ -344,7 +329,7 @@ export const toggleTakeoutAction = (
     if (latestChangeFrom === 'local') {
       const newItem = getState().item[id];
       const itemUpdateCommand: DatabaseCommand = {
-        action: 'item-update',
+        action: 'db-item-update',
         data: newItem,
       };
       window.api.db(itemUpdateCommand);
@@ -353,7 +338,6 @@ export const toggleTakeoutAction = (
 };
 
 export const itemInsertAction = (
-  boxId: string,
   item: Item,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -370,12 +354,14 @@ export const itemInsertAction = (
     };
     dispatch(itemAction);
 
+    const boxId = getBoxId(item._id);
     const box = getState().box[boxId];
     if (!box) {
       const boxAction: BoxAddAction = {
         type: 'box-add',
         payload: {
           id: boxId,
+          name: getState().settings.messages.firstBoxName,
         },
       };
       dispatch(boxAction);
@@ -383,10 +369,7 @@ export const itemInsertAction = (
 
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
-      payload: {
-        box_id: boxId,
-        item_id: item._id,
-      },
+      payload: item._id,
     };
     dispatch(boxAction);
 
@@ -399,7 +382,7 @@ export const itemInsertAction = (
     if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
-        action: 'item-add',
+        action: 'db-item-add',
         data: newItem,
       };
       window.api.db(itemCommand);
@@ -427,7 +410,7 @@ export const itemReplaceAction = (
     if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
       const itemCommand: DatabaseCommand = {
-        action: 'item-update',
+        action: 'db-item-update',
         data: newItem,
       };
       window.api.db(itemCommand);
@@ -445,11 +428,12 @@ export const boxAddAction = (
       payload: latestChangeFrom,
     };
     dispatch(latestChangeFromAction);
-
+    const id = generateId();
     const boxAction: BoxAddAction = {
       type: 'box-add',
       payload: {
-        name: name,
+        id,
+        name,
       },
     };
     dispatch(boxAction);
@@ -459,6 +443,17 @@ export const boxAddAction = (
       payload: name,
     };
     dispatch(workCurrentBoxAction);
+
+    if (latestChangeFrom === 'local') {
+      const itemCommand: DatabaseCommand = {
+        action: 'db-box-add',
+        data: {
+          id,
+          name,
+        },
+      };
+      window.api.db(itemCommand);
+    }
   };
 };
 
@@ -474,43 +469,49 @@ export const boxRenameAction = (
     };
     dispatch(latestChangeFromAction);
 
-    const items = getState().box[id].items;
-    items.forEach(_id => {
-      const oldItem = getState().item[_id];
-      const modified_date = oldItem.modified_date;
-      const itemAction: ItemUpdateAction = {
-        type: 'item-update',
+    const box = getState().box[id];
+    if (!box) {
+      const boxAction: BoxAddAction = {
+        type: 'box-add',
         payload: {
-          _id: _id,
-          box: name,
-          modified_date, // don't change modified_date
+          id,
+          name,
         },
       };
-      dispatch(itemAction);
+      dispatch(boxAction);
 
       if (latestChangeFrom === 'local') {
-        const newItem = getState().item[_id];
-        const itemCommand: DatabaseCommand = {
-          action: 'item-update',
-          data: newItem,
+        const command: DatabaseCommand = {
+          action: 'db-box-add',
+          data: {
+            id,
+            name,
+          },
         };
-        window.api.db(itemCommand);
+        window.api.db(command);
       }
-    });
-    const boxAction: BoxUpdateAction = {
-      type: 'box-update',
-      payload: {
-        id,
-        name,
-      },
-    };
-    dispatch(boxAction);
+    }
+    else {
+      const boxAction: BoxNameUpdateAction = {
+        type: 'box-name-update',
+        payload: {
+          id,
+          name,
+        },
+      };
+      dispatch(boxAction);
 
-    const workAction: WorkCurrentBoxUpdateAction = {
-      type: 'work-current-box-update',
-      payload: name,
-    };
-    dispatch(workAction);
+      if (latestChangeFrom === 'local') {
+        const command: DatabaseCommand = {
+          action: 'db-box-name-update',
+          data: {
+            id,
+            name,
+          },
+        };
+        window.api.db(command);
+      }
+    }
   };
 };
 
@@ -565,6 +566,14 @@ export const boxDeleteAction = (
       payload: prevBoxId,
     };
     dispatch(workCurrentBoxAction);
+
+    if (latestChangeFrom === 'local') {
+      const command: DatabaseCommand = {
+        action: 'db-box-delete',
+        data: id,
+      };
+      window.api.db(command);
+    }
   };
 };
 

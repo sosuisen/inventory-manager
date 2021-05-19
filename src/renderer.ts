@@ -6,11 +6,13 @@ import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Box, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
+  boxAddAction,
   boxRenameAction,
   itemDeleteAction,
   itemInsertAction,
   itemReplaceAction,
 } from './modules_renderer/action';
+import { getBoxId } from './modules_common/utils';
 
 const syncActionBuilder = (changes: ChangedFile[]) => {
   // eslint-disable-next-line complexity
@@ -21,39 +23,49 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
   };
   changes.forEach(file => {
     if (file.operation.startsWith('create')) {
-      itemInsertAction(
-        file.data.doc!.box,
-        file.data.doc! as Item,
-        'remote'
-      )(inventoryStore.dispatch, inventoryStore.getState);
-      counter.create++;
+      if (file.data.id.startsWith('item/')) {
+        itemInsertAction(file.data.doc! as Item, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.create++;
+      }
+      else if (file.data.id.startsWith('box/')) {
+        // File under box/ sets box name.
+        boxRenameAction(
+          getBoxId(file.data.id),
+          file.data.doc.name,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
+      }
     }
     else if (file.operation.startsWith('update')) {
-      const oldBox = inventoryStore.getState().item[file.data.id].box;
-      const newBox = file.data.doc!.box;
-      if (oldBox === newBox) {
+      if (file.data.id.startsWith('item/')) {
         itemReplaceAction(file.data.doc as Item, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );
       }
-      else {
-        // Currently, this occurs only when box was renamed in remote site.
+      else if (file.data.id.startsWith('box/')) {
+        // File under box/ sets box name.
         boxRenameAction(
-          oldBox,
-          newBox,
+          getBoxId(file.data.id),
+          file.data.doc.name,
           'remote'
         )(inventoryStore.dispatch, inventoryStore.getState);
       }
       counter.update++;
     }
     else if (file.operation.startsWith('delete')) {
-      itemDeleteAction(
-        file.data.doc!.box,
-        file.data.id,
-        'remote',
-        true
-      )(inventoryStore.dispatch, inventoryStore.getState);
+      if (file.data.id.startsWith('item')) {
+        itemDeleteAction(file.data.id, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+      }
+      else if (file.data.id.startsWith('box')) {
+        // nop
+      }
       counter.delete++;
     }
   });

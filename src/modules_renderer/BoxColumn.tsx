@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { boxSelectAction } from './action';
 import './BoxColumn.css';
 
-export const BoxColumn = (prop: { box: string; currentBoxName: string }) => {
+export const BoxColumn = (prop: { box: string; currentBoxId: string }) => {
   const dispatch = useDispatch();
 
   const selectBox = useCallback(() => {
@@ -12,7 +12,7 @@ export const BoxColumn = (prop: { box: string; currentBoxName: string }) => {
 
   return (
     <div
-      styleName={prop.box === prop.currentBoxName ? 'col selected' : 'col'}
+      styleName={prop.box === prop.currentBoxId ? 'col selected' : 'col'}
       onClick={selectBox}
     >
       {prop.box}

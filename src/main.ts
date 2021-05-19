@@ -26,6 +26,8 @@ let sync: Sync;
 const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: Box } = {};
 
+let boxCollection: Collection;
+
 let mainWindow: BrowserWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -171,19 +173,27 @@ const init = async () => {
     });
   }
 
-  const cols = await gitDDB.getCollections();
+  boxCollection = await gitDDB.collection('box');
+
+  // Get collections directly under item/
+  const cols = await gitDDB.getCollections('item');
   cols.forEach(async col => {
-    const box = col.collectionPath().slice(0, -1);
-    const boxItems = ((await col.allDocs({ include_docs: true })).rows.map(
-      row => row.doc
-    ) as unknown) as Item[];
-    boxes[box].items = [];
+    const boxId = col.collectionPath().slice(0, -1); // Remove trailing slash.
+
+    // Get docs by full-path (item/boxId/itemId)
+    const boxItems = ((
+      await gitDDB.allDocs({ prefix: 'item/' + boxId, include_docs: true })
+    ).rows.map(row => row.doc) as unknown) as Item[];
+
+    boxes[boxId].items = [];
     boxItems.forEach(item => {
-      items[item._id] = item;
-      boxes[box].items.push(item._id);
+      items[item._id] = item; // Set full-path as id.
+      boxes[boxId].items.push(item._id);
     });
-    boxes[box].name =
-      (await gitDDB.get(box)).name ?? getSettings().temporalSettings.messages.firstBoxName;
+
+    boxes[boxId].name =
+      (await boxCollection.get(boxId)).name ??
+      getSettings().temporalSettings.messages.firstBoxName;
   });
 
   if (cols.length === 0) {
@@ -228,12 +238,10 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
   const method = '';
   // eslint-disable-next-line default-case
   switch (command.action) {
-    case 'item-add':
-    case 'item-update': {
-      const boxId = command.data.boxId;
+    case 'db-item-add':
+    case 'db-item-update': {
       const jsonObj = (command.data.item as unknown) as { _id: string };
       gitDDB
-        .collection(boxId)
         .put(jsonObj)
         .then(() => {
           if (sync) {
@@ -243,7 +251,7 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
-    case 'item-delete': {
+    case 'db-item-delete': {
       const id = command.data;
       gitDDB
         .delete(id)
@@ -255,7 +263,33 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
-    case 'sync': {
+    case 'db-box-add':
+    case 'db-box-name-update': {
+      const id = command.data.id;
+      const name = command.data.name;
+      boxCollection
+        .put(id, { name })
+        .then(() => {
+          if (sync) {
+            sync.trySync();
+          }
+        })
+        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      break;
+    }
+    case 'db-box-delete': {
+      const id = command.data;
+      boxCollection
+        .delete(id)
+        .then(() => {
+          if (sync) {
+            sync.trySync();
+          }
+        })
+        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      break;
+    }
+    case 'db-sync': {
       sync.trySync();
     }
   }

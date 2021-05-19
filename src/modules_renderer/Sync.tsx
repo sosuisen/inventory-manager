@@ -8,7 +8,7 @@ import window from './window';
 
 const handleClick = () => {
   const syncCommand: DatabaseCommand = {
-    action: 'sync',
+    action: 'db-sync',
     data: '',
   };
   window.api.db(syncCommand);

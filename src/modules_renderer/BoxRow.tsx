@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectorCurrentBoxName, selectorMessages, selectorOrderedBoxes } from './selector';
+import { selectorCurrentBoxId, selectorMessages, selectorOrderedBoxes } from './selector';
 import { BoxColumn } from './BoxColumn';
 import './BoxRow.css';
 import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
@@ -8,10 +8,10 @@ import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
 export const BoxRow = () => {
   const [nameValue, setName] = useState('');
 
-  const currentBoxName = useSelector(selectorCurrentBoxName);
+  const currentBoxId = useSelector(selectorCurrentBoxId);
   const boxes = useSelector(selectorOrderedBoxes);
   const boxList = boxes.map(box => (
-    <BoxColumn box={box} currentBoxName={currentBoxName}></BoxColumn>
+    <BoxColumn box={box.name} currentBoxId={currentBoxId}></BoxColumn>
   ));
 
   const messages = useSelector(selectorMessages);
@@ -22,7 +22,7 @@ export const BoxRow = () => {
     if (nameValue === '') {
       return;
     }
-    const sameName = boxes.filter(box => box === nameValue);
+    const sameName = boxes.filter(box => box.name === nameValue);
     if (sameName.length > 0) {
       return;
     }
@@ -35,18 +35,18 @@ export const BoxRow = () => {
     if (nameValue === '') {
       return;
     }
-    const sameName = boxes.filter(box => box === nameValue);
+    const sameName = boxes.filter(box => box.name === nameValue);
     if (sameName.length > 0) {
       return;
     }
-    dispatch(boxRenameAction(currentBoxName, nameValue));
+    dispatch(boxRenameAction(currentBoxId, nameValue));
     setName('');
     document.getElementById('boxRenameDialog')!.removeAttribute('open');
-  }, [currentBoxName, nameValue, dispatch]);
+  }, [currentBoxId, nameValue, dispatch]);
 
   const deleteBox = useCallback(() => {
-    dispatch(boxDeleteAction(currentBoxName));
-  }, [currentBoxName, dispatch]);
+    dispatch(boxDeleteAction(currentBoxId));
+  }, [currentBoxId, dispatch]);
 
   return (
     <div styleName='boxRow'>

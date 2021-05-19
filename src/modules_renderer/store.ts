@@ -17,7 +17,7 @@ import {
   TemporalSettingsState,
   WorkState,
 } from '../modules_common/store.types';
-import { generateId, getCurrentDateAndTime } from '../modules_common/utils';
+import { generateId, getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
 
 // eslint-disable-next-line default-param-last, complexity
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
@@ -71,29 +71,31 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
   }
 };
 
-// eslint-disable-next-line default-param-last
+// eslint-disable-next-line complexity, default-param-last
 const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
   switch (action.type) {
     case 'box-init': {
       return { ...action.payload };
     }
     case 'box-add': {
-      const newState = { ...state };
-      const id = action.payload.id ?? generateId();
-      const name =
-        action.payload.name ?? inventoryStore.getState().settings.messages.firstBoxName;
-      newState[id] = {
+      const newState = JSON.parse(JSON.stringify(state));
+      if (newState[action.payload.id]) {
+        newState[action.payload.id].name = action.payload.name;
+        return newState;
+      }
+
+      newState[action.payload.id] = {
         name: action.payload.name,
         items: [],
       };
       return newState;
     }
-    case 'box-update': {
+    case 'box-name-update': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.id] = {
-        name: action.payload.name,
-        items: [...state[action.payload.id].items],
-      };
+      if (!newState[action.payload.id]) {
+        return newState;
+      }
+      newState[action.payload.id].name = action.payload.name;
       return newState;
     }
     case 'box-delete': {
@@ -103,14 +105,20 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     }
     case 'box-item-add': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.box_id].items.push(action.payload.item_id);
+      const boxId = getBoxId(action.payload);
+      if (!newState[boxId]) {
+        return newState;
+      }
+      newState[boxId].items.push(action.payload);
       return newState;
     }
     case 'box-item-delete': {
       const newState = JSON.parse(JSON.stringify(state));
-      newState[action.payload.box_id] = newState[action.payload.box_id].filter(
-        (id: string) => id !== action.payload.item_id
-      );
+      const boxId = getBoxId(action.payload);
+      if (!newState[boxId]) {
+        return newState;
+      }
+      newState[boxId] = newState[boxId].filter((id: string) => id !== action.payload);
       return newState;
     }
     default:
