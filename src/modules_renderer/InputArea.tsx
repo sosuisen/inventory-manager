@@ -1,9 +1,16 @@
-import React, { useCallback, useState } from 'react';
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
 
+import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './InputArea.css';
 import { selectorCurrentBoxId, selectorMessages } from './selector';
-import { itemAddActionCreator } from './action';
+import { itemAddActionCreator } from './actionCreator';
 
 export const InputArea = () => {
   const [nameValue, setName] = useState('');

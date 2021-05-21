@@ -1,3 +1,11 @@
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
@@ -7,7 +15,7 @@ import {
   itemDeleteActionCreator,
   itemNameUpdateActionCreator,
   toggleTakeoutActionCreator,
-} from './action';
+} from './actionCreator';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
@@ -20,16 +28,16 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
   const dispatch = useDispatch();
 
   const deleteItem = useCallback(() => {
-    dispatch(itemDeleteActionCreator(currentBoxId, prop.item._id));
+    dispatch(itemDeleteActionCreator(prop.item._id));
   }, [currentBoxId, prop.item._id, dispatch]);
 
   const toggleTakeout = useCallback(() => {
-    dispatch(toggleTakeoutActionCreator(currentBoxId, prop.item._id));
+    dispatch(toggleTakeoutActionCreator(prop.item._id));
   }, [prop.item._id, dispatch]);
 
   const changeName = useCallback(
     (elm: HTMLElement) => {
-      dispatch(itemNameUpdateActionCreator(currentBoxId, prop.item._id, nameValue, elm));
+      dispatch(itemNameUpdateActionCreator(prop.item._id, nameValue, elm));
     },
     [nameValue, dispatch]
   );

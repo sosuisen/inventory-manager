@@ -1,6 +1,14 @@
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { boxSelectActionCreator } from './action';
+import { boxSelectActionCreator } from './actionCreator';
 import './BoxColumn.css';
 
 export const BoxColumn = (prop: { box: string; currentBoxId: string }) => {

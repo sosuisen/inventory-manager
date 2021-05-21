@@ -1,3 +1,11 @@
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { ChangedFile } from 'git-documentdb';
@@ -6,12 +14,11 @@ import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Box, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
-  boxAddAction,
-  boxRenameAction,
-  itemDeleteAction,
-  itemInsertAction,
-  itemReplaceAction,
-} from './modules_renderer/action';
+  boxRenameActionCreator,
+  itemDeleteActionCreator,
+  itemInsertActionCreator,
+  itemReplaceActionCreator,
+} from './modules_renderer/actionCreator';
 import { getBoxId } from './modules_common/utils';
 
 const syncActionBuilder = (changes: ChangedFile[]) => {
@@ -24,7 +31,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
   changes.forEach(file => {
     if (file.operation.startsWith('create')) {
       if (file.data.id.startsWith('item/')) {
-        itemInsertAction(file.data.doc! as Item, 'remote')(
+        itemInsertActionCreator(file.data.doc! as Item, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );
@@ -32,7 +39,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
       }
       else if (file.data.id.startsWith('box/')) {
         // File under box/ sets box name.
-        boxRenameAction(
+        boxRenameActionCreator(
           getBoxId(file.data.id),
           file.data.doc.name,
           'remote'
@@ -41,14 +48,14 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     }
     else if (file.operation.startsWith('update')) {
       if (file.data.id.startsWith('item/')) {
-        itemReplaceAction(file.data.doc as Item, 'remote')(
+        itemReplaceActionCreator(file.data.doc as Item, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );
       }
       else if (file.data.id.startsWith('box/')) {
         // File under box/ sets box name.
-        boxRenameAction(
+        boxRenameActionCreator(
           getBoxId(file.data.id),
           file.data.doc.name,
           'remote'
@@ -58,7 +65,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     }
     else if (file.operation.startsWith('delete')) {
       if (file.data.id.startsWith('item')) {
-        itemDeleteAction(file.data.id, 'remote')(
+        itemDeleteActionCreator(file.data.id, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );

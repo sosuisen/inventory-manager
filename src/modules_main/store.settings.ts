@@ -5,6 +5,7 @@
  * This source code is licensed under the Mozilla Public License Version 2.0
  * found in the LICENSE file in the root directory of this source tree.
  */
+
 import path from 'path';
 import Store from 'electron-store';
 import { app, BrowserWindow, nativeImage } from 'electron';

@@ -1,4 +1,12 @@
-.col {
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+ 
+ .col {
   float: left;
   padding: 3px 7px 3px 7px;
   font-size: 16px;
