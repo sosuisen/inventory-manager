@@ -1,5 +1,13 @@
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import { Dispatch } from 'redux';
-import { DatabaseCommand, InventoryActionType } from '../modules_common/action.types';
+import { DatabaseCommand } from '../modules_common/db.types';
 import {
   Box,
   InventoryState,
@@ -11,8 +19,34 @@ import {
 import { generateId, getBoxId } from '../modules_common/utils';
 import window from './window';
 
+/**
+ * Redux Action Types
+ */
+type ItemActionType =
+  | 'item-init'
+  | 'item-add'
+  | 'item-update'
+  | 'item-insert'
+  | 'item-replace'
+  | 'item-delete';
+type BoxActionType =
+  | 'box-init'
+  | 'box-add'
+  | 'box-name-update'
+  | 'box-delete'
+  | 'box-item-add'
+  | 'box-item-delete';
+type WorkActionType =
+  | 'work-init'
+  | 'work-current-box-update'
+  | 'work-synchronizing-update'
+  | 'work-sync-info-update'
+  | 'work-latest-change-from-update'
+  | 'work-item-added-update'
+  | 'work-item-deleted-update';
+
 export interface InventoryActionBase {
-  type: InventoryActionType;
+  type: ItemActionType | BoxActionType | WorkActionType;
   payload: any;
 }
 

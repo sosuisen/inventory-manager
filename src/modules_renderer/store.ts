@@ -17,7 +17,7 @@ import {
   TemporalSettingsState,
   WorkState,
 } from '../modules_common/store.types';
-import { generateId, getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
+import { getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
 
 // eslint-disable-next-line default-param-last, complexity
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {

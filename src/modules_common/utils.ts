@@ -1,15 +1,24 @@
+/**
+ * Inventory Manager
+ * Copyright (c) Hidekazu Kubota
+ *
+ * This source code is licensed under the Mozilla Public License Version 2.0
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 import { monotonicFactory } from 'ulid';
 const ulid = monotonicFactory();
 
-export const getBoxId = (fullId: string) => {
-  const res = fullId.match(/^item\/(.+?)\//);
-  if (res.length >= 2) {
-    return res[1];
+export const getBoxId = (id: string) => {
+  const resBox = id.match(/^box\/(.+?)\.json/);
+  if (resBox.length >= 2) {
+    return resBox[1];
   }
-  const res2 = fullId.match(/^box\/(.+?)\.json/);
-  if (res2.length >= 2) {
-    return res2[1];
+  const resItem = id.match(/^(.+?)\//);
+  if (resItem.length >= 2) {
+    return resItem[1];
   }
+
   return undefined;
 };
 

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { DatabaseCommand } from '../modules_common/action.types';
+import { DatabaseCommand } from '../modules_common/db.types';
 import { SyncInfo } from '../modules_common/store.types';
 import { selectorMessages } from './selector';
 import './Sync.css';

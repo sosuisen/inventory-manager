@@ -17,7 +17,7 @@ import {
   settingsStore,
   subscribeSettingsStore,
 } from './modules_main/store.settings';
-import { DatabaseCommand } from './modules_common/action.types';
+import { DatabaseCommand } from './modules_common/db.types';
 import { Box, Item } from './modules_common/store.types';
 import { generateId } from './modules_common/utils';
 

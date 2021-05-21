@@ -7,7 +7,7 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { DatabaseCommand } from './modules_common/action.types';
+import { DatabaseCommand } from './modules_common/db.types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
