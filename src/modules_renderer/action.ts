@@ -17,42 +17,15 @@ import {
 /**
  * Redux Action Types
  */
-type ItemActionType =
-  | 'item-init'
-  | 'item-add'
-  | 'item-update'
-  | 'item-insert'
-  | 'item-replace'
-  | 'item-delete';
-type BoxActionType =
-  | 'box-init'
-  | 'box-add'
-  | 'box-name-update'
-  | 'box-delete'
-  | 'box-item-add'
-  | 'box-item-delete';
-type WorkActionType =
-  | 'work-init'
-  | 'work-current-box-update'
-  | 'work-synchronizing-update'
-  | 'work-sync-info-update'
-  | 'work-latest-change-from-update'
-  | 'work-item-added-update'
-  | 'work-item-deleted-update';
 
-export interface InventoryActionBase {
-  type: ItemActionType | BoxActionType | WorkActionType;
-  payload: any;
-}
-
-export interface ItemInitAction extends InventoryActionBase {
+export interface ItemInitAction {
   type: 'item-init';
   payload: {
     [key: string]: Item;
   };
 }
 
-export interface ItemAddAction extends InventoryActionBase {
+export interface ItemAddAction {
   type: 'item-add';
   payload: {
     _id: string;
@@ -60,7 +33,7 @@ export interface ItemAddAction extends InventoryActionBase {
   };
 }
 
-export interface ItemUpdateAction extends InventoryActionBase {
+export interface ItemUpdateAction {
   type: 'item-update';
   payload: {
     _id: string;
@@ -71,12 +44,12 @@ export interface ItemUpdateAction extends InventoryActionBase {
   };
 }
 
-export interface ItemInsertAction extends InventoryActionBase {
+export interface ItemInsertAction {
   type: 'item-insert';
   payload: Item;
 }
 
-export interface ItemReplaceAction extends InventoryActionBase {
+export interface ItemReplaceAction {
   type: 'item-replace';
   payload: Item;
 }
@@ -84,7 +57,7 @@ export interface ItemReplaceAction extends InventoryActionBase {
 /**
  * payload: _id of item
  */
-export interface ItemDeleteAction extends InventoryActionBase {
+export interface ItemDeleteAction {
   type: 'item-delete';
   payload: string;
 }
@@ -97,21 +70,21 @@ export type ItemAction =
   | ItemReplaceAction
   | ItemDeleteAction;
 
-export interface BoxInitAction extends InventoryActionBase {
+export interface BoxInitAction {
   type: 'box-init';
   payload: {
     [name: string]: Box;
   };
 }
 
-export interface BoxAddAction extends InventoryActionBase {
+export interface BoxAddAction {
   type: 'box-add';
   payload: {
     id: string;
     name: string;
   };
 }
-export interface BoxNameUpdateAction extends InventoryActionBase {
+export interface BoxNameUpdateAction {
   type: 'box-name-update';
   payload: {
     id: string;
@@ -119,17 +92,17 @@ export interface BoxNameUpdateAction extends InventoryActionBase {
   };
 }
 
-export interface BoxDeleteAction extends InventoryActionBase {
+export interface BoxDeleteAction {
   type: 'box-delete';
   payload: string;
 }
 
-export interface BoxItemAddAction extends InventoryActionBase {
+export interface BoxItemAddAction {
   type: 'box-item-add';
   payload: string;
 }
 
-export interface BoxItemDeleteAction extends InventoryActionBase {
+export interface BoxItemDeleteAction {
   type: 'box-item-delete';
   payload: string;
 }
@@ -142,37 +115,37 @@ export type BoxAction =
   | BoxItemAddAction
   | BoxItemDeleteAction;
 
-export interface WorkInitAction extends InventoryActionBase {
+export interface WorkInitAction {
   type: 'work-init';
   payload: WorkState;
 }
 
-export interface WorkCurrentBoxUpdateAction extends InventoryActionBase {
+export interface WorkCurrentBoxUpdateAction {
   type: 'work-current-box-update';
   payload: string;
 }
 
-export interface WorkSynchronizingUpdateAction extends InventoryActionBase {
+export interface WorkSynchronizingUpdateAction {
   type: 'work-synchronizing-update';
   payload: boolean;
 }
 
-export interface WorkSyncInfoUpdateAction extends InventoryActionBase {
+export interface WorkSyncInfoUpdateAction {
   type: 'work-sync-info-update';
   payload: SyncInfo | undefined;
 }
 
-export interface WorkLatestChangeFromUpdateAction extends InventoryActionBase {
+export interface WorkLatestChangeFromUpdateAction {
   type: 'work-latest-change-from-update';
   payload: LatestChangeFrom;
 }
 
-export interface WorkItemAddedUpdateAction extends InventoryActionBase {
+export interface WorkItemAddedUpdateAction {
   type: 'work-item-added-update';
   payload: boolean;
 }
 
-export interface WorkItemDeletedUpdateAction extends InventoryActionBase {
+export interface WorkItemDeletedUpdateAction {
   type: 'work-item-deleted-update';
   payload: boolean;
 }
