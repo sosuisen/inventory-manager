@@ -298,6 +298,19 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
+    case 'db-box-delete-revert': {
+      const id = command.data;
+      const box = boxCollection.get(id, 1);
+      boxCollection
+        .put(box)
+        .then(() => {
+          if (sync) {
+            sync.trySync();
+          }
+        })
+        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      break;
+    }
     case 'db-sync': {
       sync.trySync();
     }

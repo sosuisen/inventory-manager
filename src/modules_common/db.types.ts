@@ -27,6 +27,11 @@ export type DatabaseBoxDelete = {
   data: string;
 };
 
+export type DatabaseBoxDeleteRevert = {
+  command: 'db-box-delete-revert';
+  data: string;
+};
+
 export type DatabaseItemAdd = {
   command: 'db-item-add';
   data: Item;
@@ -50,6 +55,7 @@ export type DatabaseCommand =
   | DatabaseBoxAdd
   | DatabaseBoxNameUpdate
   | DatabaseBoxDelete
+  | DatabaseBoxDeleteRevert
   | DatabaseItemAdd
   | DatabaseItemDelete
   | DatabaseItemUpdate

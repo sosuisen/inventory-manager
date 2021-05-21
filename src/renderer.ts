@@ -14,12 +14,15 @@ import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Box, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
+  boxDeleteActionCreator,
   boxRenameActionCreator,
   itemDeleteActionCreator,
   itemInsertActionCreator,
   itemReplaceActionCreator,
 } from './modules_renderer/actionCreator';
 import { getBoxId } from './modules_common/utils';
+import window from './modules_renderer/window';
+import { DatabaseBoxDeleteRevert } from './modules_common/db.types';
 
 const syncActionBuilder = (changes: ChangedFile[]) => {
   // eslint-disable-next-line complexity
@@ -28,54 +31,73 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     update: 0,
     delete: 0,
   };
+  const boxChanges: ChangedFile[] = [];
+
+  // Item changes
   changes.forEach(file => {
-    if (file.operation.startsWith('create')) {
-      if (file.data.id.startsWith('item/')) {
-        itemInsertActionCreator(file.data.doc! as Item, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-        counter.create++;
-      }
-      else if (file.data.id.startsWith('box/')) {
-        // File under box/ sets box name.
-        boxRenameActionCreator(
-          getBoxId(file.data.id),
-          file.data.doc.name,
-          'remote'
-        )(inventoryStore.dispatch, inventoryStore.getState);
-      }
+    if (file.data.id.startsWith('box/')) {
+      boxChanges.push(file);
+    }
+    else if (file.operation.startsWith('create')) {
+      itemInsertActionCreator(file.data.doc! as Item, 'remote')(
+        inventoryStore.dispatch,
+        inventoryStore.getState
+      );
+      counter.create++;
     }
     else if (file.operation.startsWith('update')) {
-      if (file.data.id.startsWith('item/')) {
-        itemReplaceActionCreator(file.data.doc as Item, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-      }
-      else if (file.data.id.startsWith('box/')) {
-        // File under box/ sets box name.
-        boxRenameActionCreator(
-          getBoxId(file.data.id),
-          file.data.doc.name,
-          'remote'
-        )(inventoryStore.dispatch, inventoryStore.getState);
-      }
+      itemReplaceActionCreator(file.data.doc as Item, 'remote')(
+        inventoryStore.dispatch,
+        inventoryStore.getState
+      );
       counter.update++;
     }
     else if (file.operation.startsWith('delete')) {
-      if (file.data.id.startsWith('item')) {
-        itemDeleteActionCreator(file.data.id, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-      }
-      else if (file.data.id.startsWith('box')) {
-        // nop
-      }
+      itemDeleteActionCreator(file.data.id, 'remote')(
+        inventoryStore.dispatch,
+        inventoryStore.getState
+      );
       counter.delete++;
     }
   });
+
+  // Box changes
+  boxChanges.forEach(file => {
+    if (file.operation.startsWith('create')) {
+      boxRenameActionCreator(
+        getBoxId(file.data.id),
+        file.data.doc.name,
+        'remote'
+      )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.create++;
+    }
+    else if (file.operation.startsWith('update')) {
+      boxRenameActionCreator(
+        getBoxId(file.data.id),
+        file.data.doc.name,
+        'remote'
+      )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.update++;
+    }
+    else if (file.operation.startsWith('delete')) {
+      if (inventoryStore.getState().box[file.data.id].items.length > 0) {
+        // Revert deleted box
+        const cmd: DatabaseBoxDeleteRevert = {
+          command: 'db-box-delete-revert',
+          data: file.data.id,
+        };
+        window.api.db(cmd);
+      }
+      else {
+        boxDeleteActionCreator(getBoxId(file.data.id), 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.delete++;
+      }
+    }
+  });
+
   inventoryStore.dispatch({
     type: 'work-sync-info-update',
     payload: {
