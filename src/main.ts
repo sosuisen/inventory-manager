@@ -249,12 +249,11 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
   let collection: Collection;
   const method = '';
   // eslint-disable-next-line default-case
-  switch (command.action) {
+  switch (command.command) {
     case 'db-item-add':
     case 'db-item-update': {
-      const jsonObj = (command.data.item as unknown) as { _id: string };
       itemCollection
-        .put(jsonObj)
+        .put(command.data)
         .then(() => {
           if (sync) {
             sync.trySync();
@@ -277,10 +276,8 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     }
     case 'db-box-add':
     case 'db-box-name-update': {
-      const id = command.data.id;
-      const name = command.data.name;
       boxCollection
-        .put(id, { name })
+        .put(command.data)
         .then(() => {
           if (sync) {
             sync.trySync();

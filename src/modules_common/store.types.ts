@@ -14,28 +14,39 @@ export type SyncInfo = {
   delete: number;
 };
 
-export interface AppInfo {
+export type AppInfo = {
   name: string;
   version: string;
   iconDataURL: string;
-}
+};
 
-export interface Item {
+export type Item = {
   _id: string;
   name: string;
   takeout: boolean;
   created_date: string;
   modified_date: string;
-}
+};
 
 export type ItemState = {
   [_id: string]: Item;
 };
 
-export interface Box {
+/**
+ * Type for box document in GitDocumentDB
+ */
+export type BoxDoc = {
+  _id: string;
   name: string;
+};
+
+/**
+ * Type for box object in redux store
+ */
+export type Box = BoxDoc & {
   items: string[];
-}
+};
+
 export type BoxState = {
   [name: string]: Box;
 };
@@ -67,14 +78,14 @@ export type AppPutAction = {
 
 export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
 
-export interface TemporalSettingsState {
+export type TemporalSettingsState = {
   messages: Messages; // It is set and updated when 'settings.language' is changed.
   appinfo: {
     name: string;
     version: string;
     iconDataURL: string;
   };
-}
+};
 
 export const initialTemporalSettingsState: TemporalSettingsState = {
   messages: English,

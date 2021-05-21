@@ -8,6 +8,7 @@
 
 import {
   Box,
+  BoxDoc,
   Item,
   LatestChangeFrom,
   SyncInfo,
@@ -79,17 +80,11 @@ export interface BoxInitAction {
 
 export interface BoxAddAction {
   type: 'box-add';
-  payload: {
-    id: string;
-    name: string;
-  };
+  payload: BoxDoc;
 }
 export interface BoxNameUpdateAction {
   type: 'box-name-update';
-  payload: {
-    id: string;
-    name: string;
-  };
+  payload: BoxDoc;
 }
 
 export interface BoxDeleteAction {

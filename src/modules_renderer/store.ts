@@ -79,12 +79,12 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     }
     case 'box-add': {
       const newState = JSON.parse(JSON.stringify(state));
-      if (newState[action.payload.id]) {
-        newState[action.payload.id].name = action.payload.name;
+      if (newState[action.payload._id]) {
+        newState[action.payload._id].name = action.payload.name;
         return newState;
       }
 
-      newState[action.payload.id] = {
+      newState[action.payload._id] = {
         name: action.payload.name,
         items: [],
       };
@@ -92,10 +92,10 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     }
     case 'box-name-update': {
       const newState = JSON.parse(JSON.stringify(state));
-      if (!newState[action.payload.id]) {
+      if (!newState[action.payload._id]) {
         return newState;
       }
-      newState[action.payload.id].name = action.payload.name;
+      newState[action.payload._id].name = action.payload.name;
       return newState;
     }
     case 'box-delete': {
