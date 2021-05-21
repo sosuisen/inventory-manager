@@ -3,7 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectorCurrentBoxId, selectorMessages, selectorOrderedBoxes } from './selector';
 import { BoxColumn } from './BoxColumn';
 import './BoxRow.css';
-import { boxAddAction, boxDeleteAction, boxRenameAction } from './action';
+import {
+  boxAddActionCreator,
+  boxDeleteActionCreator,
+  boxRenameActionCreator,
+} from './action';
 
 export const BoxRow = () => {
   const [nameValue, setName] = useState('');
@@ -26,7 +30,7 @@ export const BoxRow = () => {
     if (sameName.length > 0) {
       return;
     }
-    dispatch(boxAddAction(nameValue));
+    dispatch(boxAddActionCreator(nameValue));
     setName('');
     document.getElementById('boxNameDialog')!.removeAttribute('open');
   }, [nameValue, boxes, dispatch]);
@@ -39,13 +43,13 @@ export const BoxRow = () => {
     if (sameName.length > 0) {
       return;
     }
-    dispatch(boxRenameAction(currentBoxId, nameValue));
+    dispatch(boxRenameActionCreator(currentBoxId, nameValue));
     setName('');
     document.getElementById('boxRenameDialog')!.removeAttribute('open');
   }, [currentBoxId, nameValue, dispatch]);
 
   const deleteBox = useCallback(() => {
-    dispatch(boxDeleteAction(currentBoxId));
+    dispatch(boxDeleteActionCreator(currentBoxId));
   }, [currentBoxId, dispatch]);
 
   return (

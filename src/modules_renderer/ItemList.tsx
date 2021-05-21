@@ -4,7 +4,7 @@ import { selectorCurrentBoxId, selectorCurrentItems, selectorMessages } from './
 import './ItemList.css';
 import { ItemRow } from './ItemRow';
 import {
-  itemAddAction,
+  itemAddActionCreator,
   WorkItemAddedUpdateAction,
   WorkItemDeletedUpdateAction,
 } from './action';
@@ -26,7 +26,7 @@ export const ItemList = () => {
   ));
 
   const handleClick = useCallback(() => {
-    dispatch(itemAddAction(currentBoxId, nameValue));
+    dispatch(itemAddActionCreator(currentBoxId, nameValue));
     setName('');
   }, [currentBoxId, nameValue, dispatch]);
 

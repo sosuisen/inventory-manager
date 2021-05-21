@@ -197,7 +197,7 @@ export type InventoryAction = ItemAction | BoxAction | WorkAction;
  * Action creators (redux-thunk)
  */
 
-export const itemAddAction = (
+export const itemAddActionCreator = (
   boxId: string,
   name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
@@ -259,7 +259,7 @@ export const itemAddAction = (
   };
 };
 
-export const itemDeleteAction = (
+export const itemDeleteActionCreator = (
   id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -298,7 +298,7 @@ export const itemDeleteAction = (
   };
 };
 
-export const itemNameUpdateAction = (
+export const itemNameUpdateActionCreator = (
   id: string,
   name: string,
   elm: HTMLElement,
@@ -340,7 +340,7 @@ export const itemNameUpdateAction = (
   };
 };
 
-export const toggleTakeoutAction = (
+export const toggleTakeoutActionCreator = (
   id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -371,7 +371,7 @@ export const toggleTakeoutAction = (
   };
 };
 
-export const itemInsertAction = (
+export const itemInsertActionCreator = (
   item: Item,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -424,7 +424,7 @@ export const itemInsertAction = (
   };
 };
 
-export const itemReplaceAction = (
+export const itemReplaceActionCreator = (
   item: Item,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -452,7 +452,7 @@ export const itemReplaceAction = (
   };
 };
 
-export const boxAddAction = (
+export const boxAddActionCreator = (
   name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -491,7 +491,7 @@ export const boxAddAction = (
   };
 };
 
-export const boxRenameAction = (
+export const boxRenameActionCreator = (
   id: string,
   name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
@@ -549,7 +549,7 @@ export const boxRenameAction = (
   };
 };
 
-export const boxDeleteAction = (
+export const boxDeleteActionCreator = (
   id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
@@ -611,7 +611,7 @@ export const boxDeleteAction = (
   };
 };
 
-export const boxSelectAction = (id: string) => {
+export const boxSelectActionCreator = (id: string) => {
   return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const workAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',

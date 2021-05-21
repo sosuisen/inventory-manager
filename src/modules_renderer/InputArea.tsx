@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './InputArea.css';
 import { selectorCurrentBoxId, selectorMessages } from './selector';
-import { itemAddAction } from './action';
+import { itemAddActionCreator } from './action';
 
 export const InputArea = () => {
   const [nameValue, setName] = useState('');
@@ -13,7 +13,7 @@ export const InputArea = () => {
   const dispatch = useDispatch();
 
   const handleClick = useCallback(() => {
-    dispatch(itemAddAction(currentBoxId, nameValue));
+    dispatch(itemAddActionCreator(currentBoxId, nameValue));
     setName('');
   }, [currentBoxId, nameValue, dispatch]);
 

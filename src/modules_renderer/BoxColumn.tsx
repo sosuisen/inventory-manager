@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { boxSelectAction } from './action';
+import { boxSelectActionCreator } from './action';
 import './BoxColumn.css';
 
 export const BoxColumn = (prop: { box: string; currentBoxId: string }) => {
   const dispatch = useDispatch();
 
   const selectBox = useCallback(() => {
-    dispatch(boxSelectAction(prop.box));
+    dispatch(boxSelectActionCreator(prop.box));
   }, [prop.box, dispatch]);
 
   return (

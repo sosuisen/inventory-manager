@@ -3,7 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import './ItemRow.css';
 import { getLocalDateAndTime } from '../modules_common/utils';
 import { selectorCurrentBoxId, selectorMessages } from './selector';
-import { itemDeleteAction, itemNameUpdateAction, toggleTakeoutAction } from './action';
+import {
+  itemDeleteActionCreator,
+  itemNameUpdateActionCreator,
+  toggleTakeoutActionCreator,
+} from './action';
 import { Item } from '../modules_common/store.types';
 
 export const ItemRow = (prop: { item: Item; index: number }) => {
@@ -16,16 +20,16 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
   const dispatch = useDispatch();
 
   const deleteItem = useCallback(() => {
-    dispatch(itemDeleteAction(currentBoxId, prop.item._id));
+    dispatch(itemDeleteActionCreator(currentBoxId, prop.item._id));
   }, [currentBoxId, prop.item._id, dispatch]);
 
   const toggleTakeout = useCallback(() => {
-    dispatch(toggleTakeoutAction(currentBoxId, prop.item._id));
+    dispatch(toggleTakeoutActionCreator(currentBoxId, prop.item._id));
   }, [prop.item._id, dispatch]);
 
   const changeName = useCallback(
     (elm: HTMLElement) => {
-      dispatch(itemNameUpdateAction(currentBoxId, prop.item._id, nameValue, elm));
+      dispatch(itemNameUpdateActionCreator(currentBoxId, prop.item._id, nameValue, elm));
     },
     [nameValue, dispatch]
   );
