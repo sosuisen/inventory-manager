@@ -27,6 +27,7 @@ const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: Box } = {};
 
 let boxCollection: Collection;
+let itemCollection: Collection;
 
 let mainWindow: BrowserWindow;
 
@@ -174,23 +175,26 @@ const init = async () => {
   }
 
   boxCollection = await gitDDB.collection('box');
+  itemCollection = await gitDDB.collection('item');
 
-  // Get collections directly under item/
+  // Get a box list from item/ directory.
+  // Don't get a box list from box/ directory because files under box/ only have subordinate properties of item/.
+  // If some files under box/ are missing, they will be automatically complemented by default values.
   const cols = await gitDDB.getCollections('item');
   cols.forEach(async col => {
     const boxId = col.collectionPath().slice(0, -1); // Remove trailing slash.
 
-    // Get docs by full-path (item/boxId/itemId)
     const boxItems = ((
-      await gitDDB.allDocs({ prefix: 'item/' + boxId, include_docs: true })
+      await itemCollection.allDocs({ prefix: boxId, include_docs: true })
     ).rows.map(row => row.doc) as unknown) as Item[];
 
     boxes[boxId].items = [];
     boxItems.forEach(item => {
-      items[item._id] = item; // Set full-path as id.
+      items[item._id] = item; // Set boxId/itemId as id.
       boxes[boxId].items.push(item._id);
     });
 
+    // Set default value if not exists.
     boxes[boxId].name =
       (await boxCollection.get(boxId)).name ??
       getSettings().temporalSettings.messages.firstBoxName;
@@ -241,7 +245,7 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     case 'db-item-add':
     case 'db-item-update': {
       const jsonObj = (command.data.item as unknown) as { _id: string };
-      gitDDB
+      itemCollection
         .put(jsonObj)
         .then(() => {
           if (sync) {
@@ -253,7 +257,7 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     }
     case 'db-item-delete': {
       const id = command.data;
-      gitDDB
+      itemCollection
         .delete(id)
         .then(() => {
           if (sync) {
