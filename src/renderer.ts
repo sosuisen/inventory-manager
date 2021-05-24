@@ -38,58 +38,59 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     if (file.data.id.startsWith('box/')) {
       boxChanges.push(file);
     }
-    else if (file.operation.startsWith('insert')) {
-      itemInsertActionCreator(file.data.doc! as Item, 'remote')(
-        inventoryStore.dispatch,
-        inventoryStore.getState
-      );
-      counter.create++;
-    }
-    else if (file.operation.startsWith('update')) {
-      itemReplaceActionCreator(file.data.doc as Item, 'remote')(
-        inventoryStore.dispatch,
-        inventoryStore.getState
-      );
-      counter.update++;
-    }
-    else if (file.operation.startsWith('delete')) {
-      itemDeleteActionCreator(file.data.id, 'remote')(
-        inventoryStore.dispatch,
-        inventoryStore.getState
-      );
-      counter.delete++;
+    else {
+      const item = (file.data.doc as unknown) as Item;
+      item._id = item._id.replace(/^item\//, '');
+
+      if (file.operation.startsWith('insert')) {
+        itemInsertActionCreator(item, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.create++;
+      }
+      else if (file.operation.startsWith('update')) {
+        itemReplaceActionCreator(item, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.update++;
+      }
+      else if (file.operation.startsWith('delete')) {
+        itemDeleteActionCreator(item._id, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.delete++;
+      }
     }
   });
 
   // Box changes
   boxChanges.forEach(file => {
+    const box = (file.data as unknown) as Box;
+    box._id = box._id.replace(/^box\//, '');
     if (file.operation.startsWith('insert')) {
-      const boxId = getBoxId(file.data.id);
-      if (boxId) {
-        boxRenameActionCreator(
-          boxId,
-          file.data.doc!.name,
-          'remote'
-        )(inventoryStore.dispatch, inventoryStore.getState);
-        counter.create++;
-      }
+      boxRenameActionCreator(
+        box._id,
+        box.name,
+        'remote'
+      )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.create++;
     }
     else if (file.operation.startsWith('update')) {
-      const boxId = getBoxId(file.data.id);
-      if (boxId) {
-        boxRenameActionCreator(
-          boxId,
-          file.data.doc!.name,
-          'remote'
-        )(inventoryStore.dispatch, inventoryStore.getState);
-        counter.update++;
-      }
+      boxRenameActionCreator(
+        box._id,
+        box.name,
+        'remote'
+      )(inventoryStore.dispatch, inventoryStore.getState);
+      counter.update++;
     }
     else if (file.operation.startsWith('delete')) {
-      if (!inventoryStore.getState().box[file.data.id]) {
+      if (!inventoryStore.getState().box[box._id]) {
         // nop
       }
-      else if (inventoryStore.getState().box[file.data.id].items.length > 0) {
+      else if (inventoryStore.getState().box[box._id].items.length > 0) {
         // Revert deleted box
         const cmd: DatabaseBoxDeleteRevert = {
           command: 'db-box-delete-revert',
@@ -98,14 +99,11 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         window.api.db(cmd);
       }
       else {
-        const boxId = getBoxId(file.data.id);
-        if (boxId) {
-          boxDeleteActionCreator(boxId, 'remote')(
-            inventoryStore.dispatch,
-            inventoryStore.getState
-          );
-          counter.delete++;
-        }
+        boxDeleteActionCreator(box._id, 'remote')(
+          inventoryStore.dispatch,
+          inventoryStore.getState
+        );
+        counter.delete++;
       }
     }
   });
