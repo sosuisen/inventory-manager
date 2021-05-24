@@ -68,7 +68,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
 
   // Box changes
   boxChanges.forEach(file => {
-    const box = (file.data as unknown) as Box;
+    const box = (file.data.doc as unknown) as Box;
     box._id = box._id.replace(/^box\//, '');
     if (file.operation.startsWith('insert')) {
       boxRenameActionCreator(
