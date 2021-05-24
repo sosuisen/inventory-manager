@@ -315,9 +315,12 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     }
     case 'db-box-delete-revert': {
       const id = command.data;
-      const box = boxCollection.get(id, 1);
       boxCollection
-        .put(box)
+        .get(id, 1)
+        .then(box => {
+          if (box) boxCollection.put(box);
+          else throw new Error('backNumber does not found');
+        })
         .then(() => {
           if (sync) {
             sync.trySync();
