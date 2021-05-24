@@ -154,6 +154,7 @@ const init = async () => {
         personal_access_token,
         private: true,
       },
+      interval: 10000,
       conflict_resolution_strategy: 'ours-diff',
       live: true,
     };

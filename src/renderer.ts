@@ -94,7 +94,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         // Revert deleted box
         const cmd: DatabaseBoxDeleteRevert = {
           command: 'db-box-delete-revert',
-          data: file.data.id,
+          data: box._id,
         };
         window.api.db(cmd);
       }
