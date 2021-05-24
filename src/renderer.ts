@@ -38,7 +38,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
     if (file.data.id.startsWith('box/')) {
       boxChanges.push(file);
     }
-    else if (file.operation.startsWith('create')) {
+    else if (file.operation.startsWith('insert')) {
       itemInsertActionCreator(file.data.doc! as Item, 'remote')(
         inventoryStore.dispatch,
         inventoryStore.getState
@@ -63,7 +63,7 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
 
   // Box changes
   boxChanges.forEach(file => {
-    if (file.operation.startsWith('create')) {
+    if (file.operation.startsWith('insert')) {
       const boxId = getBoxId(file.data.id);
       if (boxId) {
         boxRenameActionCreator(
@@ -86,7 +86,10 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
       }
     }
     else if (file.operation.startsWith('delete')) {
-      if (inventoryStore.getState().box[file.data.id].items.length > 0) {
+      if (!inventoryStore.getState().box[file.data.id]) {
+        // nop
+      }
+      else if (inventoryStore.getState().box[file.data.id].items.length > 0) {
         // Revert deleted box
         const cmd: DatabaseBoxDeleteRevert = {
           command: 'db-box-delete-revert',

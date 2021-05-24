@@ -10,13 +10,17 @@ import { monotonicFactory } from 'ulid';
 const ulid = monotonicFactory();
 
 export const getBoxId = (id: string) => {
-  const resBox = id.match(/^box\/(.+?)\.json/);
-  if (resBox && resBox.length >= 2) {
-    return resBox[1];
+  const resBoxId = id.match(/^box\/(.+?)$/);
+  if (resBoxId && resBoxId.length >= 2) {
+    return resBoxId[1];
   }
-  const resItem = id.match(/^(.+?)\//);
-  if (resItem && resItem.length >= 2) {
-    return resItem[1];
+  const resItemId = id.match(/^item\/(.+?)\//);
+  if (resItemId && resItemId.length >= 2) {
+    return resItemId[1];
+  }
+  const resItemCollectionId = id.match(/^(.+?)\//);
+  if (resItemCollectionId && resItemCollectionId.length >= 2) {
+    return resItemCollectionId[1];
   }
 
   return undefined;

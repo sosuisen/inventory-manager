@@ -26,7 +26,8 @@ export const Sync = (prop: { synchronizing: boolean; info: SyncInfo | undefined 
 
   return (
     <div styleName='sync'>
-      {prop.info !== undefined ? (
+      {prop.info !== undefined &&
+      (prop.info.create > 0 || prop.info.update > 0 || prop.info.delete > 0) ? (
         <div styleName='balloon'>
           {prop.info.create > 0 ? <div>{messages.syncCreate + prop.info.create}</div> : ''}
           {prop.info.update > 0 ? <div>{messages.syncUpdate + prop.info.update}</div> : ''}

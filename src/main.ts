@@ -28,7 +28,7 @@ import {
 } from './modules_main/store.settings';
 import { DatabaseCommand } from './modules_common/db.types';
 import { Box, Item } from './modules_common/store.types';
-import { generateId } from './modules_common/utils';
+import { generateId, getBoxId } from './modules_common/utils';
 
 let gitDDB: GitDocumentDB;
 let sync: Sync;
@@ -186,41 +186,41 @@ const init = async () => {
   boxCollection = await gitDDB.collection('box');
   itemCollection = await gitDDB.collection('item');
 
-  // Get a box list from item/ directory.
-  // Don't get a box list from box/ directory because files under box/ only have subordinate properties of item/.
-  // If some files under box/ are missing, they will be automatically complemented by default values.
-  const cols = await gitDDB.getCollections('item');
-  const boxItemPromises: Promise<AllDocsResult>[] = [];
-  const boxIds: string[] = [];
-  cols.forEach(col => {
-    const res = col.collectionPath().match(/^item\/(.+)\//);
-    if (res && res.length === 2) {
-      const boxId = res[1];
-      boxIds.push(boxId);
-      boxItemPromises.push(itemCollection.allDocs({ prefix: boxId, include_docs: true }));
+  const boxDocs = ((await boxCollection.allDocs({ include_docs: true })).rows.map(
+    row => row.doc
+  ) as unknown) as Box[];
+  boxDocs.forEach(boxDoc => {
+    // Add lacked property
+    boxDoc.items = [];
+    boxes[boxDoc._id] = boxDoc;
+  });
+
+  const itemDocs = ((await itemCollection.allDocs({ include_docs: true })).rows.map(
+    row => row.doc
+  ) as unknown) as Item[];
+
+  itemDocs.forEach(itemDoc => {
+    // Set boxId/itemId as id.
+    items[itemDoc._id] = itemDoc;
+    const boxId = getBoxId(itemDoc._id);
+    if (boxId) {
+      if (boxes[boxId]) {
+        boxes[boxId].items.push(itemDoc._id);
+      }
+      else {
+        // Create box if not exist.
+        const boxName = getSettings().temporalSettings.messages.firstBoxName;
+        boxes[boxId] = {
+          _id: boxId,
+          name: boxName,
+          items: [],
+        };
+        boxes[boxId].items.push(itemDoc._id);
+      }
     }
   });
-  const itemsArray: AllDocsResult[] = await Promise.all(boxItemPromises);
-  for (let i = 0; i < boxIds.length; i++) {
-    const boxId = boxIds[i];
-    const myItems = itemsArray[i];
-    boxes[boxId] = {
-      _id: boxId,
-      // Set default value if not exists.
-      name:
-        // eslint-disable-next-line no-await-in-loop
-        (await boxCollection.get(boxId))?.name ??
-        getSettings().temporalSettings.messages.firstBoxName,
-      items: [],
-    };
-    myItems.rows.forEach(item => {
-      // Set boxId/itemId as id.
-      items[item.id] = (item.doc as unknown) as Item;
-      boxes[boxId].items.push(item.id);
-    });
-  }
 
-  if (boxIds.length === 0) {
+  if (boxDocs.length === 0) {
     const box = generateId();
     const boxName = getSettings().temporalSettings.messages.firstBoxName;
     boxes[box] = {
