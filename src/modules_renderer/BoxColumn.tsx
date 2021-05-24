@@ -8,22 +8,23 @@
 
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import { Box } from '../modules_common/store.types';
 import { boxSelectActionCreator } from './actionCreator';
 import './BoxColumn.css';
 
-export const BoxColumn = (prop: { box: string; currentBoxId: string }) => {
+export const BoxColumn = (prop: { box: Box; currentBoxId: string }) => {
   const dispatch = useDispatch();
 
   const selectBox = useCallback(() => {
-    dispatch(boxSelectActionCreator(prop.box));
+    dispatch(boxSelectActionCreator(prop.box._id));
   }, [prop.box, dispatch]);
 
   return (
     <div
-      styleName={prop.box === prop.currentBoxId ? 'col selected' : 'col'}
+      styleName={prop.box._id === prop.currentBoxId ? 'col selected' : 'col'}
       onClick={selectBox}
     >
-      {prop.box}
+      {prop.box.name}
     </div>
   );
 };

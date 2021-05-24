@@ -21,7 +21,7 @@ export const selectorCurrentBox = (state: InventoryState) => {
 export const selectorOrderedBoxes = (state: InventoryState) => {
   return Object.values(state.box).sort((a, b) => {
     if (a.name > b.name) return 1;
-    if (a.name > b.name) return -1;
+    if (a.name < b.name) return -1;
     return 0;
   });
 };

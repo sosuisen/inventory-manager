@@ -64,20 +64,26 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
   // Box changes
   boxChanges.forEach(file => {
     if (file.operation.startsWith('create')) {
-      boxRenameActionCreator(
-        getBoxId(file.data.id),
-        file.data.doc.name,
-        'remote'
-      )(inventoryStore.dispatch, inventoryStore.getState);
-      counter.create++;
+      const boxId = getBoxId(file.data.id);
+      if (boxId) {
+        boxRenameActionCreator(
+          boxId,
+          file.data.doc!.name,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
+        counter.create++;
+      }
     }
     else if (file.operation.startsWith('update')) {
-      boxRenameActionCreator(
-        getBoxId(file.data.id),
-        file.data.doc.name,
-        'remote'
-      )(inventoryStore.dispatch, inventoryStore.getState);
-      counter.update++;
+      const boxId = getBoxId(file.data.id);
+      if (boxId) {
+        boxRenameActionCreator(
+          boxId,
+          file.data.doc!.name,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
+        counter.update++;
+      }
     }
     else if (file.operation.startsWith('delete')) {
       if (inventoryStore.getState().box[file.data.id].items.length > 0) {
@@ -89,11 +95,14 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
         window.api.db(cmd);
       }
       else {
-        boxDeleteActionCreator(getBoxId(file.data.id), 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-        counter.delete++;
+        const boxId = getBoxId(file.data.id);
+        if (boxId) {
+          boxDeleteActionCreator(boxId, 'remote')(
+            inventoryStore.dispatch,
+            inventoryStore.getState
+          );
+          counter.delete++;
+        }
       }
     }
   });
@@ -123,7 +132,11 @@ window.addEventListener('message', event => {
     case 'initialize-store': {
       const items: { [key: string]: Item } = event.data.items;
       const boxes: { [key: string]: Box } = event.data.boxes;
-      const boxArray = Object.keys(boxes).sort();
+      const boxArray = Object.values(boxes).sort((a, b) => {
+        if (a.name > b.name) return 1;
+        if (a.name < b.name) return -1;
+        return 0;
+      });
       const currentBox = boxArray[0];
       inventoryStore.dispatch({
         type: 'item-init',
@@ -135,7 +148,7 @@ window.addEventListener('message', event => {
       });
       inventoryStore.dispatch({
         type: 'work-current-box-update',
-        payload: currentBox,
+        payload: currentBox._id,
       });
 
       const appInfo = (event.data.settings.temporalSettings.app as unknown) as AppInfo;

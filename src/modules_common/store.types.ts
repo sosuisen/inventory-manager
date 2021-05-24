@@ -48,7 +48,7 @@ export type Box = BoxDoc & {
 };
 
 export type BoxState = {
-  [name: string]: Box;
+  [id: string]: Box;
 };
 
 export type LatestChangeFrom = 'local' | 'remote';

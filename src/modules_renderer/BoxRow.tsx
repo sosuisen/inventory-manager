@@ -23,7 +23,7 @@ export const BoxRow = () => {
   const currentBoxId = useSelector(selectorCurrentBoxId);
   const boxes = useSelector(selectorOrderedBoxes);
   const boxList = boxes.map(box => (
-    <BoxColumn box={box.name} currentBoxId={currentBoxId}></BoxColumn>
+    <BoxColumn box={box} currentBoxId={currentBoxId}></BoxColumn>
   ));
 
   const messages = useSelector(selectorMessages);

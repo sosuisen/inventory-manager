@@ -240,26 +240,28 @@ export const itemInsertActionCreator = (
     dispatch(latestChangeFromAction);
 
     const boxId = getBoxId(item._id);
-    const box = getState().box[boxId];
-    if (!box) {
-      const boxAction: BoxAddAction = {
-        type: 'box-add',
-        payload: {
-          _id: boxId,
-          name: getState().settings.messages.firstBoxName,
-        },
-      };
-      dispatch(boxAction);
-
-      if (latestChangeFrom === 'local') {
-        const cmd: DatabaseBoxAdd = {
-          command: 'db-box-add',
-          data: {
+    if (boxId !== undefined) {
+      const box = getState().box[boxId];
+      if (!box) {
+        const boxAction: BoxAddAction = {
+          type: 'box-add',
+          payload: {
             _id: boxId,
             name: getState().settings.messages.firstBoxName,
           },
         };
-        window.api.db(cmd);
+        dispatch(boxAction);
+
+        if (latestChangeFrom === 'local') {
+          const cmd: DatabaseBoxAdd = {
+            command: 'db-box-add',
+            data: {
+              _id: boxId,
+              name: getState().settings.messages.firstBoxName,
+            },
+          };
+          window.api.db(cmd);
+        }
       }
     }
 
@@ -348,7 +350,7 @@ export const boxAddActionCreator = (
 
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
       type: 'work-current-box-update',
-      payload: name,
+      payload: _id,
     };
     dispatch(workCurrentBoxAction);
 

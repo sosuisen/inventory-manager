@@ -23,7 +23,7 @@ import { getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
   switch (action.type) {
     case 'item-init': {
-      return { ...action.payload };
+      return JSON.parse(JSON.stringify(action.payload));
     }
     case 'item-add': {
       const newState = { ...state };
@@ -75,7 +75,7 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
 const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
   switch (action.type) {
     case 'box-init': {
-      return { ...action.payload };
+      return JSON.parse(JSON.stringify(action.payload));
     }
     case 'box-add': {
       const newState = JSON.parse(JSON.stringify(state));
@@ -85,6 +85,7 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
       }
 
       newState[action.payload._id] = {
+        _id: action.payload._id,
         name: action.payload.name,
         items: [],
       };
@@ -106,7 +107,7 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     case 'box-item-add': {
       const newState = JSON.parse(JSON.stringify(state));
       const boxId = getBoxId(action.payload);
-      if (!newState[boxId]) {
+      if (boxId === undefined || !newState[boxId]) {
         return newState;
       }
       newState[boxId].items.push(action.payload);
@@ -115,10 +116,12 @@ const boxReducer = (state: BoxState = {}, action: BoxAction): BoxState => {
     case 'box-item-delete': {
       const newState = JSON.parse(JSON.stringify(state));
       const boxId = getBoxId(action.payload);
-      if (!newState[boxId]) {
+      if (boxId === undefined || !newState[boxId]) {
         return newState;
       }
-      newState[boxId] = newState[boxId].filter((id: string) => id !== action.payload);
+      newState[boxId].items = newState[boxId].items.filter(
+        (id: string) => id !== action.payload
+      );
       return newState;
     }
     default:

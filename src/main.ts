@@ -11,6 +11,7 @@ import os from 'os';
 import { readJsonSync } from 'fs-extra';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import {
+  AllDocsResult,
   ChangedFile,
   Collection,
   GitDocumentDB,
@@ -189,30 +190,44 @@ const init = async () => {
   // Don't get a box list from box/ directory because files under box/ only have subordinate properties of item/.
   // If some files under box/ are missing, they will be automatically complemented by default values.
   const cols = await gitDDB.getCollections('item');
-  cols.forEach(async col => {
-    const boxId = col.collectionPath().slice(0, -1); // Remove trailing slash.
-
-    const boxItems = ((
-      await itemCollection.allDocs({ prefix: boxId, include_docs: true })
-    ).rows.map(row => row.doc) as unknown) as Item[];
-
-    boxes[boxId].items = [];
-    boxItems.forEach(item => {
-      items[item._id] = item; // Set boxId/itemId as id.
-      boxes[boxId].items.push(item._id);
-    });
-
-    // Set default value if not exists.
-    boxes[boxId].name =
-      (await boxCollection.get(boxId)).name ??
-      getSettings().temporalSettings.messages.firstBoxName;
+  const boxItemPromises: Promise<AllDocsResult>[] = [];
+  const boxIds: string[] = [];
+  cols.forEach(col => {
+    const res = col.collectionPath().match(/^item\/(.+)\//);
+    if (res && res.length === 2) {
+      const boxId = res[1];
+      boxIds.push(boxId);
+      boxItemPromises.push(itemCollection.allDocs({ prefix: boxId, include_docs: true }));
+    }
   });
+  const itemsArray: AllDocsResult[] = await Promise.all(boxItemPromises);
+  for (let i = 0; i < boxIds.length; i++) {
+    const boxId = boxIds[i];
+    const myItems = itemsArray[i];
+    boxes[boxId] = {
+      _id: boxId,
+      // Set default value if not exists.
+      name:
+        // eslint-disable-next-line no-await-in-loop
+        (await boxCollection.get(boxId))?.name ??
+        getSettings().temporalSettings.messages.firstBoxName,
+      items: [],
+    };
+    myItems.rows.forEach(item => {
+      // Set boxId/itemId as id.
+      items[item.id] = (item.doc as unknown) as Item;
+      boxes[boxId].items.push(item.id);
+    });
+  }
 
-  if (cols.length === 0) {
+  if (boxIds.length === 0) {
     const box = generateId();
     const boxName = getSettings().temporalSettings.messages.firstBoxName;
-    boxes[box].name = boxName;
-    boxes[box].items = [];
+    boxes[box] = {
+      _id: box,
+      name: boxName,
+      items: [],
+    };
   }
   createWindow();
 };

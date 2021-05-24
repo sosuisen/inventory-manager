@@ -11,11 +11,11 @@ const ulid = monotonicFactory();
 
 export const getBoxId = (id: string) => {
   const resBox = id.match(/^box\/(.+?)\.json/);
-  if (resBox.length >= 2) {
+  if (resBox && resBox.length >= 2) {
     return resBox[1];
   }
   const resItem = id.match(/^(.+?)\//);
-  if (resItem.length >= 2) {
+  if (resItem && resItem.length >= 2) {
     return resItem[1];
   }
 
