@@ -169,6 +169,7 @@ export const itemNameUpdateActionCreator = (
       itemNameUpdateTime !== '' &&
       itemNameUpdateTime > enqueueTime
     ) {
+      console.log('Block expired remote update');
       return;
     }
     if (name === '' || name.match(/^\s+$/)) {
@@ -229,6 +230,7 @@ export const itemTakeoutUpdateActionCreator = (
       itemTakeoutUpdateTime !== '' &&
       itemTakeoutUpdateTime > enqueueTime
     ) {
+      console.log('Block expired remote update');
       return;
     }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
@@ -386,6 +388,7 @@ export const boxNameUpdateActionCreator = (
       boxNameUpdateTime !== '' &&
       boxNameUpdateTime > enqueueTime
     ) {
+      console.log('Block expired remote update');
       return;
     }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
