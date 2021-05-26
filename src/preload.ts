@@ -25,8 +25,8 @@ ipcRenderer.on('initialize-store', (event, items, boxes, settings) => {
   window.postMessage({ command: 'initialize-store', items, boxes, settings }, 'file://');
 });
 
-ipcRenderer.on('sync', (event, changes) => {
-  window.postMessage({ command: 'sync', changes }, 'file://');
+ipcRenderer.on('sync', (event, changes, taskMetadata) => {
+  window.postMessage({ command: 'sync', changes, taskMetadata }, 'file://');
 });
 
 ipcRenderer.on('sync-start', () => {

@@ -17,6 +17,7 @@ import {
   GitDocumentDB,
   RemoteOptions,
   Sync,
+  TaskMetadata,
 } from 'git-documentdb';
 import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
 import {
@@ -172,8 +173,8 @@ const init = async () => {
 
   if (remoteOptions && remoteOptions.remote_url) {
     sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
-    sync.on('localChange', (changes: ChangedFile[]) => {
-      mainWindow.webContents.send('sync', changes);
+    sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+      mainWindow.webContents.send('sync', changes, taskMetadata);
     });
     sync.on('start', () => {
       mainWindow.webContents.send('sync-start');
@@ -260,58 +261,74 @@ app.on('activate', async () => {
 // code. You can also put them in separate files and import them here.
 
 // eslint-disable-next-line complexity
-ipcMain.handle('db', (e, command: DatabaseCommand) => {
+ipcMain.handle('db', async (e, command: DatabaseCommand) => {
   let collection: Collection;
   const method = '';
   // eslint-disable-next-line default-case
   switch (command.command) {
     case 'db-item-add':
     case 'db-item-update': {
-      itemCollection
-        .put(command.data)
-        .then(() => {
-          if (sync) {
-            sync.trySync();
-          }
-        })
-        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
-      break;
+      const taskId = await new Promise((resolve, reject) => {
+        itemCollection
+          .put(command.data, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata.taskId);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return taskId;
     }
     case 'db-item-delete': {
-      const id = command.data;
-      itemCollection
-        .delete(id)
-        .then(() => {
-          if (sync) {
-            sync.trySync();
-          }
-        })
-        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
-      break;
+      const taskId = await new Promise((resolve, reject) => {
+        const id = command.data;
+        itemCollection
+          .delete(id, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata.taskId);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return taskId;
     }
     case 'db-box-add':
     case 'db-box-name-update': {
-      boxCollection
-        .put(command.data)
-        .then(() => {
-          if (sync) {
-            sync.trySync();
-          }
-        })
-        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
-      break;
+      const taskId = await new Promise((resolve, reject) => {
+        boxCollection
+          .put(command.data, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata.taskId);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return taskId;
     }
     case 'db-box-delete': {
-      const id = command.data;
-      boxCollection
-        .delete(id)
-        .then(() => {
-          if (sync) {
-            sync.trySync();
-          }
-        })
-        .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
-      break;
+      const taskId = await new Promise((resolve, reject) => {
+        const id = command.data;
+        boxCollection
+          .delete(id, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata.taskId);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return taskId;
     }
     case 'db-box-delete-revert': {
       const id = command.data;
@@ -331,6 +348,7 @@ ipcMain.handle('db', (e, command: DatabaseCommand) => {
     }
     case 'db-sync': {
       sync.trySync();
+      break;
     }
   }
 });

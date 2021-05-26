@@ -26,7 +26,6 @@ import {
   ItemAddAction,
   ItemDeleteAction,
   ItemInsertAction,
-  ItemReplaceAction,
   ItemUpdateAction,
   WorkCurrentBoxUpdateAction,
   WorkItemAddedUpdateAction,
@@ -47,7 +46,7 @@ export const itemAddActionCreator = (
   name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (name === '' || name.match(/^\s+$/)) {
       return;
     }
@@ -96,7 +95,7 @@ export const itemAddActionCreator = (
         command: 'db-item-add',
         data: newItem,
       };
-      window.api.db(cmd);
+      await window.api.db(cmd);
     }
 
     const boxAction: BoxItemAddAction = {
@@ -117,7 +116,7 @@ export const itemDeleteActionCreator = (
   id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -141,7 +140,7 @@ export const itemDeleteActionCreator = (
         command: 'db-item-delete',
         data: id,
       };
-      window.api.db(cmd);
+      await window.api.db(cmd);
     }
 
     const workAction: WorkItemDeletedUpdateAction = {
@@ -152,18 +151,26 @@ export const itemDeleteActionCreator = (
   };
 };
 
+let itemNameUpdateTime = '';
 export const itemNameUpdateActionCreator = (
   id: string,
   name: string,
-  elm: HTMLElement,
+  elm?: HTMLElement,
+  modified_date?: string,
+  enqueueTime?: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (itemNameUpdateTime && itemNameUpdateTime > enqueueTime) {
+      return;
+    }
     if (name === '' || name.match(/^\s+$/)) {
       return;
     }
     if (name === getState().item[id].name) {
-      elm.blur();
+      if (elm) {
+        elm.blur();
+      }
       return;
     }
 
@@ -178,6 +185,7 @@ export const itemNameUpdateActionCreator = (
       payload: {
         _id: id,
         name,
+        modified_date,
       },
     };
     dispatch(itemAction);
@@ -188,17 +196,27 @@ export const itemNameUpdateActionCreator = (
         command: 'db-item-update',
         data: newItem,
       };
-      window.api.db(cmd);
+      // eslint-disable-next-line require-atomic-updates
+      itemNameUpdateTime = await window.api.db(cmd);
     }
-    elm.blur();
+    if (elm) {
+      elm.blur();
+    }
   };
 };
 
-export const toggleTakeoutActionCreator = (
+let itemTakeoutUpdateTime = '';
+export const itemTakeoutUpdateActionCreator = (
   id: string,
+  takeout: boolean,
+  modified_date?: string,
+  enqueueTime?: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (itemTakeoutUpdateTime && itemTakeoutUpdateTime > enqueueTime) {
+      return;
+    }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -209,7 +227,8 @@ export const toggleTakeoutActionCreator = (
       type: 'item-update',
       payload: {
         _id: id,
-        takeout: !getState().item[id].takeout,
+        takeout,
+        modified_date,
       },
     };
     dispatch(itemAction);
@@ -220,7 +239,8 @@ export const toggleTakeoutActionCreator = (
         command: 'db-item-update',
         data: newItem,
       };
-      window.api.db(cmd);
+      // eslint-disable-next-line require-atomic-updates
+      itemTakeoutUpdateTime = await window.api.db(cmd);
     }
   };
 };
@@ -232,7 +252,7 @@ export const itemInsertActionCreator = (
   item: Item,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -260,7 +280,7 @@ export const itemInsertActionCreator = (
               name: getState().settings.messages.firstBoxName,
             },
           };
-          window.api.db(cmd);
+          await window.api.db(cmd);
         }
       }
     }
@@ -277,7 +297,7 @@ export const itemInsertActionCreator = (
         command: 'db-item-add',
         data: newItem,
       };
-      window.api.db(cmd);
+      await window.api.db(cmd);
     }
 
     const boxAction: BoxItemAddAction = {
@@ -295,44 +315,13 @@ export const itemInsertActionCreator = (
 };
 
 /**
- * Replace a specified item
- */
-export const itemReplaceActionCreator = (
-  item: Item,
-  latestChangeFrom: LatestChangeFrom = 'local'
-) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
-      type: 'work-latest-change-from-update',
-      payload: latestChangeFrom,
-    };
-    dispatch(latestChangeFromAction);
-
-    const itemAction: ItemReplaceAction = {
-      type: 'item-replace',
-      payload: item,
-    };
-    dispatch(itemAction);
-
-    if (latestChangeFrom === 'local') {
-      const newItem = getState().item[item._id];
-      const itemCommand: DatabaseItemUpdate = {
-        command: 'db-item-update',
-        data: newItem,
-      };
-      window.api.db(itemCommand);
-    }
-  };
-};
-
-/**
  * Create a new box from name
  */
 export const boxAddActionCreator = (
   name: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -362,17 +351,22 @@ export const boxAddActionCreator = (
           name,
         },
       };
-      window.api.db(cmd);
+      await window.api.db(cmd);
     }
   };
 };
 
-export const boxRenameActionCreator = (
+let boxNameUpdateTime = '';
+export const boxNameUpdateActionCreator = (
   _id: string,
   name: string,
+  enqueueTime?: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    if (boxNameUpdateTime && boxNameUpdateTime > enqueueTime) {
+      return;
+    }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -398,7 +392,7 @@ export const boxRenameActionCreator = (
             name,
           },
         };
-        window.api.db(command);
+        await window.api.db(command);
       }
     }
     else {
@@ -419,7 +413,8 @@ export const boxRenameActionCreator = (
             name,
           },
         };
-        window.api.db(command);
+        // eslint-disable-next-line require-atomic-updates
+        boxNameUpdateTime = await window.api.db(command);
       }
     }
   };
@@ -429,7 +424,7 @@ export const boxDeleteActionCreator = (
   id: string,
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
-  return function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     // Cannot delete if the box has items.
     const items = getState().box[id].items;
     if (items.length > 0) {
@@ -476,7 +471,7 @@ export const boxDeleteActionCreator = (
         command: 'db-box-delete',
         data: id,
       };
-      window.api.db(cmd);
+      await window.api.db(cmd);
     }
 
     const workCurrentBoxAction: WorkCurrentBoxUpdateAction = {
