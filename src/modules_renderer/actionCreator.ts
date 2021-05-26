@@ -161,7 +161,14 @@ export const itemNameUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (itemNameUpdateTime && itemNameUpdateTime > enqueueTime) {
+    console.log(
+      'itemNameUpdateTime: ' + itemNameUpdateTime + ', enqueueTime: ' + enqueueTime
+    );
+    if (
+      enqueueTime !== undefined &&
+      itemNameUpdateTime !== '' &&
+      itemNameUpdateTime > enqueueTime
+    ) {
       return;
     }
     if (name === '' || name.match(/^\s+$/)) {
@@ -214,7 +221,14 @@ export const itemTakeoutUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (itemTakeoutUpdateTime && itemTakeoutUpdateTime > enqueueTime) {
+    console.log(
+      'itemTakeoutUpdateTime: ' + itemTakeoutUpdateTime + ', enqueueTime: ' + enqueueTime
+    );
+    if (
+      enqueueTime !== undefined &&
+      itemTakeoutUpdateTime !== '' &&
+      itemTakeoutUpdateTime > enqueueTime
+    ) {
       return;
     }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
@@ -364,7 +378,14 @@ export const boxNameUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    if (boxNameUpdateTime && boxNameUpdateTime > enqueueTime) {
+    console.log(
+      'boxNameUpdateTime: ' + boxNameUpdateTime + ', enqueueTime: ' + enqueueTime
+    );
+    if (
+      enqueueTime !== undefined &&
+      boxNameUpdateTime !== '' &&
+      boxNameUpdateTime > enqueueTime
+    ) {
       return;
     }
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
