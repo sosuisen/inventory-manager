@@ -20,7 +20,6 @@ import {
   itemInsertActionCreator,
   itemReplaceActionCreator,
 } from './modules_renderer/actionCreator';
-import { getBoxId } from './modules_common/utils';
 import window from './modules_renderer/window';
 import { DatabaseBoxDeleteRevert } from './modules_common/db.types';
 
