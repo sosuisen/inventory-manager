@@ -14,7 +14,7 @@ import { selectorCurrentBoxId, selectorMessages } from './selector';
 import {
   itemDeleteActionCreator,
   itemNameUpdateActionCreator,
-  toggleTakeoutActionCreator,
+  itemTakeoutUpdateActionCreator,
 } from './actionCreator';
 import { Item } from '../modules_common/store.types';
 
@@ -31,9 +31,12 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
     dispatch(itemDeleteActionCreator(prop.item._id));
   }, [currentBoxId, prop.item._id, dispatch]);
 
-  const toggleTakeout = useCallback(() => {
-    dispatch(toggleTakeoutActionCreator(prop.item._id));
-  }, [prop.item._id, dispatch]);
+  const toggleTakeout = useCallback(
+    (takeout: boolean) => {
+      dispatch(itemTakeoutUpdateActionCreator(prop.item._id, takeout));
+    },
+    [prop.item._id, dispatch]
+  );
 
   const changeName = useCallback(
     (elm: HTMLElement) => {
@@ -54,7 +57,7 @@ export const ItemRow = (prop: { item: Item; index: number }) => {
         <input
           type='radio'
           checked={prop.item.takeout}
-          onClick={e => toggleTakeout()}
+          onClick={e => toggleTakeout(!prop.item.takeout)}
         ></input>
       </div>
       <div styleName='col name'>

@@ -8,22 +8,23 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ChangedFile } from 'git-documentdb';
+import { ChangedFile, TaskMetadata } from 'git-documentdb';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
 import { AppInfo, Box, Item } from './modules_common/store.types';
 import { Messages } from './modules_common/i18n';
 import {
   boxDeleteActionCreator,
-  boxRenameActionCreator,
+  boxNameUpdateActionCreator,
   itemDeleteActionCreator,
   itemInsertActionCreator,
-  itemReplaceActionCreator,
+  itemNameUpdateActionCreator,
+  itemTakeoutUpdateActionCreator,
 } from './modules_renderer/actionCreator';
 import window from './modules_renderer/window';
 import { DatabaseBoxDeleteRevert } from './modules_common/db.types';
 
-const syncActionBuilder = (changes: ChangedFile[]) => {
+const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
   // eslint-disable-next-line complexity
   const counter = {
     create: 0,
@@ -34,71 +35,110 @@ const syncActionBuilder = (changes: ChangedFile[]) => {
 
   // Item changes
   changes.forEach(file => {
-    if (file.data.id.startsWith('box/')) {
+    let id = '';
+    if (file.operation === 'insert') {
+      id = file.new.id;
+    }
+    else if (file.operation === 'update') {
+      id = file.new.id;
+    }
+    else if (file.operation === 'delete') {
+      id = file.old.id;
+    }
+
+    if (id.startsWith('box/')) {
       boxChanges.push(file);
     }
-    else {
-      const item = (file.data.doc as unknown) as Item;
-      item._id = item._id.replace(/^item\//, '');
+    else if (file.operation === 'insert') {
+      const newItem = (file.new.doc as unknown) as Item;
+      newItem._id = newItem._id.replace(/^item\//, '');
 
-      if (file.operation.startsWith('insert')) {
-        itemInsertActionCreator(item, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-        counter.create++;
+      itemInsertActionCreator(newItem, 'remote')(
+        inventoryStore.dispatch,
+        inventoryStore.getState
+      );
+      counter.create++;
+    }
+    else if (file.operation === 'update') {
+      const oldItem = (file.old.doc as unknown) as Item;
+      oldItem._id = oldItem._id.replace(/^item\//, '');
+      const newItem = (file.new.doc as unknown) as Item;
+      newItem._id = oldItem._id.replace(/^item\//, '');
+      if (oldItem.name !== newItem.name) {
+        itemNameUpdateActionCreator(
+          newItem._id,
+          newItem.name,
+          undefined,
+          newItem.modified_date,
+          taskMetadata.enqueueTime,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
       }
-      else if (file.operation.startsWith('update')) {
-        itemReplaceActionCreator(item, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-        counter.update++;
+      if (oldItem.takeout !== newItem.takeout) {
+        itemTakeoutUpdateActionCreator(
+          newItem._id,
+          newItem.takeout,
+          newItem.modified_date,
+          taskMetadata.enqueueTime,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
       }
-      else if (file.operation.startsWith('delete')) {
-        itemDeleteActionCreator(item._id, 'remote')(
-          inventoryStore.dispatch,
-          inventoryStore.getState
-        );
-        counter.delete++;
-      }
+      counter.update++;
+    }
+    else if (file.operation.startsWith('delete')) {
+      const oldItem = (file.old.doc as unknown) as Item;
+      oldItem._id = oldItem._id.replace(/^item\//, '');
+      itemDeleteActionCreator(oldItem._id, 'remote')(
+        inventoryStore.dispatch,
+        inventoryStore.getState
+      );
+      counter.delete++;
     }
   });
 
   // Box changes
   boxChanges.forEach(file => {
-    const box = (file.data.doc as unknown) as Box;
-    box._id = box._id.replace(/^box\//, '');
-    if (file.operation.startsWith('insert')) {
-      boxRenameActionCreator(
-        box._id,
-        box.name,
+    if (file.operation === 'insert') {
+      const newBox = (file.new.doc as unknown) as Box;
+      newBox._id = newBox._id.replace(/^box\//, '');
+      boxNameUpdateActionCreator(
+        newBox._id,
+        newBox.name,
+        taskMetadata.enqueueTime,
         'remote'
       )(inventoryStore.dispatch, inventoryStore.getState);
       counter.create++;
     }
-    else if (file.operation.startsWith('update')) {
-      boxRenameActionCreator(
-        box._id,
-        box.name,
+    else if (file.operation === 'update') {
+      // const oldBox = (file.old.doc as unknown) as Box;
+      // oldBox._id = oldBox._id.replace(/^box\//, '');
+      const newBox = (file.new.doc as unknown) as Box;
+      newBox._id = newBox._id.replace(/^box\//, '');
+      boxNameUpdateActionCreator(
+        newBox._id,
+        newBox.name,
+        taskMetadata.enqueueTime,
         'remote'
       )(inventoryStore.dispatch, inventoryStore.getState);
       counter.update++;
     }
     else if (file.operation.startsWith('delete')) {
-      if (!inventoryStore.getState().box[box._id]) {
+      const oldBox = (file.old.doc as unknown) as Box;
+      oldBox._id = oldBox._id.replace(/^box\//, '');
+
+      if (!inventoryStore.getState().box[oldBox._id]) {
         // nop
       }
-      else if (inventoryStore.getState().box[box._id].items.length > 0) {
+      else if (inventoryStore.getState().box[oldBox._id].items.length > 0) {
         // Revert deleted box
         const cmd: DatabaseBoxDeleteRevert = {
           command: 'db-box-delete-revert',
-          data: box._id,
+          data: oldBox._id,
         };
         window.api.db(cmd);
       }
       else {
-        boxDeleteActionCreator(box._id, 'remote')(
+        boxDeleteActionCreator(oldBox._id, 'remote')(
           inventoryStore.dispatch,
           inventoryStore.getState
         );
@@ -169,7 +209,7 @@ window.addEventListener('message', event => {
       break;
     }
     case 'sync': {
-      syncActionBuilder(event.data.changes);
+      syncActionBuilder(event.data.changes, event.data.taskMetadata);
       break;
     }
 

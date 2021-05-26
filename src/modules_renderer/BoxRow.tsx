@@ -14,7 +14,7 @@ import './BoxRow.css';
 import {
   boxAddActionCreator,
   boxDeleteActionCreator,
-  boxRenameActionCreator,
+  boxNameUpdateActionCreator,
 } from './actionCreator';
 
 export const BoxRow = () => {
@@ -51,7 +51,7 @@ export const BoxRow = () => {
     if (sameName.length > 0) {
       return;
     }
-    dispatch(boxRenameActionCreator(currentBoxId, nameValue));
+    dispatch(boxNameUpdateActionCreator(currentBoxId, nameValue));
     setName('');
     document.getElementById('boxRenameDialog')!.removeAttribute('open');
   }, [currentBoxId, nameValue, dispatch]);
