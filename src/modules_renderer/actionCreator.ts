@@ -7,6 +7,7 @@
  */
 
 import { Dispatch } from 'redux';
+import AsyncLock from 'async-lock';
 import {
   DatabaseBoxAdd,
   DatabaseBoxDelete,
@@ -33,6 +34,8 @@ import {
   WorkLatestChangeFromUpdateAction,
 } from './action';
 import window from './window';
+
+const lock = new AsyncLock();
 
 /**
  * Action creators (redux-thunk)
@@ -161,55 +164,57 @@ export const itemNameUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    console.log(
-      'itemNameUpdateTime: ' + itemNameUpdateTime + ', enqueueTime: ' + enqueueTime
-    );
-    if (
-      enqueueTime !== undefined &&
-      itemNameUpdateTime !== '' &&
-      itemNameUpdateTime > enqueueTime
-    ) {
-      console.log('Block expired remote update');
-      return;
-    }
-    if (name === '' || name.match(/^\s+$/)) {
-      return;
-    }
-    if (name === getState().item[id].name) {
+    await lock.acquire('itemNameUpdate', async () => {
+      console.log(
+        'itemNameUpdateTime: ' + itemNameUpdateTime + ', enqueueTime: ' + enqueueTime
+      );
+      if (
+        enqueueTime !== undefined &&
+        itemNameUpdateTime !== '' &&
+        itemNameUpdateTime > enqueueTime
+      ) {
+        console.log('Block expired remote update');
+        return;
+      }
+      if (name === '' || name.match(/^\s+$/)) {
+        return;
+      }
+      if (name === getState().item[id].name) {
+        if (elm) {
+          elm.blur();
+        }
+        return;
+      }
+
+      const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+        type: 'work-latest-change-from-update',
+        payload: latestChangeFrom,
+      };
+      dispatch(latestChangeFromAction);
+
+      const itemAction: ItemUpdateAction = {
+        type: 'item-update',
+        payload: {
+          _id: id,
+          name,
+          modified_date,
+        },
+      };
+      dispatch(itemAction);
+
+      if (latestChangeFrom === 'local') {
+        const newItem = getState().item[id];
+        const cmd: DatabaseItemUpdate = {
+          command: 'db-item-update',
+          data: newItem,
+        };
+        // eslint-disable-next-line require-atomic-updates
+        itemNameUpdateTime = await window.api.db(cmd);
+      }
       if (elm) {
         elm.blur();
       }
-      return;
-    }
-
-    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
-      type: 'work-latest-change-from-update',
-      payload: latestChangeFrom,
-    };
-    dispatch(latestChangeFromAction);
-
-    const itemAction: ItemUpdateAction = {
-      type: 'item-update',
-      payload: {
-        _id: id,
-        name,
-        modified_date,
-      },
-    };
-    dispatch(itemAction);
-
-    if (latestChangeFrom === 'local') {
-      const newItem = getState().item[id];
-      const cmd: DatabaseItemUpdate = {
-        command: 'db-item-update',
-        data: newItem,
-      };
-      // eslint-disable-next-line require-atomic-updates
-      itemNameUpdateTime = await window.api.db(cmd);
-    }
-    if (elm) {
-      elm.blur();
-    }
+    });
   };
 };
 
@@ -222,42 +227,44 @@ export const itemTakeoutUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    console.log(
-      'itemTakeoutUpdateTime: ' + itemTakeoutUpdateTime + ', enqueueTime: ' + enqueueTime
-    );
-    if (
-      enqueueTime !== undefined &&
-      itemTakeoutUpdateTime !== '' &&
-      itemTakeoutUpdateTime > enqueueTime
-    ) {
-      console.log('Block expired remote update');
-      return;
-    }
-    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
-      type: 'work-latest-change-from-update',
-      payload: latestChangeFrom,
-    };
-    dispatch(latestChangeFromAction);
-
-    const itemAction: ItemUpdateAction = {
-      type: 'item-update',
-      payload: {
-        _id: id,
-        takeout,
-        modified_date,
-      },
-    };
-    dispatch(itemAction);
-
-    if (latestChangeFrom === 'local') {
-      const newItem = getState().item[id];
-      const cmd: DatabaseItemUpdate = {
-        command: 'db-item-update',
-        data: newItem,
+    await lock.acquire('itemTakeoutUpdate', async () => {
+      console.log(
+        'itemTakeoutUpdateTime: ' + itemTakeoutUpdateTime + ', enqueueTime: ' + enqueueTime
+      );
+      if (
+        enqueueTime !== undefined &&
+        itemTakeoutUpdateTime !== '' &&
+        itemTakeoutUpdateTime > enqueueTime
+      ) {
+        console.log('Block expired remote update');
+        return;
+      }
+      const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+        type: 'work-latest-change-from-update',
+        payload: latestChangeFrom,
       };
-      // eslint-disable-next-line require-atomic-updates
-      itemTakeoutUpdateTime = await window.api.db(cmd);
-    }
+      dispatch(latestChangeFromAction);
+
+      const itemAction: ItemUpdateAction = {
+        type: 'item-update',
+        payload: {
+          _id: id,
+          takeout,
+          modified_date,
+        },
+      };
+      dispatch(itemAction);
+
+      if (latestChangeFrom === 'local') {
+        const newItem = getState().item[id];
+        const cmd: DatabaseItemUpdate = {
+          command: 'db-item-update',
+          data: newItem,
+        };
+        // eslint-disable-next-line require-atomic-updates
+        itemTakeoutUpdateTime = await window.api.db(cmd);
+      }
+    });
   };
 };
 
@@ -380,67 +387,69 @@ export const boxNameUpdateActionCreator = (
   latestChangeFrom: LatestChangeFrom = 'local'
 ) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
-    console.log(
-      'boxNameUpdateTime: ' + boxNameUpdateTime + ', enqueueTime: ' + enqueueTime
-    );
-    if (
-      enqueueTime !== undefined &&
-      boxNameUpdateTime !== '' &&
-      boxNameUpdateTime > enqueueTime
-    ) {
-      console.log('Block expired remote update');
-      return;
-    }
-    const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
-      type: 'work-latest-change-from-update',
-      payload: latestChangeFrom,
-    };
-    dispatch(latestChangeFromAction);
-
-    const box = getState().box[_id];
-    if (!box) {
-      const boxAction: BoxAddAction = {
-        type: 'box-add',
-        payload: {
-          _id,
-          name,
-        },
+    await lock.acquire('boxNameUpdate', async () => {
+      console.log(
+        'boxNameUpdateTime: ' + boxNameUpdateTime + ', enqueueTime: ' + enqueueTime
+      );
+      if (
+        enqueueTime !== undefined &&
+        boxNameUpdateTime !== '' &&
+        boxNameUpdateTime > enqueueTime
+      ) {
+        console.log('Block expired remote update');
+        return;
+      }
+      const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
+        type: 'work-latest-change-from-update',
+        payload: latestChangeFrom,
       };
-      dispatch(boxAction);
+      dispatch(latestChangeFromAction);
 
-      if (latestChangeFrom === 'local') {
-        const command: DatabaseBoxAdd = {
-          command: 'db-box-add',
-          data: {
+      const box = getState().box[_id];
+      if (!box) {
+        const boxAction: BoxAddAction = {
+          type: 'box-add',
+          payload: {
             _id,
             name,
           },
         };
-        await window.api.db(command);
-      }
-    }
-    else {
-      const boxAction: BoxNameUpdateAction = {
-        type: 'box-name-update',
-        payload: {
-          _id,
-          name,
-        },
-      };
-      dispatch(boxAction);
+        dispatch(boxAction);
 
-      if (latestChangeFrom === 'local') {
-        const command: DatabaseBoxNameUpdate = {
-          command: 'db-box-name-update',
-          data: {
+        if (latestChangeFrom === 'local') {
+          const command: DatabaseBoxAdd = {
+            command: 'db-box-add',
+            data: {
+              _id,
+              name,
+            },
+          };
+          await window.api.db(command);
+        }
+      }
+      else {
+        const boxAction: BoxNameUpdateAction = {
+          type: 'box-name-update',
+          payload: {
             _id,
             name,
           },
         };
-        // eslint-disable-next-line require-atomic-updates
-        boxNameUpdateTime = await window.api.db(command);
+        dispatch(boxAction);
+
+        if (latestChangeFrom === 'local') {
+          const command: DatabaseBoxNameUpdate = {
+            command: 'db-box-name-update',
+            data: {
+              _id,
+              name,
+            },
+          };
+          // eslint-disable-next-line require-atomic-updates
+          boxNameUpdateTime = await window.api.db(command);
+        }
       }
-    }
+    });
   };
 };
 
