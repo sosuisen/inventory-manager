@@ -139,7 +139,10 @@ const init = async () => {
   else {
     configPath = path.resolve('/tmp/', remoteConfigFile);
   }
-  const envConfig = readJsonSync(configPath);
+  let envConfig: { [key: string]: string } = {};
+  try {
+    envConfig = readJsonSync(configPath);
+  } catch (e) {}
   for (const k in envConfig) {
     process.env[k] = envConfig[k];
   }
