@@ -84,11 +84,11 @@ const createWindow = (): void => {
   });
 };
 
-const showErrorDialog = (label: MessageLabel) => {
+const showErrorDialog = (label: MessageLabel, msg: string) => {
   dialog.showMessageBoxSync({
     type: 'error',
     buttons: ['OK'],
-    message: MESSAGE(label),
+    message: MESSAGE(label) + '(' + msg + ')',
   });
 };
 
@@ -120,7 +120,7 @@ const init = async () => {
       },
     });
   } catch (err) {
-    showErrorDialog('databaseCreateError');
+    showErrorDialog('databaseCreateError', err.message);
     console.log(err);
     app.exit();
   }
@@ -164,7 +164,7 @@ const init = async () => {
   const dbInfo = await gitDDB.open();
   if (!dbInfo.ok) {
     await gitDDB.createDB(remoteOptions).catch(e => {
-      showErrorDialog('databaseCreateError');
+      showErrorDialog('databaseCreateError', e.message);
       console.error(e);
       app.exit();
     });
