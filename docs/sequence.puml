@@ -1,8 +1,0 @@
-@startuml
-Queue -> Sync: FileUpdate (enqueTime T-1)
-Input -> Action: Update
-Action -> Queue: DatabaseAction (enqueTime T)
-Sync -> Action: UpdateAction
-
-
-@enduml

@@ -1,0 +1,36 @@
+@startuml
+queue Queue
+control sync_worker
+entity "GitDocumentDB\nLocal" as LocalDB
+boundary FormInput
+participant "ActionCreator\n(redux-thunk)" as ActionCreator
+entity store
+
+Queue <-? : Enqueue sync task
+Queue --> Queue : Next task
+Queue -> sync_worker: Dequeue sync task <enqueTime T>
+activate Queue #c0ffc0
+activate sync_worker #c0ffc0
+sync_worker -> LocalDB: start
+
+activate LocalDB #c0ffc0
+LocalDB <-? : fetch from remote
+LocalDB -> LocalDB: merge and commit
+LocalDB ->?: push to remote
+LocalDB -> LocalDB: Write value "A" to file by task at T
+
+deactivate ActionCreator
+
+LocalDB --> sync_worker: complete
+deactivate LocalDB
+
+sync_worker -> ActionCreator : UpdateActionCreator("A")
+activate ActionCreator #c0ffc0
+ActionCreator -> store: UpdateAction("A")
+deactivate ActionCreator
+
+sync_worker --> Queue: resolve
+deactivate Queue
+deactivate sync_worker
+
+@enduml

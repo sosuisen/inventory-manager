@@ -1,0 +1,67 @@
+@startuml
+queue Queue
+control sync_worker
+control put_worker
+entity "GitDocumentDB\nLocal" as LocalDB
+boundary FormInput
+participant "ActionCreator\n(redux-thunk)" as ActionCreator
+entity store
+
+Queue <-? : Enqueue sync task
+Queue --> Queue : Next task
+Queue -> sync_worker: Dequeue sync task <enqueTime T>
+activate Queue #c0ffc0
+activate sync_worker #c0ffc0
+sync_worker -> LocalDB: start
+
+activate LocalDB #c0ffc0
+LocalDB <-? : fetch from remote
+LocalDB -> LocalDB: merge and commit
+LocalDB ->?: push to remote
+LocalDB -> LocalDB: Write value "A" to file by task at T
+
+activate FormInput #ffc0c0
+FormInput -> FormInput: Input value "B"
+FormInput -> ActionCreator: UpdateActionCreator("B")
+deactivate FormInput
+
+activate ActionCreator #ffc0c0
+note over ActionCreator : Start critical section
+ActionCreator -> store: UpdateAction("B")
+
+ActionCreator -> Queue: Enqueue update task
+activate Queue #ffc0c0
+Queue --> ActionCreator: Return enqueTime T+1 by enqueueCallback
+deactivate Queue
+
+note over ActionCreator : Write T+1 to register
+note over ActionCreator : End critical section
+deactivate ActionCreator
+
+LocalDB --> sync_worker: complete
+deactivate LocalDB
+
+sync_worker -> ActionCreator !!: UpdateActionCreator("A") with <enqueTime T>
+note over ActionCreator : Block due to T < T+1
+
+sync_worker --> Queue: resolve
+deactivate Queue
+deactivate sync_worker
+
+Queue --> Queue : Next task
+
+activate Queue #ffc0c0
+
+Queue -> put_worker: Dequeue update task <enqueueTime T+1>
+activate put_worker #ffc0c0
+activate LocalDB #ffc0c0
+put_worker -> LocalDB: update and commit 
+LocalDB -> LocalDB: Write "B" to file by task at T+1
+LocalDB --> put_worker
+deactivate LocalDB
+put_worker --> Queue: resolve
+deactivate Queue
+
+deactivate put_worker
+
+@enduml

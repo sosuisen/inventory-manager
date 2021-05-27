@@ -11,7 +11,6 @@ import os from 'os';
 import { readJsonSync } from 'fs-extra';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import {
-  AllDocsResult,
   ChangedFile,
   Collection,
   GitDocumentDB,
