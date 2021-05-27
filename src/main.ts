@@ -221,13 +221,14 @@ const init = async () => {
   });
 
   if (boxDocs.length === 0) {
-    const box = generateId();
+    const boxId = 'box' + generateId();
     const boxName = getSettings().temporalSettings.messages.firstBoxName;
-    boxes[box] = {
-      _id: box,
+    boxes[boxId] = {
+      _id: boxId,
       name: boxName,
       items: [],
     };
+    await boxCollection.put({ _id: boxId, name: boxName });
   }
   createWindow();
 };

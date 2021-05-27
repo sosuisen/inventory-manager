@@ -82,7 +82,7 @@ export const itemAddActionCreator = (
       }
     }
 
-    const id = boxId + '/' + generateId();
+    const id = boxId + '/item' + generateId();
     const itemAction: ItemAddAction = {
       type: 'item-add',
       payload: {
@@ -350,7 +350,7 @@ export const boxAddActionCreator = (
       payload: latestChangeFrom,
     };
     dispatch(latestChangeFromAction);
-    const _id = generateId();
+    const _id = 'box' + generateId();
     const boxAction: BoxAddAction = {
       type: 'box-add',
       payload: {
