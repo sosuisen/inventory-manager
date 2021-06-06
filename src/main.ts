@@ -13,6 +13,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import {
   ChangedFile,
   Collection,
+  DuplicatedFile,
   GitDocumentDB,
   RemoteOptions,
   Sync,
@@ -90,6 +91,56 @@ const showErrorDialog = (label: MessageLabel, msg: string) => {
     buttons: ['OK'],
     message: MESSAGE(label) + '(' + msg + ')',
   });
+};
+
+const loadData = async () => {
+  boxCollection = await gitDDB.collection('box');
+  itemCollection = await gitDDB.collection('item');
+
+  const boxDocs = ((await boxCollection.allDocs()).rows.map(
+    row => row.doc
+  ) as unknown) as Box[];
+  boxDocs.forEach(boxDoc => {
+    // Add lacked property
+    boxDoc.items = [];
+    boxes[boxDoc._id] = boxDoc;
+  });
+
+  const itemDocs = ((await itemCollection.allDocs()).rows.map(
+    row => row.doc
+  ) as unknown) as Item[];
+
+  itemDocs.forEach(itemDoc => {
+    // Set boxId/itemId as id.
+    items[itemDoc._id] = itemDoc;
+    const boxId = getBoxId(itemDoc._id);
+    if (boxId) {
+      if (boxes[boxId]) {
+        boxes[boxId].items.push(itemDoc._id);
+      }
+      else {
+        // Create box if not exist.
+        const boxName = getSettings().temporalSettings.messages.firstBoxName;
+        boxes[boxId] = {
+          _id: boxId,
+          name: boxName,
+          items: [],
+        };
+        boxes[boxId].items.push(itemDoc._id);
+      }
+    }
+  });
+
+  if (boxDocs.length === 0) {
+    const boxId = 'box' + generateId();
+    const boxName = getSettings().temporalSettings.messages.firstBoxName;
+    boxes[boxId] = {
+      _id: boxId,
+      name: boxName,
+      items: [],
+    };
+    await boxCollection.put({ _id: boxId, name: boxName });
+  }
 };
 
 // eslint-disable-next-line complexity
@@ -179,6 +230,16 @@ const init = async () => {
       mainWindow.webContents.send('sync', changes, taskMetadata);
     });
 
+    sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
+      await loadData();
+      mainWindow.webContents.send(
+        'initialize-store',
+        items,
+        boxes,
+        settingsStore.getState()
+      );
+    });
+
     sync.on('start', () => {
       mainWindow.webContents.send('sync-start');
     });
@@ -187,53 +248,8 @@ const init = async () => {
     });
   }
 
-  boxCollection = await gitDDB.collection('box');
-  itemCollection = await gitDDB.collection('item');
+  await loadData();
 
-  const boxDocs = ((await boxCollection.allDocs()).rows.map(
-    row => row.doc
-  ) as unknown) as Box[];
-  boxDocs.forEach(boxDoc => {
-    // Add lacked property
-    boxDoc.items = [];
-    boxes[boxDoc._id] = boxDoc;
-  });
-
-  const itemDocs = ((await itemCollection.allDocs()).rows.map(
-    row => row.doc
-  ) as unknown) as Item[];
-
-  itemDocs.forEach(itemDoc => {
-    // Set boxId/itemId as id.
-    items[itemDoc._id] = itemDoc;
-    const boxId = getBoxId(itemDoc._id);
-    if (boxId) {
-      if (boxes[boxId]) {
-        boxes[boxId].items.push(itemDoc._id);
-      }
-      else {
-        // Create box if not exist.
-        const boxName = getSettings().temporalSettings.messages.firstBoxName;
-        boxes[boxId] = {
-          _id: boxId,
-          name: boxName,
-          items: [],
-        };
-        boxes[boxId].items.push(itemDoc._id);
-      }
-    }
-  });
-
-  if (boxDocs.length === 0) {
-    const boxId = 'box' + generateId();
-    const boxName = getSettings().temporalSettings.messages.firstBoxName;
-    boxes[boxId] = {
-      _id: boxId,
-      name: boxName,
-      items: [],
-    };
-    await boxCollection.put({ _id: boxId, name: boxName });
-  }
   createWindow();
 };
 
