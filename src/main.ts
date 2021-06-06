@@ -161,8 +161,8 @@ const init = async () => {
       live: true,
     };
   }
-  const dbInfo = await gitDDB.open();
-  if (!dbInfo.ok) {
+  const openResult = await gitDDB.open();
+  if (!openResult.ok) {
     await gitDDB.createDB(remoteOptions).catch(e => {
       showErrorDialog('databaseCreateError', e.message);
       console.error(e);
@@ -178,6 +178,7 @@ const init = async () => {
     sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       mainWindow.webContents.send('sync', changes, taskMetadata);
     });
+
     sync.on('start', () => {
       mainWindow.webContents.send('sync-start');
     });
@@ -189,7 +190,7 @@ const init = async () => {
   boxCollection = await gitDDB.collection('box');
   itemCollection = await gitDDB.collection('item');
 
-  const boxDocs = ((await boxCollection.allDocs({ include_docs: true })).rows.map(
+  const boxDocs = ((await boxCollection.allDocs()).rows.map(
     row => row.doc
   ) as unknown) as Box[];
   boxDocs.forEach(boxDoc => {
@@ -198,7 +199,7 @@ const init = async () => {
     boxes[boxDoc._id] = boxDoc;
   });
 
-  const itemDocs = ((await itemCollection.allDocs({ include_docs: true })).rows.map(
+  const itemDocs = ((await itemCollection.allDocs()).rows.map(
     row => row.doc
   ) as unknown) as Item[];
 
@@ -259,9 +260,6 @@ app.on('activate', async () => {
     createWindow();
   }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
 
 // eslint-disable-next-line complexity
 ipcMain.handle('db', async (e, command: DatabaseCommand) => {
@@ -350,7 +348,9 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       break;
     }
     case 'db-sync': {
-      sync.trySync();
+      if (sync) {
+        sync.trySync();
+      }
       break;
     }
   }
