@@ -246,6 +246,9 @@ const init = async () => {
     sync.on('complete', () => {
       mainWindow.webContents.send('sync-complete');
     });
+    sync.on('error', () => {
+      mainWindow.webContents.send('sync-complete');
+    });
   }
 
   await loadData();
