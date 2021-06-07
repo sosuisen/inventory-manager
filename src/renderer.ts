@@ -101,13 +101,21 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
     if (file.operation === 'insert') {
       const newBox = (file.new.doc as unknown) as Box;
       newBox._id = newBox._id.replace(/^box\//, '');
-      boxNameUpdateActionCreator(
-        newBox._id,
-        newBox.name,
-        taskMetadata.enqueueTime,
-        'remote'
-      )(inventoryStore.dispatch, inventoryStore.getState);
-      counter.create++;
+      if (
+        newBox.name === inventoryStore.getState().settings.messages.firstBoxName &&
+        inventoryStore.getState().box[newBox._id].items.length === 0
+      ) {
+        // Skip inserting a new box when it is empty and its name is firstBoxName.
+      }
+      else {
+        boxNameUpdateActionCreator(
+          newBox._id,
+          newBox.name,
+          taskMetadata.enqueueTime,
+          'remote'
+        )(inventoryStore.dispatch, inventoryStore.getState);
+        counter.create++;
+      }
     }
     else if (file.operation === 'update') {
       // const oldBox = (file.old.doc as unknown) as Box;
