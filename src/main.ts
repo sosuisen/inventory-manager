@@ -9,7 +9,7 @@
 import * as path from 'path';
 import os from 'os';
 import { readJsonSync } from 'fs-extra';
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeImage } from 'electron';
 import {
   ChangedFile,
   Collection,
@@ -19,19 +19,39 @@ import {
   Sync,
   TaskMetadata,
 } from 'git-documentdb';
-import { availableLanguages, defaultLanguage, MessageLabel } from './modules_common/i18n';
+import { selectPreferredLanguage, translate } from 'typed-intl';
 import {
-  getSettings,
-  initializeGlobalStore,
-  MESSAGE,
-  settingsStore,
-  subscribeSettingsStore,
-} from './modules_main/store.settings';
+  availableLanguages,
+  defaultLanguage,
+  English,
+  Japanese,
+  MessageLabel,
+} from './modules_common/i18n';
 import { DatabaseCommand } from './modules_common/db.types';
-import { Box, Item } from './modules_common/store.types';
+import { Box, InfoState, Item, SettingsState } from './modules_common/store.types';
 import { generateId, getBoxId } from './modules_common/utils';
 
-let gitDDB: GitDocumentDB;
+export const dataDirName = 'inventory_manager_data';
+
+let inventoryDB: GitDocumentDB;
+let settingsDB: GitDocumentDB;
+
+/**
+ * Default data directory
+ *
+ * settingsDB is created in defaultDataDir.
+ * inventoryDB is created in settings.dataStorePath. (Default is defaultDataDir.)
+ *
+ * - '../../../../../../inventory_manager_data' is default path when using asar created by squirrels.windows.
+ * - './inventory_manager_data' is default path when starting from command line (npm start).
+ * - They can be distinguished by using app.isPackaged
+ *
+ * TODO: Default path for Mac / Linux is needed.
+ */
+const defaultDataDir = app.isPackaged
+  ? path.join(__dirname, `../../../../../${dataDirName}`)
+  : path.join(__dirname, `../${dataDirName}`);
+
 let sync: Sync;
 const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: Box } = {};
@@ -40,6 +60,47 @@ let boxCollection: Collection;
 let itemCollection: Collection;
 
 let mainWindow: BrowserWindow;
+
+const info: InfoState = {
+  messages: English,
+  appinfo: {
+    name: app.getName(),
+    version: app.getVersion(),
+    iconDataURL: nativeImage
+      // .ico cannot be loaded in ubuntu
+      //  .createFromPath(path.resolve(__dirname, '../assets/inventory_manager_icon.ico'))
+      .createFromPath(
+        path.resolve(__dirname, '../assets/inventory_manager_icon-128x128.png')
+      )
+      .toDataURL(),
+  },
+};
+
+let settings: SettingsState = {
+  language: '',
+  dataStorePath: defaultDataDir,
+  sync: {
+    remote_url: '',
+    connection: {
+      type: 'github',
+      personal_access_token: '',
+      private: true,
+    },
+    interval: 30000,
+  },
+};
+
+// Utility for i18n
+export const MESSAGE = (label: MessageLabel, ...args: string[]) => {
+  let message: string = info.messages[label];
+  if (args) {
+    args.forEach((replacement, index) => {
+      const variable = '$' + (index + 1); // $1, $2, ...
+      message = message.replace(variable, replacement);
+    });
+  }
+  return message;
+};
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -75,13 +136,7 @@ const createWindow = (): void => {
   }
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.send('initialize-store', items, boxes, settingsStore.getState());
-    subscribeSettingsStore(mainWindow);
-
-    const unsubscribe = subscribeSettingsStore(mainWindow);
-    mainWindow.on('close', () => {
-      unsubscribe();
-    });
+    mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
   });
 };
 
@@ -94,8 +149,8 @@ const showErrorDialog = (label: MessageLabel, msg: string) => {
 };
 
 const loadData = async () => {
-  boxCollection = await gitDDB.collection('box');
-  itemCollection = await gitDDB.collection('item');
+  boxCollection = await inventoryDB.collection('box');
+  itemCollection = await inventoryDB.collection('item');
 
   const boxDocs = ((await boxCollection.allDocs()).rows.map(
     row => row.doc
@@ -120,7 +175,7 @@ const loadData = async () => {
       }
       else {
         // Create box if not exist.
-        const boxName = getSettings().temporalSettings.messages.firstBoxName;
+        const boxName = info.messages.firstBoxName;
         boxes[boxId] = {
           _id: boxId,
           name: boxName,
@@ -133,7 +188,7 @@ const loadData = async () => {
 
   if (boxDocs.length === 0) {
     const boxId = 'box' + generateId();
-    const boxName = getSettings().temporalSettings.messages.firstBoxName;
+    const boxName = info.messages.firstBoxName;
     boxes[boxId] = {
       _id: boxId,
       name: boxName,
@@ -145,22 +200,22 @@ const loadData = async () => {
 
 // eslint-disable-next-line complexity
 const init = async () => {
-  // locale can be got after 'ready'
-  const myLocale = app.getLocale();
-  console.debug(`locale: ${myLocale}`);
-
-  let preferredLanguage: string = defaultLanguage;
-  if (availableLanguages.includes(myLocale)) {
-    preferredLanguage = myLocale;
-  }
-
-  // Load settings
-  initializeGlobalStore(preferredLanguage as string);
-
-  // Load inventory
+  // Open databases
   try {
-    gitDDB = new GitDocumentDB({
-      local_dir: getSettings().persistentSettings.storage.path,
+    settingsDB = new GitDocumentDB({
+      local_dir: defaultDataDir,
+      db_name: 'local_settings',
+    });
+    const settingsOpenResult = await settingsDB.open();
+    if (!settingsOpenResult.ok) {
+      await settingsDB.createDB();
+    }
+
+    settings =
+      (((await settingsDB.get('settings')) as unknown) as SettingsState) ?? settings;
+
+    inventoryDB = new GitDocumentDB({
+      local_dir: settings.dataStorePath,
       db_name: 'db',
       schema: {
         json: {
@@ -170,74 +225,76 @@ const init = async () => {
         },
       },
     });
+
+    const openResult = await inventoryDB.open();
+    if (!openResult.ok) {
+      await inventoryDB.createDB();
+    }
+
+    let remoteOptions: RemoteOptions | undefined;
+    if (settings.sync.remote_url && settings.sync.connection.personal_access_token) {
+      remoteOptions = {
+        remote_url: settings.sync.remote_url,
+        connection: settings.sync.connection,
+        interval: settings.sync.interval,
+        conflict_resolution_strategy: 'ours-diff',
+        live: true,
+      };
+    }
+    if (remoteOptions) {
+      sync = await inventoryDB.sync(remoteOptions);
+    }
   } catch (err) {
     showErrorDialog('databaseCreateError', err.message);
     console.log(err);
     app.exit();
   }
-  if (!gitDDB) {
+  if (!settingsDB || !inventoryDB) {
     return;
   }
 
-  let remoteConfigFile = 'inventory_manager_env';
-  if (!app.isPackaged) {
-    remoteConfigFile += '_dev';
-  }
-  let configPath;
-  if (os.platform() === 'win32') {
-    configPath = path.resolve('c:\\tmp\\', remoteConfigFile);
-  }
-  else {
-    configPath = path.resolve('/tmp/', remoteConfigFile);
-  }
-  let envConfig: { [key: string]: string } = {};
-  try {
-    envConfig = readJsonSync(configPath);
-  } catch (e) {}
-  for (const k in envConfig) {
-    process.env[k] = envConfig[k];
-  }
-  const remote_url = process.env.INVENTORY_MANAGER_URL;
-  const personal_access_token = process.env.INVENTORY_MANAGER_TOKEN;
-  let remoteOptions: RemoteOptions | undefined;
-  if (remote_url && personal_access_token) {
-    remoteOptions = {
-      remote_url: remote_url,
-      connection: {
-        type: 'github',
-        personal_access_token,
-        private: true,
-      },
-      conflict_resolution_strategy: 'ours-diff',
-      live: true,
-    };
-  }
-  const openResult = await gitDDB.open();
-  if (!openResult.ok) {
-    await gitDDB.createDB(remoteOptions).catch(e => {
-      showErrorDialog('databaseCreateError', e.message);
-      console.error(e);
-      app.exit();
-    });
-  }
-  else if (remoteOptions) {
-    await gitDDB.sync(remoteOptions);
+  // locale can be got after 'ready'
+  const myLocale = app.getLocale();
+  console.debug(`locale: ${myLocale}`);
+
+  let preferredLanguage: string = defaultLanguage;
+  if (availableLanguages.includes(myLocale)) {
+    preferredLanguage = myLocale;
   }
 
-  if (remoteOptions && remoteOptions.remote_url) {
-    sync = gitDDB.getSynchronizer(remoteOptions.remote_url);
+  if (settings.language === '') {
+    // eslint-disable-next-line require-atomic-updates
+    settings.language = preferredLanguage;
+  }
+
+  /**
+   * i18n
+   */
+  const translations = translate(English).supporting('ja', Japanese);
+  // const translations = translate(English);
+
+  selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
+  info.messages = translations.messages();
+
+  // Load inventory
+  try {
+  } catch (err) {
+    showErrorDialog('databaseCreateError', err.message);
+    console.log(err);
+    app.exit();
+  }
+  if (!inventoryDB) {
+    return;
+  }
+
+  if (sync !== undefined) {
     sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
       mainWindow.webContents.send('sync', changes, taskMetadata);
     });
 
     sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
       await loadData();
-      mainWindow.webContents.send(
-        'initialize-store',
-        items,
-        boxes,
-        settingsStore.getState()
-      );
+      mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
     });
 
     sync.on('start', () => {
@@ -265,7 +322,7 @@ app.on('ready', init);
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', async () => {
-  await gitDDB.close();
+  await inventoryDB.close();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -275,7 +332,7 @@ app.on('activate', async () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    await gitDDB.open();
+    await inventoryDB.open();
     createWindow();
   }
 });

@@ -6,7 +6,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { English, Messages } from './i18n';
+import { Messages } from './i18n';
 
 export type SyncInfo = {
   create: number;
@@ -62,45 +62,31 @@ export type WorkState = {
   itemDeleted: boolean;
 };
 
-export type MessagesPutAction = {
-  type: 'messages-put';
-  payload: Messages;
-};
-
-export type AppPutAction = {
-  type: 'appinfo-put';
-  payload: {
-    name: string;
-    version: string;
-    iconDataURL: string;
-  };
-};
-
-export type TemporalSettingsAction = MessagesPutAction | AppPutAction;
-
-export type TemporalSettingsState = {
+export type InfoState = {
   messages: Messages; // It is set and updated when 'settings.language' is changed.
-  appinfo: {
-    name: string;
-    version: string;
-    iconDataURL: string;
-  };
+  appinfo: AppInfo;
 };
 
-export const initialTemporalSettingsState: TemporalSettingsState = {
-  messages: English,
-  appinfo: {
-    name: '',
-    version: '',
-    iconDataURL: '',
-  },
+export type SettingsState = {
+  language: string;
+  dataStorePath: string;
+  sync: {
+    remote_url: string;
+    connection: {
+      type: 'github';
+      personal_access_token: string;
+      private: boolean;
+    };
+    interval: number;
+  };
 };
 
 export type InventoryState = {
   item: ItemState;
   box: BoxState;
   work: WorkState;
-  settings: TemporalSettingsState;
+  info: InfoState;
+  settings: SettingsState;
 };
 
 /**

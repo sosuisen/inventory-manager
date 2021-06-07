@@ -11,8 +11,7 @@ import * as ReactDOM from 'react-dom';
 import { ChangedFile, TaskMetadata } from 'git-documentdb';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
-import { AppInfo, Box, Item } from './modules_common/store.types';
-import { Messages } from './modules_common/i18n';
+import { Box, InfoState, Item, SettingsState } from './modules_common/store.types';
 import {
   boxDeleteActionCreator,
   boxNameUpdateActionCreator,
@@ -102,7 +101,7 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
       const newBox = (file.new.doc as unknown) as Box;
       newBox._id = newBox._id.replace(/^box\//, '');
       if (
-        newBox.name === inventoryStore.getState().settings.messages.firstBoxName &&
+        newBox.name === inventoryStore.getState().info.messages.firstBoxName &&
         inventoryStore.getState().box[newBox._id].items.length === 0
       ) {
         // Skip inserting a new box when it is empty and its name is firstBoxName.
@@ -199,16 +198,17 @@ window.addEventListener('message', event => {
         payload: currentBox._id,
       });
 
-      const appInfo = (event.data.settings.temporalSettings.app as unknown) as AppInfo;
-      const messages = (event.data.settings.temporalSettings
-        .messages as unknown) as Messages;
+      const info: InfoState = event.data.info;
+      const settings: SettingsState = event.data.settings;
+
       inventoryStore.dispatch({
-        type: 'appinfo-put',
-        payload: appInfo,
+        type: 'info-init',
+        payload: info,
       });
+
       inventoryStore.dispatch({
-        type: 'messages-put',
-        payload: messages,
+        type: 'settings-init',
+        payload: settings,
       });
 
       const domContainer = document.getElementById('react-container');

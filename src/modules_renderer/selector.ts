@@ -42,11 +42,11 @@ export const selectorCurrentItems = (state: InventoryState): Item[] => {
 };
 
 export const selectorAppInfo = (state: InventoryState) => {
-  return state.settings.appinfo;
+  return state.info.appinfo;
 };
 
 export const selectorMessages = (state: InventoryState) => {
-  return state.settings.messages;
+  return state.info.messages;
 };
 
 export const selectorSync = (state: InventoryState) => {

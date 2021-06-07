@@ -9,8 +9,10 @@
 import {
   Box,
   BoxDoc,
+  InfoState,
   Item,
   LatestChangeFrom,
+  SettingsState,
   SyncInfo,
   WorkState,
 } from '../modules_common/store.types';
@@ -154,4 +156,23 @@ export type WorkAction =
   | WorkItemAddedUpdateAction
   | WorkItemDeletedUpdateAction;
 
-export type InventoryAction = ItemAction | BoxAction | WorkAction;
+export interface InfoInitAction {
+  type: 'info-init';
+  payload: InfoState;
+}
+
+export type InfoAction = InfoInitAction;
+
+export interface SettingsInitAction {
+  type: 'settings-init';
+  payload: SettingsState;
+}
+
+export type SettingsAction = SettingsInitAction;
+
+export type InventoryAction =
+  | ItemAction
+  | BoxAction
+  | WorkAction
+  | InfoAction
+  | SettingsAction;

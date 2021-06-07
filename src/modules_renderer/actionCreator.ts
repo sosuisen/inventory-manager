@@ -65,7 +65,7 @@ export const itemAddActionCreator = (
         type: 'box-add',
         payload: {
           _id: boxId,
-          name: getState().settings.messages.firstBoxName,
+          name: getState().info.messages.firstBoxName,
         },
       };
       dispatch(boxAction);
@@ -75,7 +75,7 @@ export const itemAddActionCreator = (
           command: 'db-box-add',
           data: {
             _id: boxId,
-            name: getState().settings.messages.firstBoxName,
+            name: getState().info.messages.firstBoxName,
           },
         };
         window.api.db(cmd);
@@ -290,7 +290,7 @@ export const itemInsertActionCreator = (
           type: 'box-add',
           payload: {
             _id: boxId,
-            name: getState().settings.messages.firstBoxName,
+            name: getState().info.messages.firstBoxName,
           },
         };
         dispatch(boxAction);
@@ -300,7 +300,7 @@ export const itemInsertActionCreator = (
             command: 'db-box-add',
             data: {
               _id: boxId,
-              name: getState().settings.messages.firstBoxName,
+              name: getState().info.messages.firstBoxName,
             },
           };
           await window.api.db(cmd);

@@ -7,17 +7,16 @@
  */
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import thunk from 'redux-thunk';
-import { BoxAction, ItemAction, WorkAction } from './action';
-
+import { BoxAction, InfoAction, ItemAction, SettingsAction, WorkAction } from './action';
 import {
   BoxState,
-  initialTemporalSettingsState,
+  InfoState,
   ItemState,
-  TemporalSettingsAction,
-  TemporalSettingsState,
+  SettingsState,
   WorkState,
 } from '../modules_common/store.types';
 import { getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
+import { English } from '../modules_common/i18n';
 
 // eslint-disable-next-line default-param-last, complexity
 const itemReducer = (state: ItemState = {}, action: ItemAction) => {
@@ -174,16 +173,46 @@ const workReducer = (
   }
 };
 
-const settingsReducer = (
+const infoReducer = (
   // eslint-disable-next-line default-param-last
-  state: TemporalSettingsState = initialTemporalSettingsState,
-  action: TemporalSettingsAction
+  state: InfoState = {
+    messages: English,
+    appinfo: {
+      name: '',
+      version: '',
+      iconDataURL: '',
+    },
+  },
+  action: InfoAction
 ) => {
   switch (action.type) {
-    case 'appinfo-put':
-      return { ...state, appinfo: action.payload };
-    case 'messages-put':
-      return { ...state, messages: action.payload };
+    case 'info-init':
+      return JSON.parse(JSON.stringify(action.payload));
+    default:
+      return state;
+  }
+};
+
+const settingsReducer = (
+  // eslint-disable-next-line default-param-last
+  state: SettingsState = {
+    language: 'en',
+    dataStorePath: '',
+    sync: {
+      remote_url: '',
+      connection: {
+        type: 'github',
+        personal_access_token: '',
+        private: true,
+      },
+      interval: 30000,
+    },
+  },
+  action: SettingsAction
+) => {
+  switch (action.type) {
+    case 'settings-init':
+      return JSON.parse(JSON.stringify(action.payload));
     default:
       return state;
   }
@@ -193,6 +222,7 @@ export const inventory = combineReducers({
   item: itemReducer,
   box: boxReducer,
   work: workReducer,
+  info: infoReducer,
   settings: settingsReducer,
 });
 
