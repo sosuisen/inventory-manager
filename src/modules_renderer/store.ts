@@ -196,6 +196,7 @@ const infoReducer = (
 const settingsReducer = (
   // eslint-disable-next-line default-param-last
   state: SettingsState = {
+    _id: 'settings',
     language: 'en',
     dataStorePath: '',
     sync: {
@@ -213,6 +214,11 @@ const settingsReducer = (
   switch (action.type) {
     case 'settings-init':
       return JSON.parse(JSON.stringify(action.payload));
+    case 'settings-language-update': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.language = action.payload;
+      return newState;
+    }
     default:
       return state;
   }

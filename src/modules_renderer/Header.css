@@ -1,0 +1,27 @@
+.header {
+  padding: 6px;
+  font-size: 32px;
+}
+
+.title {
+  font-family: serif;
+}
+
+.appIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 7px;
+}
+
+.settingsIcon {
+  float: right;
+  font-size: 16px;
+  color: #303030;
+  margin-top: 12px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+.version {
+  font-size: 16px;
+}

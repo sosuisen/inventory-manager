@@ -168,7 +168,12 @@ export interface SettingsInitAction {
   payload: SettingsState;
 }
 
-export type SettingsAction = SettingsInitAction;
+export interface SettingsLanguageUpdateAction {
+  type: 'settings-language-update';
+  payload: string;
+}
+
+export type SettingsAction = SettingsInitAction | SettingsLanguageUpdateAction;
 
 export type InventoryAction =
   | ItemAction

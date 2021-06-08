@@ -1,0 +1,120 @@
+.settingsDialog {
+  width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #f8f8f8;
+  border: 6px solid #909090;
+}
+
+.settingsHeader {
+  font-size: 18px; 
+  background-color: #6060e0;
+  color: white;
+  padding: 7px;
+  width: 100%;
+}
+
+.closeButton {
+  color: white;
+  float: right;
+  font-size: 24px;
+  padding: 4px;
+}
+
+.syncSettings {
+  margin-top: 0px;
+}
+
+.syncSettingsHeader {
+  font-size: 16px; 
+  background-color: #e0e0ff;
+  padding: 7px;
+  width: 100%;
+}
+
+.syncUrl {
+  margin-top: 3px;
+}
+
+.syncUrlHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncUrlInput {
+  width: 400px;
+  margin: 5px 0px 5px 0px;
+  float: left;
+}
+
+.syncUrlAlert {
+  clear: both;
+  color: red;
+  margin: 0px 0px 0px 12px;
+}
+
+.syncUrlFooter {
+  clear: both;  
+  font-size: 12px;
+  color: #606060;
+  margin: 0px 0px 0px 20px;
+}
+
+.syncPersonalAccessToken {
+  margin-top: 3px;
+}
+
+.syncPersonalAccessTokenHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncPersonalAccessTokenInput {
+  width: 400px;
+  margin: 5px 0px 5px 0px;
+  float: left;
+}
+
+.syncPersonalAccessTokenAlert {
+  clear: both;
+  color: red;
+  margin: 0px 0px 0px 12px;
+}
+
+.syncPersonalAccessTokenFooter {
+  clear: both;  
+  font-size: 12px;
+  color: #606060;
+  margin: 0px 0px 0px 20px;
+}
+
+.languageSettings {
+  margin-top: 12px;
+}
+
+.languageSettingsHeader {
+  font-size: 16px; 
+  background-color: #e0e0ff;
+  padding: 7px;
+  width: 100%;
+}
+
+.languageSelector {
+  margin-top: 7px;
+  font-size: 14px;
+}
+
+.language {
+  float: left;
+  margin-left: 10px;
+}
+
+.languageLabel {
+  margin-left: 7px;
+}

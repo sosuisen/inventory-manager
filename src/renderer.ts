@@ -216,6 +216,14 @@ window.addEventListener('message', event => {
 
       break;
     }
+    case 'update-info': {
+      const info: InfoState = event.data.info;
+      inventoryStore.dispatch({
+        type: 'info-init',
+        payload: info,
+      });
+      break;
+    }
     case 'sync': {
       syncActionBuilder(event.data.changes, event.data.taskMetadata);
       break;

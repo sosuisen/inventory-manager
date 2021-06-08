@@ -6,7 +6,7 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { Box, BoxDoc, Item } from './store.types';
+import { BoxDoc, Item } from './store.types';
 
 /**
  * Action to Database
@@ -60,3 +60,10 @@ export type DatabaseCommand =
   | DatabaseItemDelete
   | DatabaseItemUpdate
   | DatabaseSync;
+
+export type SettingsLanguageUpdate = {
+  command: 'settings-language-update';
+  data: string;
+};
+
+export type SettingsCommand = SettingsLanguageUpdate;

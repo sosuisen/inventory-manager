@@ -68,6 +68,7 @@ export type InfoState = {
 };
 
 export type SettingsState = {
+  _id: string;
   language: string;
   dataStorePath: string;
   sync: {

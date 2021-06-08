@@ -15,6 +15,7 @@ import {
   DatabaseItemAdd,
   DatabaseItemDelete,
   DatabaseItemUpdate,
+  SettingsLanguageUpdate,
 } from '../modules_common/db.types';
 import { InventoryState, Item, LatestChangeFrom } from '../modules_common/store.types';
 import { generateId, getBoxId } from '../modules_common/utils';
@@ -28,6 +29,7 @@ import {
   ItemDeleteAction,
   ItemInsertAction,
   ItemUpdateAction,
+  SettingsLanguageUpdateAction,
   WorkCurrentBoxUpdateAction,
   WorkItemAddedUpdateAction,
   WorkItemDeletedUpdateAction,
@@ -522,5 +524,20 @@ export const boxSelectActionCreator = (id: string) => {
       payload: id,
     };
     dispatch(workAction);
+  };
+};
+
+export const settingsLanguageUpdateCreator = (lang: string) => {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const settingsAction: SettingsLanguageUpdateAction = {
+      type: 'settings-language-update',
+      payload: lang,
+    };
+    dispatch(settingsAction);
+    const cmd: SettingsLanguageUpdate = {
+      command: 'settings-language-update',
+      data: lang,
+    };
+    await window.api.settings(cmd);
   };
 };

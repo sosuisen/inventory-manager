@@ -55,3 +55,7 @@ export const selectorSync = (state: InventoryState) => {
     syncInfo: state.work.syncInfo,
   };
 };
+
+export const selectorSettings = (state: InventoryState) => {
+  return state.settings;
+};

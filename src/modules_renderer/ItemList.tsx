@@ -104,7 +104,7 @@ export const ItemList = () => {
     <div styleName='itemList'>
       {/* header */}
       <div styleName='row'>
-        <div styleName='col takeout'>
+        <div styleName='col takeout takeoutIcon'>
           <i className='fas fa-exclamation-circle' title={messages.takeout}></i>
         </div>
         <div styleName='col name'>

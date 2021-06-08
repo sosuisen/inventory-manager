@@ -13,18 +13,12 @@ import { InputArea } from './InputArea';
 import { BoxRow } from './BoxRow';
 import './InventoryManager.css';
 import { selectorAppInfo, selectorSync } from './selector';
-import { Sync } from './Sync';
+import { Header } from './Header';
 
 export const InventoryManager = () => {
-  const appInfo = useSelector(selectorAppInfo);
-  const sync = useSelector(selectorSync);
   return (
     <div styleName='inventoryManager'>
-      <div styleName='header'>
-        <img styleName='appIcon' src={appInfo.iconDataURL}></img>
-        {appInfo.name} <span styleName='version'>{appInfo.version}</span>
-        <Sync synchronizing={sync.synchronizing} info={sync.syncInfo}></Sync>
-      </div>
+      <Header />
       <BoxRow />
       <InputArea />
       <ItemList />

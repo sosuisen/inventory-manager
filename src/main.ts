@@ -7,9 +7,7 @@
  */
 
 import * as path from 'path';
-import os from 'os';
-import { readJsonSync } from 'fs-extra';
-import { app, BrowserWindow, dialog, ipcMain, nativeImage } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from 'electron';
 import {
   ChangedFile,
   Collection,
@@ -27,7 +25,7 @@ import {
   Japanese,
   MessageLabel,
 } from './modules_common/i18n';
-import { DatabaseCommand } from './modules_common/db.types';
+import { DatabaseCommand, SettingsCommand } from './modules_common/db.types';
 import { Box, InfoState, Item, SettingsState } from './modules_common/store.types';
 import { generateId, getBoxId } from './modules_common/utils';
 
@@ -61,6 +59,8 @@ let itemCollection: Collection;
 
 let mainWindow: BrowserWindow;
 
+const translations = translate(English).supporting('ja', Japanese);
+
 const info: InfoState = {
   messages: English,
   appinfo: {
@@ -77,6 +77,7 @@ const info: InfoState = {
 };
 
 let settings: SettingsState = {
+  _id: 'settings',
   language: '',
   dataStorePath: defaultDataDir,
   sync: {
@@ -137,6 +138,14 @@ const createWindow = (): void => {
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
+  });
+
+  // Open hyperlink on external browser window
+  // by preventing to open it on new electron window
+  // when target='_blank' is set.
+  mainWindow.webContents.on('new-window', (e, _url) => {
+    e.preventDefault();
+    shell.openExternal(_url);
   });
 };
 
@@ -270,9 +279,6 @@ const init = async () => {
   /**
    * i18n
    */
-  const translations = translate(English).supporting('ja', Japanese);
-  // const translations = translate(English);
-
   selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
   info.messages = translations.messages();
 
@@ -339,8 +345,6 @@ app.on('activate', async () => {
 
 // eslint-disable-next-line complexity
 ipcMain.handle('db', async (e, command: DatabaseCommand) => {
-  let collection: Collection;
-  const method = '';
   // eslint-disable-next-line default-case
   switch (command.command) {
     case 'db-item-add':
@@ -428,6 +432,19 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         sync.trySync();
       }
       break;
+    }
+  }
+});
+
+ipcMain.handle('settings', async (e, command: SettingsCommand) => {
+  // eslint-disable-next-line default-case
+  switch (command.command) {
+    case 'settings-language-update': {
+      settings.language = command.data;
+      selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
+      info.messages = translations.messages();
+      mainWindow.webContents.send('update-info', info);
+      await settingsDB.put(settings);
     }
   }
 });
