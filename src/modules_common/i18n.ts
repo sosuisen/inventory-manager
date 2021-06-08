@@ -36,6 +36,9 @@ type MessagesMain = {
   syncPersonalAccessTokenHeader: string;
   syncPersonalAccessTokenFooter: string;
   syncPersonalAccessTokenPlaceholder: string;
+  syncIntervalHeader: string;
+  syncIntervalFooter: string;
+  syncIntervalAlert: string;
   languageSettingsHeader: string;
 };
 
@@ -85,6 +88,10 @@ export const English: Messages = {
   syncPersonalAccessTokenFooter:
     'See <a target="_blank" href="https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">this guide</a> to get your personal access token from GitHub. Be careful to check [repo] at [Select scopes] section.',
   syncPersonalAccessTokenPlaceholder: 'e.g) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  syncIntervalHeader: 'Interval (sec)',
+  syncIntervalFooter:
+    'Please enter sync interval time greater than or equal to 10 seconds.',
+  syncIntervalAlert: 'Please enter a number greater than or equal to 10.',
   languageSettingsHeader: 'Language',
 };
 
@@ -114,12 +121,15 @@ export const Japanese: Messages = {
   settingsDialog: '設定',
   syncSettingsHeader: '同期',
   syncUrlHeader: '同期先のURL',
-  syncUrlFooter: 'あなたの GitHub リポジトリ名を入力してください',
+  syncUrlFooter: 'あなたの GitHub リポジトリ名を入力してください。',
   syncUrlPlaceholder: '例) https://github.com/your_account_name/your_repository_name',
   syncPersonalAccessTokenHeader: '個人アクセストークン',
   syncPersonalAccessTokenFooter:
     '<a target="_blank" href="https://docs.github.com/ja/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token">こちらのガイド</a>を参照して、あなたの個人アクセストークン（Personal Access Token）を取得してください。取得の際は [Select scopes] 項目の [repo] 欄にチェックを必ず入れてください。',
   syncPersonalAccessTokenPlaceholder: '例) ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  syncIntervalHeader: '間隔（秒）',
+  syncIntervalFooter: '同期間隔（10秒以上）を入力してください。',
+  syncIntervalAlert: '10以上の値を入力してください',
   languageSettingsHeader: '言語',
 };
 

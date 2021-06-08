@@ -19,13 +19,27 @@ export const SettingPanel = (prop: {
 }) => {
   const dispatch = useDispatch();
 
-  const [syncUrlValue, setSyncUrlValue] = useState('');
-  const [syncPersonalAccessTokenValue, setSyncPersonalAccessTokenValue] = useState('');
   const messages = useSelector(selectorMessages);
   const settings = useSelector(selectorSettings);
 
+  const [syncUrlValue, setSyncUrlValue] = useState(settings.sync.remote_url);
+  const [syncPersonalAccessTokenValue, setSyncPersonalAccessTokenValue] = useState(
+    settings.sync.connection.personal_access_token
+  );
+  const [syncIntervalValue, setSyncIntervalValue] = useState(settings.sync.interval / 1000);
+  const [syncIntervalAlertValue, setSyncIntervalAlertValue] = useState('');
+
   const applyAndCloseSettings = () => {
+    if (syncIntervalValue < 10) {
+      setSyncIntervalAlertValue(messages.syncIntervalAlert);
+      return;
+    }
     prop.setIsOpen(false);
+  };
+
+  const changeSyncInterval = (interval: number) => {
+    setSyncIntervalValue(interval);
+    setSyncIntervalAlertValue('');
   };
 
   const changeLanguage = (lang: string) => {
@@ -87,6 +101,18 @@ export const SettingPanel = (prop: {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             dangerouslySetInnerHTML={{ __html: messages.syncPersonalAccessTokenFooter }}
           ></div>
+        </div>
+        <div styleName='syncInterval'>
+          <div styleName='syncIntervalHeader'>{messages.syncIntervalHeader}</div>
+          <input
+            type='number'
+            id='syncIntervalInput'
+            styleName='syncIntervalInput'
+            value={syncIntervalValue}
+            onChange={e => changeSyncInterval(parseInt(e.target.value, 10))}
+          ></input>
+          <div styleName='syncIntervalFooter'>{messages.syncIntervalFooter}</div>
+          <div styleName='syncIntervalAlert'>{syncIntervalAlertValue}</div>
         </div>
       </div>
       <div styleName='languageSettings'>

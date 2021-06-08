@@ -53,14 +53,14 @@
 .syncUrlAlert {
   clear: both;
   color: red;
-  margin: 0px 0px 0px 12px;
+  margin: 0px 0px 0px 180px;
 }
 
 .syncUrlFooter {
   clear: both;  
   font-size: 12px;
   color: #606060;
-  margin: 0px 0px 0px 20px;
+  margin: 0px 0px 0px 180px;
 }
 
 .syncPersonalAccessToken {
@@ -91,7 +91,39 @@
   clear: both;  
   font-size: 12px;
   color: #606060;
-  margin: 0px 0px 0px 20px;
+  margin: 0px 0px 0px 180px;
+}
+
+.syncInterval {
+  margin-top: 3px;
+}
+
+.syncIntervalHeader {
+  width: 160px;
+  font-size: 14px;
+  margin: 5px 5px 5px 12px;
+  border-bottom: 1px dashed;
+  float: left;
+}
+
+.syncIntervalInput {
+  width: 50px;
+  margin: 5px 0px 5px 0px;
+  float: left;
+}
+
+.syncIntervalAlert {
+  clear: both;
+  color: red;
+  font-size: 12px;
+  margin: 0px 0px 0px 180px;
+}
+
+.syncIntervalFooter {
+  float: left;
+  font-size: 12px;
+  color: #606060;
+  margin: 8px 0px 0px 12px;
 }
 
 .languageSettings {
