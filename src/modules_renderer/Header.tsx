@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { Sync } from './Sync';
 import { SettingPanel } from './SettingPanel';
 import { selectorAppInfo, selectorSync } from './selector';
+import window from './window';
 
 export const Header = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -20,6 +21,9 @@ export const Header = () => {
   const sync = useSelector(selectorSync);
 
   const handleClick = () => {
+    window.api.db({
+      command: 'db-pause-sync',
+    });
     setSettingsOpen(true);
   };
 
@@ -35,7 +39,7 @@ export const Header = () => {
       <div styleName='settingsIcon' onClick={handleClick}>
         <i className='fas fa-sliders-h'></i>
       </div>
-      <SettingPanel isOpen={!settingsOpen} setIsOpen={setIsOpen} />
+      <SettingPanel isOpen={settingsOpen} setIsOpen={setIsOpen} />
       <Sync synchronizing={sync.synchronizing} info={sync.syncInfo} />
     </div>
   );

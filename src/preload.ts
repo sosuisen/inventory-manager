@@ -7,7 +7,7 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { DatabaseCommand, SettingsCommand } from './modules_common/db.types';
+import { DatabaseCommand } from './modules_common/db.types';
 
 contextBridge.exposeInMainWorld('api', {
   /**
@@ -15,9 +15,6 @@ contextBridge.exposeInMainWorld('api', {
    */
   db: (command: DatabaseCommand) => {
     return ipcRenderer.invoke('db', command);
-  },
-  settings: (command: SettingsCommand) => {
-    return ipcRenderer.invoke('settings', command);
   },
 });
 

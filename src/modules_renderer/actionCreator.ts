@@ -15,7 +15,10 @@ import {
   DatabaseItemAdd,
   DatabaseItemDelete,
   DatabaseItemUpdate,
-  SettingsLanguageUpdate,
+  DatabaseLanguageUpdate,
+  DatabaseSyncIntervalUpdate,
+  DatabaseSyncPersonalAccessTokenUpdate,
+  DatabaseSyncRemoteUrlUpdate,
 } from '../modules_common/db.types';
 import { InventoryState, Item, LatestChangeFrom } from '../modules_common/store.types';
 import { generateId, getBoxId } from '../modules_common/utils';
@@ -30,6 +33,9 @@ import {
   ItemInsertAction,
   ItemUpdateAction,
   SettingsLanguageUpdateAction,
+  SettingsSyncIntervalUpdateAction,
+  SettingsSyncPersonalAccessTokenUpdateAction,
+  SettingsSyncRemoteUrlUpdateAction,
   WorkCurrentBoxUpdateAction,
   WorkItemAddedUpdateAction,
   WorkItemDeletedUpdateAction,
@@ -534,10 +540,55 @@ export const settingsLanguageUpdateCreator = (lang: string) => {
       payload: lang,
     };
     dispatch(settingsAction);
-    const cmd: SettingsLanguageUpdate = {
-      command: 'settings-language-update',
+    const cmd: DatabaseLanguageUpdate = {
+      command: 'db-language-update',
       data: lang,
     };
-    await window.api.settings(cmd);
+    await window.api.db(cmd);
+  };
+};
+
+export const settingsSyncRemoteUrlUpdateCreator = (remote_url: string) => {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const settingsAction: SettingsSyncRemoteUrlUpdateAction = {
+      type: 'settings-sync-remote-url-update',
+      payload: remote_url,
+    };
+    dispatch(settingsAction);
+    const cmd: DatabaseSyncRemoteUrlUpdate = {
+      command: 'db-sync-remote-url-update',
+      data: remote_url,
+    };
+    await window.api.db(cmd);
+  };
+};
+
+export const settingsSyncPersonalAccessTokenUpdateCreator = (token: string) => {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const settingsAction: SettingsSyncPersonalAccessTokenUpdateAction = {
+      type: 'settings-sync-personal-access-token-update',
+      payload: token,
+    };
+    dispatch(settingsAction);
+    const cmd: DatabaseSyncPersonalAccessTokenUpdate = {
+      command: 'db-sync-personal-access-token-update',
+      data: token,
+    };
+    await window.api.db(cmd);
+  };
+};
+
+export const settingsSyncIntervalUpdateCreator = (interval: number) => {
+  return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const settingsAction: SettingsSyncIntervalUpdateAction = {
+      type: 'settings-sync-interval-update',
+      payload: interval * 1000,
+    };
+    dispatch(settingsAction);
+    const cmd: DatabaseSyncIntervalUpdate = {
+      command: 'db-sync-interval-update',
+      data: interval * 1000,
+    };
+    await window.api.db(cmd);
   };
 };

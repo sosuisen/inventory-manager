@@ -16,7 +16,7 @@ import window from './window';
 
 const handleClick = () => {
   const syncCommand: DatabaseCommand = {
-    command: 'db-sync',
+    command: 'db-exec-sync',
   };
   window.api.db(syncCommand);
 };

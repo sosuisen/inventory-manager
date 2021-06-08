@@ -25,7 +25,7 @@ import {
   Japanese,
   MessageLabel,
 } from './modules_common/i18n';
-import { DatabaseCommand, SettingsCommand } from './modules_common/db.types';
+import { DatabaseCommand } from './modules_common/db.types';
 import { Box, InfoState, Item, SettingsState } from './modules_common/store.types';
 import { generateId, getBoxId } from './modules_common/utils';
 
@@ -50,7 +50,9 @@ const defaultDataDir = app.isPackaged
   ? path.join(__dirname, `../../../../../${dataDirName}`)
   : path.join(__dirname, `../${dataDirName}`);
 
-let sync: Sync;
+let sync: Sync | undefined;
+let remoteOptions: RemoteOptions | undefined;
+
 const items: { [key: string]: Item } = {};
 const boxes: { [key: string]: Box } = {};
 
@@ -207,8 +209,41 @@ const loadData = async () => {
   }
 };
 
+const setSyncEvents = () => {
+  if (sync === undefined) return;
+  sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+    mainWindow.webContents.send('sync', changes, taskMetadata);
+  });
+
+  sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
+    await loadData();
+    mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
+  });
+
+  sync.on('start', () => {
+    mainWindow.webContents.send('sync-start');
+  });
+  sync.on('complete', () => {
+    mainWindow.webContents.send('sync-complete');
+  });
+  sync.on('error', () => {
+    mainWindow.webContents.send('sync-complete');
+  });
+};
 // eslint-disable-next-line complexity
 const init = async () => {
+  // locale can be got after 'ready'
+  const myLocale = app.getLocale();
+  console.debug(`locale: ${myLocale}`);
+
+  let preferredLanguage: string = defaultLanguage;
+  if (availableLanguages.includes(myLocale)) {
+    preferredLanguage = myLocale;
+  }
+  // Set i18n from locale (for initial error)
+  selectPreferredLanguage(availableLanguages, [preferredLanguage]);
+  info.messages = translations.messages();
+
   // Open databases
   try {
     settingsDB = new GitDocumentDB({
@@ -240,7 +275,6 @@ const init = async () => {
       await inventoryDB.createDB();
     }
 
-    let remoteOptions: RemoteOptions | undefined;
     if (settings.sync.remote_url && settings.sync.connection.personal_access_token) {
       remoteOptions = {
         remote_url: settings.sync.remote_url,
@@ -250,25 +284,20 @@ const init = async () => {
         live: true,
       };
     }
-    if (remoteOptions) {
-      sync = await inventoryDB.sync(remoteOptions);
-    }
   } catch (err) {
     showErrorDialog('databaseCreateError', err.message);
     console.log(err);
     app.exit();
   }
-  if (!settingsDB || !inventoryDB) {
-    return;
+  if (remoteOptions) {
+    sync = await inventoryDB.sync(remoteOptions).catch(err => {
+      showErrorDialog('syncError', err.message);
+      return undefined;
+    });
   }
 
-  // locale can be got after 'ready'
-  const myLocale = app.getLocale();
-  console.debug(`locale: ${myLocale}`);
-
-  let preferredLanguage: string = defaultLanguage;
-  if (availableLanguages.includes(myLocale)) {
-    preferredLanguage = myLocale;
+  if (!settingsDB || !inventoryDB) {
+    return;
   }
 
   if (settings.language === '') {
@@ -277,7 +306,7 @@ const init = async () => {
   }
 
   /**
-   * i18n
+   * Set i18n from settings
    */
   selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
   info.messages = translations.messages();
@@ -293,26 +322,8 @@ const init = async () => {
     return;
   }
 
-  if (sync !== undefined) {
-    sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
-      mainWindow.webContents.send('sync', changes, taskMetadata);
-    });
-
-    sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
-      await loadData();
-      mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
-    });
-
-    sync.on('start', () => {
-      mainWindow.webContents.send('sync-start');
-    });
-    sync.on('complete', () => {
-      mainWindow.webContents.send('sync-complete');
-    });
-    sync.on('error', () => {
-      mainWindow.webContents.send('sync-complete');
-    });
-  }
+  setSyncEvents();
+  if (sync !== undefined) console.log(sync.options());
 
   await loadData();
 
@@ -427,24 +438,80 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         .catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
       break;
     }
-    case 'db-sync': {
-      if (sync) {
+    case 'db-exec-sync': {
+      if (sync && sync.options().live) {
         sync.trySync();
       }
       break;
     }
-  }
-});
-
-ipcMain.handle('settings', async (e, command: SettingsCommand) => {
-  // eslint-disable-next-line default-case
-  switch (command.command) {
-    case 'settings-language-update': {
+    case 'db-language-update': {
       settings.language = command.data;
       selectPreferredLanguage(availableLanguages, [settings.language, defaultLanguage]);
       info.messages = translations.messages();
       mainWindow.webContents.send('update-info', info);
       await settingsDB.put(settings);
+      break;
+    }
+    case 'db-sync-remote-url-update': {
+      if (command.data === '') {
+        if (sync !== undefined) {
+          inventoryDB.unregisterRemote(sync.remoteURL());
+          sync = undefined;
+        }
+      }
+      settings.sync.remote_url = command.data;
+      await settingsDB.put(settings);
+      break;
+    }
+    case 'db-sync-personal-access-token-update': {
+      settings.sync.connection.personal_access_token = command.data;
+      await settingsDB.put(settings);
+      break;
+    }
+    case 'db-sync-interval-update': {
+      settings.sync.interval = command.data;
+      if (sync !== undefined) {
+        sync.pause();
+        sync.resume({ interval: settings.sync.interval });
+      }
+      await settingsDB.put(settings);
+      break;
+    }
+    case 'db-test-sync': {
+      if (sync !== undefined) {
+        inventoryDB.unregisterRemote(sync.remoteURL());
+      }
+      remoteOptions = {
+        remote_url: settings.sync.remote_url,
+        connection: settings.sync.connection,
+        interval: settings.sync.interval,
+        conflict_resolution_strategy: 'ours-diff',
+        live: true,
+      };
+      console.log(remoteOptions);
+      // eslint-disable-next-line require-atomic-updates
+      const syncOrError: Sync | Error = await inventoryDB.sync(remoteOptions).catch(err => {
+        return err;
+      });
+      if (syncOrError instanceof Error) {
+        return syncOrError.name;
+      }
+      // eslint-disable-next-line require-atomic-updates
+      sync = syncOrError;
+      setSyncEvents();
+      return 'succeed';
+    }
+    case 'db-pause-sync': {
+      if (sync !== undefined) {
+        sync.pause();
+      }
+      break;
+    }
+    case 'db-resume-sync': {
+      if (sync !== undefined) {
+        sync.resume();
+      }
+      break;
     }
   }
 });

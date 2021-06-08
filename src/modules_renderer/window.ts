@@ -6,12 +6,11 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-import { DatabaseCommand, SettingsCommand } from '../modules_common/db.types';
+import { DatabaseCommand } from '../modules_common/db.types';
 
 interface WindowWithAPI extends Window {
   api: {
     db: (command: DatabaseCommand) => Promise<any>;
-    settings: (command: SettingsCommand) => Promise<any>;
   };
 }
 declare const window: WindowWithAPI;

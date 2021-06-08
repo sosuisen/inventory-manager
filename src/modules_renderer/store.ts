@@ -219,6 +219,21 @@ const settingsReducer = (
       newState.language = action.payload;
       return newState;
     }
+    case 'settings-sync-remote-url-update': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.sync.remote_url = action.payload;
+      return newState;
+    }
+    case 'settings-sync-personal-access-token-update': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.sync.connection.personal_access_token = action.payload;
+      return newState;
+    }
+    case 'settings-sync-interval-update': {
+      const newState = JSON.parse(JSON.stringify(state));
+      newState.sync.interval = action.payload;
+      return newState;
+    }
     default:
       return state;
   }

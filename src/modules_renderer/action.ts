@@ -173,7 +173,27 @@ export interface SettingsLanguageUpdateAction {
   payload: string;
 }
 
-export type SettingsAction = SettingsInitAction | SettingsLanguageUpdateAction;
+export interface SettingsSyncRemoteUrlUpdateAction {
+  type: 'settings-sync-remote-url-update';
+  payload: string;
+}
+
+export interface SettingsSyncPersonalAccessTokenUpdateAction {
+  type: 'settings-sync-personal-access-token-update';
+  payload: string;
+}
+
+export interface SettingsSyncIntervalUpdateAction {
+  type: 'settings-sync-interval-update';
+  payload: number;
+}
+
+export type SettingsAction =
+  | SettingsInitAction
+  | SettingsLanguageUpdateAction
+  | SettingsSyncRemoteUrlUpdateAction
+  | SettingsSyncPersonalAccessTokenUpdateAction
+  | SettingsSyncIntervalUpdateAction;
 
 export type InventoryAction =
   | ItemAction

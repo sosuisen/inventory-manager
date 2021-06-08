@@ -47,8 +47,40 @@ export type DatabaseItemUpdate = {
   data: Item;
 };
 
-export type DatabaseSync = {
-  command: 'db-sync';
+export type DatabaseExecSync = {
+  command: 'db-exec-sync';
+};
+
+export type DatabaseSyncRemoteUrlUpdate = {
+  command: 'db-sync-remote-url-update';
+  data: string;
+};
+
+export type DatabaseSyncPersonalAccessTokenUpdate = {
+  command: 'db-sync-personal-access-token-update';
+  data: string;
+};
+
+export type DatabaseSyncIntervalUpdate = {
+  command: 'db-sync-interval-update';
+  data: number;
+};
+
+export type DatabaseTestSync = {
+  command: 'db-test-sync';
+};
+
+export type DatabasePauseSync = {
+  command: 'db-pause-sync';
+};
+
+export type DatabaseResumeSync = {
+  command: 'db-resume-sync';
+};
+
+export type DatabaseLanguageUpdate = {
+  command: 'db-language-update';
+  data: string;
 };
 
 export type DatabaseCommand =
@@ -59,11 +91,11 @@ export type DatabaseCommand =
   | DatabaseItemAdd
   | DatabaseItemDelete
   | DatabaseItemUpdate
-  | DatabaseSync;
-
-export type SettingsLanguageUpdate = {
-  command: 'settings-language-update';
-  data: string;
-};
-
-export type SettingsCommand = SettingsLanguageUpdate;
+  | DatabaseExecSync
+  | DatabaseSyncRemoteUrlUpdate
+  | DatabaseSyncPersonalAccessTokenUpdate
+  | DatabaseSyncIntervalUpdate
+  | DatabaseTestSync
+  | DatabasePauseSync
+  | DatabaseResumeSync
+  | DatabaseLanguageUpdate;
