@@ -48,6 +48,15 @@ export const SettingPanel = (prop: {
       syncRemoteUrlValue !== settings.sync.remote_url ||
       syncPersonalAccessTokenValue !== settings.sync.connection.personal_access_token
     ) {
+      if (syncRemoteUrlValue !== settings.sync.remote_url) {
+        dispatch(settingsSyncRemoteUrlUpdateCreator(syncRemoteUrlValue));
+      }
+      if (syncPersonalAccessTokenValue !== settings.sync.connection.personal_access_token) {
+        dispatch(
+          settingsSyncPersonalAccessTokenUpdateCreator(syncPersonalAccessTokenValue)
+        );
+      }
+
       // Test sync
       setTestSyncDialogMessage(messages.testingSync);
       setIsTestSyncDialogOpen(true);
@@ -73,18 +82,6 @@ export const SettingPanel = (prop: {
     });
 
     prop.setIsOpen(false);
-  };
-
-  const changeSyncRemoteUrl = () => {
-    if (syncRemoteUrlValue !== settings.sync.remote_url) {
-      dispatch(settingsSyncRemoteUrlUpdateCreator(syncRemoteUrlValue));
-    }
-  };
-
-  const changeSyncPersonalAccessToken = () => {
-    if (syncPersonalAccessTokenValue !== settings.sync.connection.personal_access_token) {
-      dispatch(settingsSyncPersonalAccessTokenUpdateCreator(syncPersonalAccessTokenValue));
-    }
   };
 
   const changeSyncInterval = () => {
@@ -143,7 +140,6 @@ export const SettingPanel = (prop: {
             value={syncRemoteUrlValue}
             placeholder={messages.syncRemoteUrlPlaceholder}
             onChange={e => setSyncRemoteUrlValue(e.target.value)}
-            onBlur={changeSyncRemoteUrl}
           ></input>
           <div styleName='syncRemoteUrlAlert'></div>
           <div styleName='syncRemoteUrlFooter'>{messages.syncRemoteUrlFooter}</div>
@@ -159,7 +155,6 @@ export const SettingPanel = (prop: {
             value={syncPersonalAccessTokenValue}
             placeholder={messages.syncPersonalAccessTokenPlaceholder}
             onChange={e => setSyncPersonalAccessTokenValue(e.target.value)}
-            onBlur={changeSyncPersonalAccessToken}
           ></input>
           <div styleName='syncPersonalAccessTokenAlert'></div>
           <div
