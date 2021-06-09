@@ -15,6 +15,7 @@ import {
   GitDocumentDB,
   RemoteOptions,
   Sync,
+  SyncResult,
   TaskMetadata,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate } from 'typed-intl';
@@ -490,14 +491,21 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       };
       console.log(remoteOptions);
       // eslint-disable-next-line require-atomic-updates
-      const syncOrError: Sync | Error = await inventoryDB.sync(remoteOptions).catch(err => {
-        return err;
-      });
+      const syncOrError: [Sync, SyncResult] | Error = await inventoryDB
+        .sync(remoteOptions, true)
+        .catch(err => {
+          return err;
+        });
       if (syncOrError instanceof Error) {
         return syncOrError.name;
       }
       // eslint-disable-next-line require-atomic-updates
-      sync = syncOrError;
+      sync = syncOrError[0];
+      const syncResult = syncOrError[1];
+      if (syncResult.action === 'combine database') {
+        await loadData();
+        mainWindow.webContents.send('initialize-store', items, boxes, info, settings);
+      }
       setSyncEvents();
       return 'succeed';
     }
