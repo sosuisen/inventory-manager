@@ -8,7 +8,7 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ChangedFile, TaskMetadata } from 'git-documentdb';
+import { ChangedFile, FatJsonDoc, TaskMetadata } from 'git-documentdb';
 import { App } from './modules_renderer/App';
 import { inventoryStore } from './modules_renderer/store';
 import { Box, InfoState, Item, SettingsState } from './modules_common/store.types';
@@ -36,13 +36,13 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
   changes.forEach(file => {
     let id = '';
     if (file.operation === 'insert') {
-      id = file.new.id;
+      id = (file.new as FatJsonDoc)._id;
     }
     else if (file.operation === 'update') {
-      id = file.new.id;
+      id = (file.new as FatJsonDoc)._id;
     }
     else if (file.operation === 'delete') {
-      id = file.old.id;
+      id = (file.old as FatJsonDoc)._id;
     }
 
     if (id.startsWith('box/')) {

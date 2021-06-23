@@ -197,13 +197,21 @@ const settingsReducer = (
   // eslint-disable-next-line default-param-last
   state: SettingsState = {
     _id: 'settings',
+    author: {
+      name: '',
+      email: '',
+    },
+    committer: {
+      name: '',
+      email: '',
+    },
     language: 'en',
     dataStorePath: '',
     sync: {
-      remote_url: '',
+      remoteUrl: '',
       connection: {
         type: 'github',
-        personal_access_token: '',
+        personalAccessToken: '',
         private: true,
       },
       interval: 30000,

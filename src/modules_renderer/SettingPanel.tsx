@@ -28,9 +28,9 @@ export const SettingPanel = (prop: {
   const messages = useSelector(selectorMessages);
   const settings = useSelector(selectorSettings);
 
-  const [syncRemoteUrlValue, setSyncRemoteUrlValue] = useState(settings.sync.remote_url);
+  const [syncRemoteUrlValue, setSyncRemoteUrlValue] = useState(settings.sync.remoteUrl);
   const [syncPersonalAccessTokenValue, setSyncPersonalAccessTokenValue] = useState(
-    settings.sync.connection.personal_access_token
+    settings.sync.connection.personalAccessToken
   );
   const [syncIntervalValue, setSyncIntervalValue] = useState(settings.sync.interval / 1000);
   const [syncIntervalAlertValue, setSyncIntervalAlertValue] = useState('');
@@ -45,13 +45,13 @@ export const SettingPanel = (prop: {
       // nop
     }
     else if (
-      syncRemoteUrlValue !== settings.sync.remote_url ||
-      syncPersonalAccessTokenValue !== settings.sync.connection.personal_access_token
+      syncRemoteUrlValue !== settings.sync.remoteUrl ||
+      syncPersonalAccessTokenValue !== settings.sync.connection.personalAccessToken
     ) {
-      if (syncRemoteUrlValue !== settings.sync.remote_url) {
+      if (syncRemoteUrlValue !== settings.sync.remoteUrl) {
         dispatch(settingsSyncRemoteUrlUpdateCreator(syncRemoteUrlValue));
       }
-      if (syncPersonalAccessTokenValue !== settings.sync.connection.personal_access_token) {
+      if (syncPersonalAccessTokenValue !== settings.sync.connection.personalAccessToken) {
         dispatch(
           settingsSyncPersonalAccessTokenUpdateCreator(syncPersonalAccessTokenValue)
         );

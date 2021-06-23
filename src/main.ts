@@ -81,13 +81,21 @@ const info: InfoState = {
 
 let settings: SettingsState = {
   _id: 'settings',
+  author: {
+    name: '',
+    email: '',
+  },
+  committer: {
+    name: '',
+    email: '',
+  },
   language: '',
   dataStorePath: defaultDataDir,
   sync: {
-    remote_url: '',
+    remoteUrl: '',
     connection: {
       type: 'github',
-      personal_access_token: '',
+      personalAccessToken: '',
       private: true,
     },
     interval: 30000,
@@ -161,21 +169,17 @@ const showErrorDialog = (label: MessageLabel, msg: string) => {
 };
 
 const loadData = async () => {
-  boxCollection = await inventoryDB.collection('box');
-  itemCollection = await inventoryDB.collection('item');
+  boxCollection = await inventoryDB.collection('box', { namePrefix: 'box' });
+  itemCollection = await inventoryDB.collection('item', { namePrefix: 'item' });
 
-  const boxDocs = ((await boxCollection.allDocs()).rows.map(
-    row => row.doc
-  ) as unknown) as Box[];
+  const boxDocs = ((await boxCollection.find()) as unknown) as Box[];
   boxDocs.forEach(boxDoc => {
     // Add lacked property
     boxDoc.items = [];
     boxes[boxDoc._id] = boxDoc;
   });
 
-  const itemDocs = ((await itemCollection.allDocs()).rows.map(
-    row => row.doc
-  ) as unknown) as Item[];
+  const itemDocs = ((await itemCollection.find()) as unknown) as Item[];
 
   itemDocs.forEach(itemDoc => {
     // Set boxId/itemId as id.
@@ -199,14 +203,13 @@ const loadData = async () => {
   });
 
   if (boxDocs.length === 0) {
-    const boxId = 'box' + generateId();
     const boxName = info.messages.firstBoxName;
-    boxes[boxId] = {
-      _id: boxId,
+    const putResult = await boxCollection.put({ name: boxName });
+    boxes[putResult._id] = {
+      _id: putResult._id,
       name: boxName,
       items: [],
     };
-    await boxCollection.put({ _id: boxId, name: boxName });
   }
 };
 
@@ -248,20 +251,34 @@ const init = async () => {
   // Open databases
   try {
     settingsDB = new GitDocumentDB({
-      local_dir: defaultDataDir,
-      db_name: 'local_settings',
+      localDir: defaultDataDir,
+      dbName: 'local_settings',
     });
-    const settingsOpenResult = await settingsDB.open();
-    if (!settingsOpenResult.ok) {
-      await settingsDB.createDB();
+    await settingsDB.open();
+
+    const loadedSettings = ((await settingsDB.get('settings')) as unknown) as SettingsState;
+    if (loadedSettings === undefined) {
+      const terminalId = generateId();
+      const userId = generateId();
+      const author = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      const committer = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      settings.author = author;
+      settings.committer = committer;
+      await settingsDB.put(settings);
+    }
+    else {
+      settings = loadedSettings;
     }
 
-    settings =
-      (((await settingsDB.get('settings')) as unknown) as SettingsState) ?? settings;
-
     inventoryDB = new GitDocumentDB({
-      local_dir: settings.dataStorePath,
-      db_name: 'db',
+      localDir: settings.dataStorePath,
+      dbName: 'db',
       schema: {
         json: {
           plainTextProperties: {
@@ -270,18 +287,17 @@ const init = async () => {
         },
       },
     });
+    inventoryDB.author = settings.author;
+    inventoryDB.committer = settings.committer;
 
-    const openResult = await inventoryDB.open();
-    if (!openResult.ok) {
-      await inventoryDB.createDB();
-    }
+    await inventoryDB.open();
 
-    if (settings.sync.remote_url && settings.sync.connection.personal_access_token) {
+    if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
       remoteOptions = {
-        remote_url: settings.sync.remote_url,
+        remoteUrl: settings.sync.remoteUrl,
         connection: settings.sync.connection,
         interval: settings.sync.interval,
-        conflict_resolution_strategy: 'ours-diff',
+        conflictResolutionStrategy: 'ours-diff',
         live: true,
       };
     }
@@ -426,7 +442,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     case 'db-box-delete-revert': {
       const id = command.data;
       boxCollection
-        .get(id, 1)
+        .getBackNumber(id, 1)
         .then(box => {
           if (box) boxCollection.put(box);
           else throw new Error('backNumber does not found');
@@ -456,16 +472,16 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     case 'db-sync-remote-url-update': {
       if (command.data === '') {
         if (sync !== undefined) {
-          inventoryDB.unregisterRemote(sync.remoteURL());
+          inventoryDB.removeSync(sync.remoteURL());
           sync = undefined;
         }
       }
-      settings.sync.remote_url = command.data;
+      settings.sync.remoteUrl = command.data;
       await settingsDB.put(settings);
       break;
     }
     case 'db-sync-personal-access-token-update': {
-      settings.sync.connection.personal_access_token = command.data;
+      settings.sync.connection.personalAccessToken = command.data;
       await settingsDB.put(settings);
       break;
     }
@@ -480,13 +496,13 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     }
     case 'db-test-sync': {
       if (sync !== undefined) {
-        inventoryDB.unregisterRemote(sync.remoteURL());
+        inventoryDB.removeSync(sync.remoteURL());
       }
       remoteOptions = {
-        remote_url: settings.sync.remote_url,
+        remoteUrl: settings.sync.remoteUrl,
         connection: settings.sync.connection,
         interval: settings.sync.interval,
-        conflict_resolution_strategy: 'ours-diff',
+        conflictResolutionStrategy: 'ours-diff',
         live: true,
       };
       console.log(remoteOptions);

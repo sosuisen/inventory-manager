@@ -69,13 +69,21 @@ export type InfoState = {
 
 export type SettingsState = {
   _id: string;
+  author: {
+    name: string;
+    email: string;
+  };
+  committer: {
+    name: string;
+    email: string;
+  };
   language: string;
   dataStorePath: string;
   sync: {
-    remote_url: string;
+    remoteUrl: string;
     connection: {
       type: 'github';
-      personal_access_token: string;
+      personalAccessToken: string;
       private: boolean;
     };
     interval: number;
