@@ -375,13 +375,12 @@ app.on('activate', async () => {
 ipcMain.handle('db', async (e, command: DatabaseCommand) => {
   // eslint-disable-next-line default-case
   switch (command.command) {
-    case 'db-item-add':
-    case 'db-item-update': {
-      const taskId = await new Promise((resolve, reject) => {
+    case 'db-item-add': {
+      const task = await new Promise((resolve, reject) => {
         itemCollection
           .put(command.data, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
-              resolve(taskMetadata.taskId);
+              resolve(taskMetadata);
             },
           })
           .catch(err => reject(err));
@@ -389,15 +388,30 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       if (sync) {
         sync.trySync();
       }
-      return taskId;
+      return task;
+    }
+    case 'db-item-update': {
+      const task = await new Promise((resolve, reject) => {
+        itemCollection
+          .put(command.data, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return task;
     }
     case 'db-item-delete': {
-      const taskId = await new Promise((resolve, reject) => {
+      const task = await new Promise((resolve, reject) => {
         const id = command.data;
         itemCollection
           .delete(id, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
-              resolve(taskMetadata.taskId);
+              resolve(taskMetadata);
             },
           })
           .catch(err => reject(err));
@@ -405,15 +419,15 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       if (sync) {
         sync.trySync();
       }
-      return taskId;
+      return task;
     }
     case 'db-box-add':
     case 'db-box-name-update': {
-      const taskId = await new Promise((resolve, reject) => {
+      const task = await new Promise((resolve, reject) => {
         boxCollection
           .put(command.data, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
-              resolve(taskMetadata.taskId);
+              resolve(taskMetadata);
             },
           })
           .catch(err => reject(err));
@@ -421,15 +435,15 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       if (sync) {
         sync.trySync();
       }
-      return taskId;
+      return task;
     }
     case 'db-box-delete': {
-      const taskId = await new Promise((resolve, reject) => {
+      const task = await new Promise((resolve, reject) => {
         const id = command.data;
         boxCollection
           .delete(id, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
-              resolve(taskMetadata.taskId);
+              resolve(taskMetadata);
             },
           })
           .catch(err => reject(err));
@@ -437,7 +451,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       if (sync) {
         sync.trySync();
       }
-      return taskId;
+      return task;
     }
     case 'db-box-delete-revert': {
       const id = command.data;

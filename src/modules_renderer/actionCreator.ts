@@ -42,6 +42,7 @@ import {
   WorkLatestChangeFromUpdateAction,
 } from './action';
 import window from './window';
+import { TaskMetadata } from 'git-documentdb';
 
 const lock = new AsyncLock();
 
@@ -216,8 +217,9 @@ export const itemNameUpdateActionCreator = (
           command: 'db-item-update',
           data: newItem,
         };
+        const taskMetadata: TaskMetadata = await window.api.db(cmd);
         // eslint-disable-next-line require-atomic-updates
-        itemNameUpdateTime = await window.api.db(cmd);
+        itemNameUpdateTime = taskMetadata.enqueueTime;
       }
       if (elm) {
         elm.blur();
@@ -269,8 +271,9 @@ export const itemTakeoutUpdateActionCreator = (
           command: 'db-item-update',
           data: newItem,
         };
+        const taskMetadata: TaskMetadata = await window.api.db(cmd);
         // eslint-disable-next-line require-atomic-updates
-        itemTakeoutUpdateTime = await window.api.db(cmd);
+        itemTakeoutUpdateTime = taskMetadata.enqueueTime;
       }
     });
   };
@@ -453,8 +456,9 @@ export const boxNameUpdateActionCreator = (
               name,
             },
           };
+          const taskMetadata: TaskMetadata = await window.api.db(command);
           // eslint-disable-next-line require-atomic-updates
-          boxNameUpdateTime = await window.api.db(command);
+          boxNameUpdateTime = taskMetadata.enqueueTime;
         }
       }
     });
