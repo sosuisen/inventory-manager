@@ -26,12 +26,8 @@ const itemReducer = (state: ItemState = {}, action: ItemAction) => {
     }
     case 'item-add': {
       const newState = { ...state };
-      const date = getCurrentDateAndTime();
       newState[action.payload._id] = {
         ...action.payload,
-        created_date: date,
-        modified_date: date,
-        takeout: false,
       };
       return newState;
     }

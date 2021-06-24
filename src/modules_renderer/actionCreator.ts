@@ -8,20 +8,21 @@
 
 import { Dispatch } from 'redux';
 import AsyncLock from 'async-lock';
+import { TaskMetadata } from 'git-documentdb';
 import {
-  DatabaseBoxAdd,
   DatabaseBoxDelete,
-  DatabaseBoxNameUpdate,
-  DatabaseItemAdd,
+  DatabaseBoxInsert,
+  DatabaseBoxPut,
   DatabaseItemDelete,
-  DatabaseItemUpdate,
+  DatabaseItemInsert,
+  DatabaseItemPut,
   DatabaseLanguageUpdate,
   DatabaseSyncIntervalUpdate,
   DatabaseSyncPersonalAccessTokenUpdate,
   DatabaseSyncRemoteUrlUpdate,
 } from '../modules_common/db.types';
 import { InventoryState, Item, LatestChangeFrom } from '../modules_common/store.types';
-import { generateId, getBoxId } from '../modules_common/utils';
+import { getBoxId, getCurrentDateAndTime } from '../modules_common/utils';
 import {
   BoxAddAction,
   BoxDeleteAction,
@@ -42,7 +43,6 @@ import {
   WorkLatestChangeFromUpdateAction,
 } from './action';
 import window from './window';
-import { TaskMetadata } from 'git-documentdb';
 
 const lock = new AsyncLock();
 
@@ -81,8 +81,8 @@ export const itemAddActionCreator = (boxId: string, name: string) => {
       dispatch(boxAction);
 
       if (latestChangeFrom === 'local') {
-        const cmd: DatabaseBoxAdd = {
-          command: 'db-box-add',
+        const cmd: DatabaseBoxPut = {
+          command: 'db-box-put',
           data: {
             _id: boxId,
             name: getState().info.messages.firstBoxName,
@@ -92,31 +92,35 @@ export const itemAddActionCreator = (boxId: string, name: string) => {
       }
     }
 
-    // if (latestChangeFrom === 'local') {
-    const cmd: DatabaseItemAdd = {
-      command: 'db-item-add',
+    const date = getCurrentDateAndTime();
+    const newItem = {
+      name,
+      created_date: date,
+      modified_date: date,
+      takeout: false,
+    };
+
+    const cmd: DatabaseItemInsert = {
+      command: 'db-item-insert',
       data: {
         boxId,
-        name,
+        item: newItem,
       },
     };
     const taskMetadata: TaskMetadata = await window.api.db(cmd);
-    const id = boxId + '/' + taskMetadata.shortId;
-    // }
-
-    const id = boxId + '/item' + generateId();
+    const _id = boxId + '/' + taskMetadata.shortId!;
     const itemAction: ItemAddAction = {
       type: 'item-add',
       payload: {
-        _id: id,
-        name,
+        ...newItem,
+        _id,
       },
     };
     dispatch(itemAction);
 
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
-      payload: id,
+      payload: _id,
     };
     dispatch(boxAction);
 
@@ -217,13 +221,13 @@ export const itemNameUpdateActionCreator = (
 
       if (latestChangeFrom === 'local') {
         const newItem = getState().item[id];
-        const cmd: DatabaseItemUpdate = {
-          command: 'db-item-update',
+        const cmd: DatabaseItemPut = {
+          command: 'db-item-put',
           data: newItem,
         };
         const taskMetadata: TaskMetadata = await window.api.db(cmd);
         // eslint-disable-next-line require-atomic-updates
-        itemNameUpdateTime = taskMetadata.enqueueTime;
+        itemNameUpdateTime = taskMetadata.enqueueTime!;
       }
       if (elm) {
         elm.blur();
@@ -271,13 +275,13 @@ export const itemTakeoutUpdateActionCreator = (
 
       if (latestChangeFrom === 'local') {
         const newItem = getState().item[id];
-        const cmd: DatabaseItemUpdate = {
-          command: 'db-item-update',
+        const cmd: DatabaseItemPut = {
+          command: 'db-item-put',
           data: newItem,
         };
         const taskMetadata: TaskMetadata = await window.api.db(cmd);
         // eslint-disable-next-line require-atomic-updates
-        itemTakeoutUpdateTime = taskMetadata.enqueueTime;
+        itemTakeoutUpdateTime = taskMetadata.enqueueTime!;
       }
     });
   };
@@ -311,8 +315,8 @@ export const itemInsertActionCreator = (
         dispatch(boxAction);
 
         if (latestChangeFrom === 'local') {
-          const cmd: DatabaseBoxAdd = {
-            command: 'db-box-add',
+          const cmd: DatabaseBoxPut = {
+            command: 'db-box-put',
             data: {
               _id: boxId,
               name: getState().info.messages.firstBoxName,
@@ -331,8 +335,8 @@ export const itemInsertActionCreator = (
 
     if (latestChangeFrom === 'local') {
       const newItem = getState().item[item._id];
-      const cmd: DatabaseItemAdd = {
-        command: 'db-item-add',
+      const cmd: DatabaseItemPut = {
+        command: 'db-item-put',
         data: newItem,
       };
       await window.api.db(cmd);
@@ -367,7 +371,15 @@ export const boxAddActionCreator = (name: string) => {
       payload: latestChangeFrom,
     };
     dispatch(latestChangeFromAction);
-    const _id = 'box' + generateId();
+
+    const cmd: DatabaseBoxInsert = {
+      command: 'db-box-insert',
+      data: {
+        name,
+      },
+    };
+    const taskMetadata: TaskMetadata = await window.api.db(cmd);
+    const _id = taskMetadata.shortId!;
     const boxAction: BoxAddAction = {
       type: 'box-add',
       payload: {
@@ -382,17 +394,6 @@ export const boxAddActionCreator = (name: string) => {
       payload: _id,
     };
     dispatch(workCurrentBoxAction);
-
-    if (latestChangeFrom === 'local') {
-      const cmd: DatabaseBoxAdd = {
-        command: 'db-box-add',
-        data: {
-          _id,
-          name,
-        },
-      };
-      await window.api.db(cmd);
-    }
   };
 };
 
@@ -434,8 +435,8 @@ export const boxNameUpdateActionCreator = (
         dispatch(boxAction);
 
         if (latestChangeFrom === 'local') {
-          const command: DatabaseBoxAdd = {
-            command: 'db-box-add',
+          const command: DatabaseBoxPut = {
+            command: 'db-box-put',
             data: {
               _id,
               name,
@@ -455,8 +456,8 @@ export const boxNameUpdateActionCreator = (
         dispatch(boxAction);
 
         if (latestChangeFrom === 'local') {
-          const command: DatabaseBoxNameUpdate = {
-            command: 'db-box-name-update',
+          const command: DatabaseBoxPut = {
+            command: 'db-box-put',
             data: {
               _id,
               name,
@@ -464,7 +465,7 @@ export const boxNameUpdateActionCreator = (
           };
           const taskMetadata: TaskMetadata = await window.api.db(command);
           // eslint-disable-next-line require-atomic-updates
-          boxNameUpdateTime = taskMetadata.enqueueTime;
+          boxNameUpdateTime = taskMetadata.enqueueTime!;
         }
       }
     });

@@ -375,10 +375,13 @@ app.on('activate', async () => {
 ipcMain.handle('db', async (e, command: DatabaseCommand) => {
   // eslint-disable-next-line default-case
   switch (command.command) {
-    case 'db-item-add': {
+    case 'db-item-insert': {
+      const col = inventoryDB.collection('item/' + command.data.boxId, {
+        namePrefix: 'item',
+      });
       const task = await new Promise((resolve, reject) => {
-        itemCollection
-          .put(command.data, {
+        col
+          .put(command.data.item, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
               resolve(taskMetadata);
             },
@@ -390,7 +393,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       }
       return task;
     }
-    case 'db-item-update': {
+    case 'db-item-put': {
       const task = await new Promise((resolve, reject) => {
         itemCollection
           .put(command.data, {
@@ -421,8 +424,22 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       }
       return task;
     }
-    case 'db-box-add':
-    case 'db-box-name-update': {
+    case 'db-box-insert': {
+      const task = await new Promise((resolve, reject) => {
+        boxCollection
+          .put(command.data, {
+            enqueueCallback: (taskMetadata: TaskMetadata) => {
+              resolve(taskMetadata);
+            },
+          })
+          .catch(err => reject(err));
+      }).catch((err: Error) => console.log(err.message + ', ' + JSON.stringify(command)));
+      if (sync) {
+        sync.trySync();
+      }
+      return task;
+    }
+    case 'db-box-put': {
       const task = await new Promise((resolve, reject) => {
         boxCollection
           .put(command.data, {

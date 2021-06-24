@@ -30,10 +30,7 @@ export interface ItemInitAction {
 
 export interface ItemAddAction {
   type: 'item-add';
-  payload: {
-    _id: string;
-    name: string;
-  };
+  payload: Item;
 }
 
 export interface ItemUpdateAction {

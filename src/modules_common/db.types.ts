@@ -12,13 +12,13 @@ import { BoxDoc, Item } from './store.types';
  * Action to Database
  */
 
-export type DatabaseBoxAdd = {
-  command: 'db-box-add';
-  data: BoxDoc;
+export type DatabaseBoxInsert = {
+  command: 'db-box-insert';
+  data: Pick<BoxDoc, 'name'>;
 };
 
-export type DatabaseBoxNameUpdate = {
-  command: 'db-box-name-update';
+export type DatabaseBoxPut = {
+  command: 'db-box-put';
   data: BoxDoc;
 };
 
@@ -32,12 +32,12 @@ export type DatabaseBoxDeleteRevert = {
   data: string;
 };
 
-export type DatabaseItemAdd = {
-  command: 'db-item-add';
+export type DatabaseItemInsert = {
+  command: 'db-item-insert';
   data: {
     boxId: string;
-    name: string;
-  }
+    item: Pick<Item, 'created_date' | 'modified_date' | 'name' | 'takeout'>;
+  };
 };
 
 export type DatabaseItemDelete = {
@@ -45,8 +45,8 @@ export type DatabaseItemDelete = {
   data: string;
 };
 
-export type DatabaseItemUpdate = {
-  command: 'db-item-update';
+export type DatabaseItemPut = {
+  command: 'db-item-put';
   data: Item;
 };
 
@@ -87,13 +87,13 @@ export type DatabaseLanguageUpdate = {
 };
 
 export type DatabaseCommand =
-  | DatabaseBoxAdd
-  | DatabaseBoxNameUpdate
+  | DatabaseBoxInsert
+  | DatabaseBoxPut
   | DatabaseBoxDelete
   | DatabaseBoxDeleteRevert
-  | DatabaseItemAdd
+  | DatabaseItemInsert
   | DatabaseItemDelete
-  | DatabaseItemUpdate
+  | DatabaseItemPut
   | DatabaseExecSync
   | DatabaseSyncRemoteUrlUpdate
   | DatabaseSyncPersonalAccessTokenUpdate
