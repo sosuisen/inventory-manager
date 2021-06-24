@@ -81,14 +81,6 @@ const info: InfoState = {
 
 let settings: SettingsState = {
   _id: 'settings',
-  author: {
-    name: '',
-    email: '',
-  },
-  committer: {
-    name: '',
-    email: '',
-  },
   language: '',
   dataStorePath: defaultDataDir,
   sync: {
@@ -258,18 +250,6 @@ const init = async () => {
 
     const loadedSettings = ((await settingsDB.get('settings')) as unknown) as SettingsState;
     if (loadedSettings === undefined) {
-      const terminalId = generateId();
-      const userId = generateId();
-      const author = {
-        name: userId,
-        email: terminalId + '@localhost',
-      };
-      const committer = {
-        name: userId,
-        email: terminalId + '@localhost',
-      };
-      settings.author = author;
-      settings.committer = committer;
       await settingsDB.put(settings);
     }
     else {
@@ -287,10 +267,30 @@ const init = async () => {
         },
       },
     });
-    inventoryDB.author = settings.author;
-    inventoryDB.committer = settings.committer;
 
-    await inventoryDB.open();
+    const openResult = await inventoryDB.open();
+    if (openResult.isNew) {
+      const terminalId = generateId();
+      const userId = generateId();
+      const author = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      const committer = {
+        name: userId,
+        email: terminalId + '@localhost',
+      };
+      // eslint-disable-next-line require-atomic-updates
+      inventoryDB.author = author;
+      // eslint-disable-next-line require-atomic-updates
+      inventoryDB.committer = committer;
+      inventoryDB.saveAuthor();
+    }
+    else {
+      inventoryDB.loadAuthor();
+      // eslint-disable-next-line require-atomic-updates
+      inventoryDB.committer = inventoryDB.author;
+    }
 
     if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
       remoteOptions = {
