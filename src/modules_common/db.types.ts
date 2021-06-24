@@ -34,7 +34,10 @@ export type DatabaseBoxDeleteRevert = {
 
 export type DatabaseItemAdd = {
   command: 'db-item-add';
-  data: Item;
+  data: {
+    boxId: string;
+    name: string;
+  }
 };
 
 export type DatabaseItemDelete = {

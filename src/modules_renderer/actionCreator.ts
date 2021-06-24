@@ -52,16 +52,17 @@ const lock = new AsyncLock();
 
 /**
  * Create a new item from name
+ *
+ * @remarks
+ * Cannot be called from remote.
  */
-export const itemAddActionCreator = (
-  boxId: string,
-  name: string,
-  latestChangeFrom: LatestChangeFrom = 'local'
-) => {
+export const itemAddActionCreator = (boxId: string, name: string) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
     if (name === '' || name.match(/^\s+$/)) {
       return;
     }
+    const latestChangeFrom: LatestChangeFrom = 'local';
+
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
@@ -91,6 +92,18 @@ export const itemAddActionCreator = (
       }
     }
 
+    // if (latestChangeFrom === 'local') {
+    const cmd: DatabaseItemAdd = {
+      command: 'db-item-add',
+      data: {
+        boxId,
+        name,
+      },
+    };
+    const taskMetadata: TaskMetadata = await window.api.db(cmd);
+    const id = boxId + '/' + taskMetadata.shortId;
+    // }
+
     const id = boxId + '/item' + generateId();
     const itemAction: ItemAddAction = {
       type: 'item-add',
@@ -100,15 +113,6 @@ export const itemAddActionCreator = (
       },
     };
     dispatch(itemAction);
-
-    if (latestChangeFrom === 'local') {
-      const newItem = getState().item[id];
-      const cmd: DatabaseItemAdd = {
-        command: 'db-item-add',
-        data: newItem,
-      };
-      await window.api.db(cmd);
-    }
 
     const boxAction: BoxItemAddAction = {
       type: 'box-item-add',
@@ -350,12 +354,14 @@ export const itemInsertActionCreator = (
 
 /**
  * Create a new box from name
+ *
+ * @remarks
+ * Cannot be called from remote.
  */
-export const boxAddActionCreator = (
-  name: string,
-  latestChangeFrom: LatestChangeFrom = 'local'
-) => {
+export const boxAddActionCreator = (name: string) => {
   return async function (dispatch: Dispatch<any>, getState: () => InventoryState) {
+    const latestChangeFrom: LatestChangeFrom = 'local';
+
     const latestChangeFromAction: WorkLatestChangeFromUpdateAction = {
       type: 'work-latest-change-from-update',
       payload: latestChangeFrom,
