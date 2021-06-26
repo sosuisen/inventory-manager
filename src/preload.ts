@@ -32,8 +32,12 @@ ipcRenderer.on('update-info', (event, info) => {
   window.postMessage({ command: 'update-info', info }, 'file://');
 });
 
-ipcRenderer.on('sync', (event, changes, taskMetadata) => {
-  window.postMessage({ command: 'sync', changes, taskMetadata }, 'file://');
+ipcRenderer.on('sync-item', (event, changes, taskMetadata) => {
+  window.postMessage({ command: 'sync-item', changes, taskMetadata }, 'file://');
+});
+
+ipcRenderer.on('sync-box', (event, changes, taskMetadata) => {
+  window.postMessage({ command: 'sync-box', changes, taskMetadata }, 'file://');
 });
 
 ipcRenderer.on('sync-start', () => {

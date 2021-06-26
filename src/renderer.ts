@@ -23,15 +23,19 @@ import {
 import window from './modules_renderer/window';
 import { DatabaseBoxDeleteRevert } from './modules_common/db.types';
 
-const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+let counter = {
+  create: 0,
+  update: 0,
+  delete: 0,
+};
+
+const syncItemActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
   // eslint-disable-next-line complexity
-  const counter = {
+  counter = {
     create: 0,
     update: 0,
     delete: 0,
   };
-  const boxChanges: ChangedFile[] = [];
-
   // Item changes
   changes.forEach(file => {
     let id = '';
@@ -45,12 +49,8 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
       id = (file.old as FatJsonDoc)._id;
     }
 
-    if (id.startsWith('box/')) {
-      boxChanges.push(file);
-    }
-    else if (file.operation === 'insert') {
+    if (file.operation === 'insert') {
       const newItem = (file.new.doc as unknown) as Item;
-      newItem._id = newItem._id.replace(/^item\//, '');
 
       itemInsertActionCreator(newItem, 'remote')(
         inventoryStore.dispatch,
@@ -60,9 +60,7 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
     }
     else if (file.operation === 'update') {
       const oldItem = (file.old.doc as unknown) as Item;
-      oldItem._id = oldItem._id.replace(/^item\//, '');
       const newItem = (file.new.doc as unknown) as Item;
-      newItem._id = oldItem._id.replace(/^item\//, '');
       if (oldItem.name !== newItem.name) {
         itemNameUpdateActionCreator(
           newItem._id,
@@ -86,7 +84,6 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
     }
     else if (file.operation.startsWith('delete')) {
       const oldItem = (file.old.doc as unknown) as Item;
-      oldItem._id = oldItem._id.replace(/^item\//, '');
       itemDeleteActionCreator(oldItem._id, 'remote')(
         inventoryStore.dispatch,
         inventoryStore.getState
@@ -94,12 +91,13 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
       counter.delete++;
     }
   });
+};
 
+const syncBoxActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
   // Box changes
-  boxChanges.forEach(file => {
+  changes.forEach(file => {
     if (file.operation === 'insert') {
       const newBox = (file.new.doc as unknown) as Box;
-      newBox._id = newBox._id.replace(/^box\//, '');
       if (
         newBox.name === inventoryStore.getState().info.messages.firstBoxName &&
         inventoryStore.getState().box[newBox._id].items.length === 0
@@ -117,10 +115,7 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
       }
     }
     else if (file.operation === 'update') {
-      // const oldBox = (file.old.doc as unknown) as Box;
-      // oldBox._id = oldBox._id.replace(/^box\//, '');
       const newBox = (file.new.doc as unknown) as Box;
-      newBox._id = newBox._id.replace(/^box\//, '');
       boxNameUpdateActionCreator(
         newBox._id,
         newBox.name,
@@ -131,8 +126,6 @@ const syncActionBuilder = (changes: ChangedFile[], taskMetadata: TaskMetadata) =
     }
     else if (file.operation.startsWith('delete')) {
       const oldBox = (file.old.doc as unknown) as Box;
-      oldBox._id = oldBox._id.replace(/^box\//, '');
-
       if (!inventoryStore.getState().box[oldBox._id]) {
         // nop
       }
@@ -224,8 +217,14 @@ window.addEventListener('message', event => {
       });
       break;
     }
-    case 'sync': {
-      syncActionBuilder(event.data.changes, event.data.taskMetadata);
+
+    case 'sync-item': {
+      syncItemActionBuilder(event.data.changes, event.data.taskMetadata);
+      break;
+    }
+
+    case 'sync-box': {
+      syncBoxActionBuilder(event.data.changes, event.data.taskMetadata);
       break;
     }
 

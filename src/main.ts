@@ -208,9 +208,23 @@ const loadData = async () => {
 
 const setSyncEvents = () => {
   if (sync === undefined) return;
-  sync.on('localChange', (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
-    mainWindow.webContents.send('sync', changes, taskMetadata);
-  });
+  // localChange events occur in the order of registration.
+  // So, the first event will occur on itemCollection, the second will occur on boxCollection.
+  itemCollection.onSyncEvent(
+    sync,
+    'localChange',
+    (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+      mainWindow.webContents.send('sync-item', changes, taskMetadata);
+    }
+  );
+
+  boxCollection.onSyncEvent(
+    sync,
+    'localChange',
+    (changes: ChangedFile[], taskMetadata: TaskMetadata) => {
+      mainWindow.webContents.send('sync-box', changes, taskMetadata);
+    }
+  );
 
   sync.on('combine', async (duplicatedFiles: DuplicatedFile[]) => {
     await loadData();
