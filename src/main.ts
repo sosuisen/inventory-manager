@@ -59,6 +59,7 @@ const boxes: { [key: string]: Box } = {};
 
 let boxCollection: Collection;
 let itemCollection: Collection;
+const itemBoxCollections: { [boxId: string]: Collection } = {};
 
 let mainWindow: BrowserWindow;
 
@@ -376,11 +377,12 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
   // eslint-disable-next-line default-case
   switch (command.command) {
     case 'db-item-insert': {
-      const col = inventoryDB.collection('item/' + command.data.boxId, {
-        namePrefix: 'item',
-      });
+      // New child collections inherit namePrefix from itemCollection.
+      itemBoxCollections[command.data.boxId] ??= itemCollection.collection(
+        command.data.boxId
+      );
       const task = await new Promise((resolve, reject) => {
-        col
+        itemBoxCollections[command.data.boxId]
           .put(command.data.item, {
             enqueueCallback: (taskMetadata: TaskMetadata) => {
               resolve(taskMetadata);

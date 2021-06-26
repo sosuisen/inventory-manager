@@ -93,6 +93,7 @@ export const itemAddActionCreator = (boxId: string, name: string) => {
     }
 
     const date = getCurrentDateAndTime();
+    // _id will be automatically generated in db.
     const newItem = {
       name,
       created_date: date,
@@ -108,6 +109,8 @@ export const itemAddActionCreator = (boxId: string, name: string) => {
       },
     };
     const taskMetadata: TaskMetadata = await window.api.db(cmd);
+    // _id management in InventoryManager differs between db and redux store.
+    // Get generated _id from db and add prefix for redux store.
     const _id = boxId + '/' + taskMetadata.shortId!;
     const itemAction: ItemAddAction = {
       type: 'item-add',
