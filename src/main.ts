@@ -354,10 +354,10 @@ const init = async () => {
     return;
   }
 
+  await loadData();
+
   setSyncEvents();
   if (sync !== undefined) console.log(sync.options());
-
-  await loadData();
 
   createWindow();
 };
