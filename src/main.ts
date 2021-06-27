@@ -489,9 +489,12 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     case 'db-box-delete-revert': {
       const id = command.data;
       boxCollection
-        .getBackNumber(id, 1)
+        .getBackNumber(id, 0, { filter: [{ author: { name: inventoryDB.author.name } }] })
         .then(box => {
-          if (box) boxCollection.put(box);
+          if (box) {
+            boxCollection.put(box);
+            console.log('## revert: ' + box._id);
+          }
           else throw new Error('backNumber does not found');
         })
         .then(() => {
