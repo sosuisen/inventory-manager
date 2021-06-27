@@ -493,7 +493,6 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         .then(box => {
           if (box) {
             boxCollection.put(box);
-            console.log('## revert: ' + box._id);
           }
           else throw new Error('backNumber does not found');
         })
