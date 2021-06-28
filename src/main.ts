@@ -19,6 +19,7 @@ import {
   TaskMetadata,
 } from 'git-documentdb';
 import { selectPreferredLanguage, translate } from 'typed-intl';
+import { ICollection } from 'git-documentdb/dist/types_collection';
 import {
   availableLanguages,
   defaultLanguage,
@@ -64,7 +65,7 @@ const boxes: { [key: string]: Box } = {};
 
 let boxCollection: Collection;
 let itemCollection: Collection;
-const itemBoxCollections: { [boxId: string]: Collection } = {};
+const itemBoxCollections: { [boxId: string]: ICollection } = {};
 
 let mainWindow: BrowserWindow;
 
@@ -369,7 +370,7 @@ const init = async () => {
   await loadData();
 
   setSyncEvents();
-  if (sync !== undefined) console.log(sync.options());
+  if (sync !== undefined) console.log(sync.options);
 
   createWindow();
 };
@@ -517,7 +518,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
       break;
     }
     case 'db-exec-sync': {
-      if (sync && sync.options().live) {
+      if (sync && sync.options.live) {
         sync.trySync();
       }
       break;
@@ -533,7 +534,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     case 'db-sync-remote-url-update': {
       if (command.data === '') {
         if (sync !== undefined) {
-          inventoryDB.removeSync(sync.remoteURL());
+          inventoryDB.removeSync(sync.remoteURL);
           sync = undefined;
         }
       }
@@ -557,7 +558,7 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
     }
     case 'db-test-sync': {
       if (sync !== undefined) {
-        inventoryDB.removeSync(sync.remoteURL());
+        inventoryDB.removeSync(sync.remoteURL);
       }
       remoteOptions = {
         remoteUrl: settings.sync.remoteUrl,
