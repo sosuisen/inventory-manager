@@ -36,6 +36,11 @@ export const dataDirName = 'inventory_manager_data';
 let inventoryDB: GitDocumentDB;
 let settingsDB: GitDocumentDB;
 
+const appInfo = {
+  appName: 'Inventory Manager',
+  dataVersion: '1.0',
+};
+
 /**
  * Default data directory
  *
@@ -301,11 +306,18 @@ const init = async () => {
       // eslint-disable-next-line require-atomic-updates
       inventoryDB.committer = committer;
       inventoryDB.saveAuthor();
+
+      await inventoryDB.saveAppInfo(appInfo);
     }
     else {
       inventoryDB.loadAuthor();
       // eslint-disable-next-line require-atomic-updates
       inventoryDB.committer = inventoryDB.author;
+
+      const loadedAppInfo = await inventoryDB.loadAppInfo();
+      if (loadedAppInfo === undefined) {
+        await inventoryDB.saveAppInfo(appInfo);
+      }
     }
 
     if (settings.sync.remoteUrl && settings.sync.connection.personalAccessToken) {
@@ -494,7 +506,6 @@ ipcMain.handle('db', async (e, command: DatabaseCommand) => {
         .then(box => {
           if (box) {
             boxCollection.put(box);
-            console.log('## revert: ' + box._id);
           }
           else throw new Error('backNumber does not found');
         })
